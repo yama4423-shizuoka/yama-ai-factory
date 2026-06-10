@@ -58,13 +58,12 @@
     <div class="badge">AI App Factory</div>
     <h1>AIアプリ工房<br><span class="grad">毎晩ひとつ、AIが新しい道具を作る</span></h1>
     <p>AIが毎晩ひとつ、新しいWebミニアプリを自動で開発・公開する実験場。<br>すべて無料・登録不要。気に入ったものがあれば使ってください。</p>
-    <span class="count-chip" id="appCount">🏭 稼働中のアプリを読み込み中…</span>
+    <span class="count-chip" id="appCount"> 稼働中のアプリを読み込み中…</span>
   </div>
 
   <!-- APPS: 新しいアプリのカードはこのグリッドの先頭に追加すること -->
   <div class="grid" id="appsGrid">
     <a class="app-card featured" href="https://ai-subs-shindan.vercel.app/">
-      <div class="icon">🤖</div>
       <div class="name">AIサブスク診断 <span class="tag">独立済み</span></div>
       <div class="desc">8問で、あなたに合うAI課金プラン(ChatGPT/Claude/Gemini…)を提案</div>
       <div class="date">2026-06-11 公開</div>
@@ -73,12 +72,12 @@
 
   <footer>
     この工房のアプリはAIエージェントが夜間に自動開発しています。<br>
-    🎬 <a href="https://streaming-optimizer-sigma.vercel.app/">サブスク診断</a> ・ 🤖 <a href="https://ai-subs-shindan.vercel.app/">AIサブスク診断</a>
+     <a href="https://streaming-optimizer-sigma.vercel.app/">サブスク診断</a> ・  <a href="https://ai-subs-shindan.vercel.app/">AIサブスク診断</a>
   </footer>
 </div>
 <script>
   const n = document.querySelectorAll('.app-card').length;
-  document.getElementById('appCount').textContent = `🏭 公開中のアプリ: ${n}個(毎晩増えます)`;
+  document.getElementById('appCount').textContent = `公開中のアプリ: ${n}個(毎晩増えます)`;
 </script>
 </body>
 </html>
