@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIアプリ工房 | 毎晩ひとつ、AIが新しい道具を作る</title>
+  <meta name="description" content="AIが毎晩ひとつ、新しいWebミニアプリを自動で開発して公開する実験場。診断・計算機・便利ツールが毎日増えていきます。すべて無料・登録不要。">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:860px; margin:0 auto; padding:48px 20px 80px; }
+    .hero { text-align:center; margin-bottom:48px; }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:16px;
+    }
+    h1 { font-size:clamp(1.7rem,5vw,2.6rem); font-weight:900; line-height:1.25; }
+    h1 .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero p { color:var(--tx3); margin-top:14px; line-height:1.8; font-size:.95rem; }
+    .count-chip {
+      display:inline-block; margin-top:16px; font-size:.8rem; color:var(--green);
+      background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.25);
+      border-radius:999px; padding:5px 16px; font-weight:700;
+    }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:16px; }
+    .app-card {
+      display:block; background:var(--s1); border:1px solid var(--bd); border-radius:16px;
+      padding:22px 20px; text-decoration:none; color:var(--tx);
+      transition:border-color .15s, transform .15s, box-shadow .15s;
+    }
+    .app-card:hover { border-color:var(--acc); transform:translateY(-3px); box-shadow:0 0 30px rgba(124,111,245,.15); }
+    .app-card .icon { font-size:2rem; margin-bottom:10px; }
+    .app-card .name { font-weight:800; font-size:1.02rem; margin-bottom:6px; }
+    .app-card .desc { font-size:.82rem; color:var(--tx2); line-height:1.6; }
+    .app-card .date { font-size:.7rem; color:var(--tx2); margin-top:10px; opacity:.7; }
+    .app-card.featured { border-color:rgba(124,111,245,.4); }
+    .app-card.featured .tag { font-size:.65rem; color:var(--acc2); font-weight:700; letter-spacing:.08em; }
+    footer { margin-top:56px; padding-top:24px; border-top:1px solid var(--bd); text-align:center; font-size:.8rem; color:var(--tx2); line-height:1.9; }
+    footer a { color:var(--acc2); text-decoration:none; }
+    @media (max-width:520px) { .wrapper { padding:32px 14px 60px; } }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="hero">
+    <div class="badge">AI App Factory</div>
+    <h1>AIアプリ工房<br><span class="grad">毎晩ひとつ、AIが新しい道具を作る</span></h1>
+    <p>AIが毎晩ひとつ、新しいWebミニアプリを自動で開発・公開する実験場。<br>すべて無料・登録不要。気に入ったものがあれば使ってください。</p>
+    <span class="count-chip" id="appCount">🏭 稼働中のアプリを読み込み中…</span>
+  </div>
+
+  <!-- APPS: 新しいアプリのカードはこのグリッドの先頭に追加すること -->
+  <div class="grid" id="appsGrid">
+    <a class="app-card featured" href="https://ai-subs-shindan.vercel.app/">
+      <div class="icon">🤖</div>
+      <div class="name">AIサブスク診断 <span class="tag">独立済み</span></div>
+      <div class="desc">8問で、あなたに合うAI課金プラン(ChatGPT/Claude/Gemini…)を提案</div>
+      <div class="date">2026-06-11 公開</div>
+    </a>
+  </div>
+
+  <footer>
+    この工房のアプリはAIエージェントが夜間に自動開発しています。<br>
+    🎬 <a href="https://streaming-optimizer-sigma.vercel.app/">サブスク診断</a> ・ 🤖 <a href="https://ai-subs-shindan.vercel.app/">AIサブスク診断</a>
+  </footer>
+</div>
+<script>
+  const n = document.querySelectorAll('.app-card').length;
+  document.getElementById('appCount').textContent = `🏭 公開中のアプリ: ${n}個(毎晩増えます)`;
+</script>
+</body>
+</html>
