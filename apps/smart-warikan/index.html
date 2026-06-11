@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>スマート割り勘メーカー | 傾斜配分・端数処理対応の割り勘計算</title>
+  <meta name="description" content="傾斜配分（上司多め・幹事割引）と端数処理に対応した割り勘計算機。倍率を設定するだけで公平な分担額を計算。結果はそのままLINEやXに貼り付けられます。無料・登録不要。">
+
+  <meta property="og:title" content="スマート割り勘メーカー | 傾斜配分・端数処理対応の割り勘計算">
+  <meta property="og:description" content="上司は多め、幹事は少なめ。倍率と端数処理に対応した割り勘計算機。計算結果をワンタップでコピーできます。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/smart-warikan/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --red:#f87171;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+
+    .back-link {
+      display:inline-block; font-size:.82rem; color:var(--tx2);
+      text-decoration:none; margin-bottom:28px; transition:color .15s;
+    }
+    .back-link:hover { color:var(--acc2); }
+
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.6rem,5vw,2.2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:32px; }
+
+    .card {
+      background:var(--s1); border:1px solid var(--bd);
+      border-radius:16px; padding:24px; margin-bottom:20px;
+    }
+
+    .form-group { margin-bottom:20px; }
+    .form-group label, .section-label {
+      display:block; font-size:.85rem; color:var(--tx3); margin-bottom:8px; font-weight:600;
+    }
+    .total-input {
+      width:100%; padding:12px 16px; font-size:1.4rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s;
+    }
+    .total-input:focus { border-color:var(--acc); }
+
+    .unit-group { display:flex; gap:8px; }
+    .unit-btn {
+      flex:1; padding:9px 0; border-radius:9px; font-size:.88rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); color:var(--tx3);
+      cursor:pointer; transition:all .15s;
+    }
+    .unit-btn.active {
+      background:rgba(124,111,245,.2); border-color:var(--acc); color:var(--acc2);
+    }
+    .unit-btn:hover:not(.active) { border-color:var(--tx2); color:var(--tx); }
+
+    .members-header {
+      display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;
+    }
+    .members-header .section-label { margin-bottom:0; }
+
+    .quick-btns { display:flex; gap:6px; flex-wrap:wrap; }
+    .quick-btn {
+      padding:4px 11px; border-radius:7px; font-size:.76rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); color:var(--tx3);
+      cursor:pointer; transition:all .15s;
+    }
+    .quick-btn:hover { border-color:var(--acc); color:var(--acc2); }
+
+    .weight-hint {
+      font-size:.76rem; color:var(--tx2); margin-bottom:12px; line-height:1.6;
+    }
+
+    #membersList { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+
+    .member-row {
+      display:flex; gap:8px; align-items:center;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      padding:10px 12px;
+    }
+    .member-name {
+      flex:1; padding:7px 10px; font-size:.95rem; min-width:0;
+      background:transparent; border:1px solid var(--bd); border-radius:7px;
+      color:var(--tx); outline:none; transition:border-color .15s;
+    }
+    .member-name:focus { border-color:var(--acc); }
+    .member-name::placeholder { color:var(--tx2); }
+
+    .weight-control { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+    .weight-label { font-size:.76rem; color:var(--tx2); white-space:nowrap; }
+    .weight-input {
+      width:62px; padding:7px 6px; font-size:.95rem; font-weight:700;
+      text-align:center;
+      background:transparent; border:1px solid var(--bd); border-radius:7px;
+      color:var(--tx); outline:none; transition:border-color .15s;
+    }
+    .weight-input:focus { border-color:var(--acc); }
+    .weight-unit { font-size:.76rem; color:var(--tx2); }
+
+    .del-btn {
+      width:28px; height:28px; border-radius:7px; flex-shrink:0;
+      background:transparent; border:1px solid var(--bd); color:var(--tx2);
+      cursor:pointer; font-size:.85rem; transition:all .15s;
+      display:flex; align-items:center; justify-content:center; line-height:1;
+    }
+    .del-btn:hover:not(:disabled) { border-color:var(--red); color:var(--red); }
+    .del-btn:disabled { opacity:.3; cursor:not-allowed; }
+
+    .add-btn {
+      width:100%; padding:10px; border-radius:10px; font-size:.9rem; font-weight:700;
+      background:transparent; border:1px dashed var(--bd); color:var(--tx2);
+      cursor:pointer; transition:all .15s; margin-bottom:20px;
+    }
+    .add-btn:hover { border-color:var(--acc); color:var(--acc2); }
+
+    .error-msg { font-size:.82rem; color:var(--red); margin-bottom:14px; display:none; }
+    .error-msg.show { display:block; }
+
+    .btn {
+      width:100%; padding:13px; border-radius:10px; border:none;
+      font-size:1rem; font-weight:700; cursor:pointer; transition:opacity .15s;
+    }
+    .btn-start { background:var(--acc); color:#fff; }
+    .btn-ghost { background:var(--s2); color:var(--tx); border:1px solid var(--bd); }
+    .btn:hover { opacity:.85; }
+
+    .result-heading { font-size:.9rem; font-weight:700; color:var(--green); margin-bottom:14px; }
+
+    .result-meta {
+      font-size:.78rem; color:var(--tx2); margin-bottom:16px;
+      padding:8px 12px;
+      background:rgba(124,111,245,.06); border:1px solid rgba(124,111,245,.12); border-radius:8px;
+    }
+
+    .result-table { width:100%; border-collapse:collapse; margin-bottom:6px; }
+    .result-table th {
+      font-size:.78rem; color:var(--tx2); font-weight:600;
+      padding:6px 10px; text-align:left; border-bottom:1px solid var(--bd);
+    }
+    .result-table th.right { text-align:right; }
+    .result-table td {
+      padding:11px 10px; border-bottom:1px solid rgba(255,255,255,.04); font-size:.95rem;
+    }
+    .result-table td.num { text-align:right; }
+    .result-table td.amount { font-weight:800; font-size:1.05rem; color:var(--acc2); }
+    .result-table td.wt { font-size:.82rem; color:var(--tx2); }
+    .result-table tr.total-row td {
+      border-bottom:none; border-top:1px solid var(--bd);
+      padding-top:12px; padding-bottom:4px;
+    }
+    .result-table .total-label { font-size:.85rem; color:var(--tx3); font-weight:600; }
+    .result-table .total-amount { font-weight:900; font-size:1.2rem; color:var(--green); }
+    .remainder-note { font-size:.78rem; color:var(--tx2); margin-bottom:16px; padding-left:2px; }
+
+    .share-row { display:flex; gap:10px; margin-bottom:12px; }
+    .share-btn {
+      flex:1; padding:11px; border-radius:10px; cursor:pointer;
+      font-size:.88rem; font-weight:700; border:none; transition:opacity .15s;
+    }
+    .share-x { background:#000; color:#fff; border:1px solid #2a2a2a; }
+    .share-copy { background:var(--s2); color:var(--tx); border:1px solid var(--bd); }
+    .share-btn:hover { opacity:.8; }
+
+    .note { font-size:.75rem; color:var(--tx2); line-height:1.75; margin-top:20px; }
+
+    @media (max-width:520px) {
+      .wrapper { padding:24px 14px 60px; }
+      .unit-btn { font-size:.8rem; }
+      .members-header { flex-direction:column; align-items:flex-start; gap:8px; }
+      .member-row { flex-wrap:wrap; }
+      .member-name { flex-basis:100%; order:-1; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back-link" href="/">&larr; AIアプリ工房に戻る</a>
+
+  <div class="badge">Smart Warikan</div>
+  <h1><span class="grad">スマート</span>割り勘メーカー</h1>
+  <p class="hero-desc">傾斜配分（上司は多め・幹事は割引）と端数処理に対応した割り勘計算機。倍率を設定するだけで公平な分担額を自動計算。結果はそのままLINEやXに貼り付けられます。</p>
+
+  <div class="card" id="inputCard">
+    <div class="form-group">
+      <label for="totalAmount">合計金額（円）</label>
+      <input type="number" class="total-input" id="totalAmount" placeholder="例: 12500" min="1" step="1">
+    </div>
+
+    <div class="form-group">
+      <label>端数の単位</label>
+      <div class="unit-group" id="unitGroup">
+        <button class="unit-btn active" data-unit="1">1円単位</button>
+        <button class="unit-btn" data-unit="10">10円単位</button>
+        <button class="unit-btn" data-unit="100">100円単位</button>
+      </div>
+    </div>
+
+    <div class="members-header">
+      <span class="section-label">参加者と倍率</span>
+      <div class="quick-btns">
+        <button class="quick-btn" onclick="quickAdd(2)">2人均等</button>
+        <button class="quick-btn" onclick="quickAdd(3)">3人均等</button>
+        <button class="quick-btn" onclick="quickAdd(4)">4人均等</button>
+        <button class="quick-btn" onclick="quickAdd(5)">5人均等</button>
+      </div>
+    </div>
+    <div class="weight-hint">倍率 1.0 = 均等。上司に2倍払ってもらうなら倍率 2.0、幹事割引なら 0.8 などを設定します。</div>
+
+    <div id="membersList"></div>
+    <button class="add-btn" onclick="addMember('', 1.0)">+ 人を追加</button>
+
+    <div class="error-msg" id="errorMsg"></div>
+    <button class="btn btn-start" onclick="calculate()">割り勘を計算する</button>
+  </div>
+
+  <div class="card" id="resultCard" style="display:none;">
+    <div class="result-heading">計算結果</div>
+    <div class="result-meta" id="resultMeta"></div>
+    <table class="result-table" id="resultTable"></table>
+    <div class="remainder-note" id="remainderNote"></div>
+    <div class="share-row">
+      <button class="share-btn share-x" onclick="shareX()">X でシェア</button>
+      <button class="share-btn share-copy" id="copyBtn" onclick="doCopy()">結果をコピー</button>
+    </div>
+    <button class="btn btn-ghost" onclick="resetCalc()">条件を変えて再計算</button>
+  </div>
+
+  <p class="note">倍率は相対的な支払い比率です。端数は最大余剰法により公平に配分されます。表示金額はあくまで計算上の目安です。</p>
+</div>
+
+<script>
+var selectedUnit = 1;
+var lastResult = null;
+
+document.getElementById('unitGroup').addEventListener('click', function(e) {
+  var btn = e.target.closest('.unit-btn');
+  if (!btn) return;
+  document.querySelectorAll('.unit-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  selectedUnit = parseInt(btn.dataset.unit, 10);
+});
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function addMember(name, weight) {
+  var list = document.getElementById('membersList');
+  var idx = list.children.length;
+  var row = document.createElement('div');
+  row.className = 'member-row';
+  var n = name || '';
+  var w = (weight !== undefined && weight > 0) ? weight : 1.0;
+  row.innerHTML =
+    '<input type="text" class="member-name" placeholder="名前（任意）" value="' + escHtml(n) + '" maxlength="20">' +
+    '<div class="weight-control">' +
+      '<span class="weight-label">倍率</span>' +
+      '<input type="number" class="weight-input" value="' + w.toFixed(1) + '" min="0.1" max="99" step="0.1">' +
+      '<span class="weight-unit">倍</span>' +
+    '</div>' +
+    '<button class="del-btn" onclick="removeMember(this)" title="削除">&#x2715;</button>';
+  list.appendChild(row);
+  refreshDelButtons();
+}
+
+function removeMember(btn) {
+  btn.closest('.member-row').remove();
+  refreshDelButtons();
+}
+
+function refreshDelButtons() {
+  var rows = document.querySelectorAll('.member-row');
+  rows.forEach(function(row) {
+    row.querySelector('.del-btn').disabled = rows.length <= 2;
+  });
+}
+
+function quickAdd(n) {
+  document.getElementById('membersList').innerHTML = '';
+  for (var i = 0; i < n; i++) addMember('', 1.0);
+}
+
+function getMembers() {
+  var rows = document.querySelectorAll('.member-row');
+  var members = [];
+  rows.forEach(function(row, i) {
+    var name = row.querySelector('.member-name').value.trim() || ('参加者' + (i + 1));
+    var raw = parseFloat(row.querySelector('.weight-input').value);
+    var weight = (!isNaN(raw) && raw > 0) ? raw : 1.0;
+    members.push({ name: name, weight: weight });
+  });
+  return members;
+}
+
+function splitLargestRemainder(total, members, unit) {
+  var totalWeight = members.reduce(function(s, m) { return s + m.weight; }, 0);
+  var rawShares = members.map(function(m) { return (total * m.weight) / totalWeight; });
+
+  var flooredShares = rawShares.map(function(s) { return Math.floor(s / unit) * unit; });
+  var totalFloored = flooredShares.reduce(function(a, b) { return a + b; }, 0);
+  var gap = total - totalFloored;
+  var extraUnits = Math.floor(gap / unit + 1e-9);
+  var trueRemainder = Math.round(gap - extraUnits * unit);
+
+  var indexed = rawShares.map(function(s, i) {
+    return { i: i, frac: s - flooredShares[i] };
+  });
+  indexed.sort(function(a, b) { return b.frac - a.frac; });
+
+  var shares = flooredShares.slice();
+  for (var k = 0; k < extraUnits && k < indexed.length; k++) {
+    shares[indexed[k].i] += unit;
+  }
+
+  return { shares: shares, trueRemainder: trueRemainder };
+}
+
+function calculate() {
+  var errEl = document.getElementById('errorMsg');
+  var totalVal = parseFloat(document.getElementById('totalAmount').value);
+
+  if (!totalVal || totalVal <= 0) {
+    errEl.textContent = '合計金額を入力してください。';
+    errEl.classList.add('show');
+    return;
+  }
+  errEl.classList.remove('show');
+
+  var members = getMembers();
+  if (members.length < 2) {
+    errEl.textContent = '参加者を2人以上追加してください。';
+    errEl.classList.add('show');
+    return;
+  }
+
+  var result = splitLargestRemainder(totalVal, members, selectedUnit);
+  var results = members.map(function(m, i) {
+    return { name: m.name, weight: m.weight, amount: result.shares[i] };
+  });
+
+  lastResult = {
+    total: totalVal,
+    unit: selectedUnit,
+    results: results,
+    trueRemainder: result.trueRemainder
+  };
+  renderResult(lastResult);
+}
+
+function renderResult(data) {
+  var unitLabels = { 1: '1円単位', 10: '10円単位', 100: '100円単位' };
+  var unitLabel = unitLabels[data.unit] || (data.unit + '円単位');
+  document.getElementById('resultMeta').textContent =
+    '合計 ' + data.total.toLocaleString('ja-JP') + '円 / ' + data.results.length + '人 / ' + unitLabel +
+    (data.unit > 1 ? ' / 余剰は最大余剰法で配分' : '');
+
+  var hasWeights = data.results.some(function(r) { return Math.abs(r.weight - 1.0) > 0.001; });
+  var cols = hasWeights ? 3 : 2;
+
+  var html = '<thead><tr><th>名前</th>' +
+    (hasWeights ? '<th class="right">倍率</th>' : '') +
+    '<th class="right">支払額</th></tr></thead><tbody>';
+
+  data.results.forEach(function(r) {
+    html += '<tr><td>' + escHtml(r.name) + '</td>' +
+      (hasWeights ? '<td class="num wt">' + r.weight.toFixed(1) + '倍</td>' : '') +
+      '<td class="num amount">' + r.amount.toLocaleString('ja-JP') + '円</td></tr>';
+  });
+
+  var collectSum = data.results.reduce(function(s, r) { return s + r.amount; }, 0);
+  html += '</tbody><tfoot><tr class="total-row">' +
+    '<td class="total-label" colspan="' + (cols - 1) + '">集金合計</td>' +
+    '<td class="num total-amount">' + collectSum.toLocaleString('ja-JP') + '円</td>' +
+    '</tr></tfoot>';
+
+  document.getElementById('resultTable').innerHTML = html;
+
+  var rn = document.getElementById('remainderNote');
+  if (data.trueRemainder > 0) {
+    rn.textContent = '端数 ' + data.trueRemainder + '円は集金合計に含まれていません（幹事負担または切り捨て）。';
+    rn.style.display = 'block';
+  } else {
+    rn.style.display = 'none';
+  }
+
+  document.getElementById('inputCard').style.display = 'none';
+  document.getElementById('resultCard').style.display = 'block';
+}
+
+function resetCalc() {
+  document.getElementById('resultCard').style.display = 'none';
+  document.getElementById('inputCard').style.display = 'block';
+}
+
+function getShareText() {
+  if (!lastResult) return '';
+  var lines = [
+    '割り勘計算結果（合計: ' + lastResult.total.toLocaleString('ja-JP') + '円）',
+    '------------------------'
+  ];
+  lastResult.results.forEach(function(r) {
+    var line = r.name + ': ' + r.amount.toLocaleString('ja-JP') + '円';
+    if (Math.abs(r.weight - 1.0) > 0.001) line += '（倍率 ' + r.weight.toFixed(1) + '）';
+    lines.push(line);
+  });
+  if (lastResult.trueRemainder > 0) {
+    lines.push('端数 ' + lastResult.trueRemainder + '円は幹事負担');
+  }
+  lines.push('------------------------');
+  lines.push('#スマート割り勘');
+  lines.push('https://yama-ai-factory.vercel.app/apps/smart-warikan/');
+  return lines.join('\n');
+}
+
+function shareX() {
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(getShareText()), '_blank', 'noopener');
+}
+
+function doCopy() {
+  var text = getShareText();
+  var btn = document.getElementById('copyBtn');
+  var orig = btn.textContent;
+  function done() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = orig; }, 2000);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(function() { fallbackCopy(text, done); });
+  } else {
+    fallbackCopy(text, done);
+  }
+}
+
+function fallbackCopy(text, done) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;opacity:0;';
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  done();
+}
+
+quickAdd(3);
+</script>
+</body>
+</html>
