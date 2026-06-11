@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>睡眠サイクル計算機 | 何時に寝れば気持ちよく起きられる?</title>
+  <meta name="description" content="起きたい時刻を入力するだけで、90分サイクルに基づいた最適な就寝時刻を逆算。今すぐ寝た場合の起床時刻も計算できます。無料・登録不要。">
+
+  <meta property="og:title" content="睡眠サイクル計算機 | 何時に寝れば気持ちよく起きられる?">
+  <meta property="og:description" content="起きたい時刻から90分サイクルで最適な就寝時刻を逆算。今すぐ寝る場合の最適起床時刻も計算できます。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/sleep-cycle/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+
+    .back-link {
+      display:inline-block; font-size:.82rem; color:var(--tx2);
+      text-decoration:none; margin-bottom:28px; transition:color .15s;
+    }
+    .back-link:hover { color:var(--acc2); }
+
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.6rem,5vw,2.2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:32px; }
+
+    .tabs { display:flex; gap:8px; margin-bottom:24px; }
+    .tab {
+      flex:1; padding:11px 12px; border-radius:10px;
+      border:1px solid var(--bd); background:var(--s1);
+      color:var(--tx3); font-size:.88rem; font-weight:600;
+      cursor:pointer; transition:all .15s; text-align:center;
+    }
+    .tab.active { border-color:var(--acc); color:var(--acc2); background:rgba(124,111,245,.1); }
+
+    .panel { display:none; }
+    .panel.active { display:block; }
+
+    .card {
+      background:var(--s1); border:1px solid var(--bd);
+      border-radius:16px; padding:24px; margin-bottom:20px;
+    }
+    label { display:block; font-size:.85rem; color:var(--tx3); margin-bottom:8px; font-weight:600; }
+    input[type="time"] {
+      width:100%; padding:12px 16px; font-size:1.5rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s;
+    }
+    input[type="time"]:focus { border-color:var(--acc); }
+    input[type="time"]::-webkit-calendar-picker-indicator { filter:invert(.7); cursor:pointer; }
+
+    .now-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; }
+
+    .btn {
+      display:block; width:100%; padding:13px; margin-top:16px; border-radius:10px;
+      background:var(--acc); border:none; color:#fff;
+      font-size:1rem; font-weight:700; cursor:pointer; transition:opacity .15s;
+    }
+    .btn:hover { opacity:.85; }
+
+    .results { display:none; }
+    .results.show { display:block; }
+
+    .results-heading { font-size:.83rem; color:var(--tx2); font-weight:600; margin-bottom:14px; }
+
+    .cycle-list { display:grid; gap:10px; margin-bottom:14px; }
+    .cycle-item {
+      background:var(--s1); border:1px solid var(--bd); border-radius:12px;
+      padding:14px 18px; display:flex; align-items:center; justify-content:space-between;
+      transition:border-color .15s;
+    }
+    .cycle-item.rec { border-color:rgba(124,111,245,.45); background:rgba(124,111,245,.06); }
+    .cycle-time { font-size:1.65rem; font-weight:900; line-height:1; }
+    .cycle-sub { font-size:.8rem; color:var(--tx3); margin-top:4px; }
+    .rec-badge {
+      font-size:.65rem; font-weight:800; letter-spacing:.08em;
+      background:rgba(52,211,153,.1); color:var(--green);
+      border:1px solid rgba(52,211,153,.3); padding:3px 10px; border-radius:999px;
+      white-space:nowrap;
+    }
+
+    .note {
+      font-size:.78rem; color:var(--tx2); line-height:1.75;
+      padding:12px 14px; background:var(--s2); border-radius:8px;
+      border-left:3px solid var(--bd); margin-bottom:16px;
+    }
+
+    .share-row { display:flex; gap:10px; }
+    .share-btn {
+      flex:1; padding:11px; border-radius:10px; cursor:pointer;
+      font-size:.88rem; font-weight:700; border:none; transition:opacity .15s;
+    }
+    .share-x { background:#000; color:#fff; border:1px solid #2a2a2a; }
+    .share-copy { background:var(--s2); color:var(--tx); border:1px solid var(--bd); }
+    .share-btn:hover { opacity:.8; }
+
+    @media (max-width:520px) {
+      .wrapper { padding:24px 14px 60px; }
+      .cycle-time { font-size:1.4rem; }
+      .share-btn { font-size:.82rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back-link" href="/">&larr; AIアプリ工房に戻る</a>
+
+  <div class="badge">Sleep Cycle</div>
+  <h1><span class="grad">睡眠サイクル</span>計算機</h1>
+  <p class="hero-desc">90分サイクルの節目に起きるとスッキリ目覚めやすくなります。<br>入眠まで約15分かかる前提で算出しています。</p>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-wake" onclick="switchTab('wake')">起きたい時刻から逆算</button>
+    <button class="tab" id="tab-now" onclick="switchTab('now')">今すぐ寝る場合</button>
+  </div>
+
+  <!-- Panel: wake mode -->
+  <div class="panel active" id="panel-wake">
+    <div class="card">
+      <label for="wakeTime">何時に起きたいですか?</label>
+      <input type="time" id="wakeTime" value="07:00">
+      <button class="btn" onclick="calcFromWake()">就寝時刻を計算する</button>
+    </div>
+
+    <div class="results" id="results-wake">
+      <p class="results-heading" id="wake-heading"></p>
+      <div class="cycle-list" id="list-wake"></div>
+      <p class="note">入眠には個人差があります。15分はあくまで目安です。就寝30分前からスマートフォンを遠ざけると入眠が早まることがあります。</p>
+      <div class="share-row">
+        <button class="share-btn share-x" onclick="shareX('wake')">X でシェア</button>
+        <button class="share-btn share-copy" id="copy-wake" onclick="doCopy('wake', this)">結果をコピー</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: now mode -->
+  <div class="panel" id="panel-now">
+    <div class="card">
+      <p class="now-desc">現在時刻から入眠15分後に眠りにつくとして、<br>スッキリ目覚めやすい起床時刻を計算します。</p>
+      <button class="btn" onclick="calcFromNow()">今から寝た場合の起床時刻を計算</button>
+    </div>
+
+    <div class="results" id="results-now">
+      <p class="results-heading" id="now-heading"></p>
+      <div class="cycle-list" id="list-now"></div>
+      <p class="note">入眠には個人差があります。15分はあくまで目安です。眠れない場合は無理せず次のサイクルを目標にしてください。</p>
+      <div class="share-row">
+        <button class="share-btn share-x" onclick="shareX('now')">X でシェア</button>
+        <button class="share-btn share-copy" id="copy-now" onclick="doCopy('now', this)">結果をコピー</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var FALL_ASLEEP = 15;
+var CYCLE = 90;
+
+function switchTab(mode) {
+  document.getElementById('tab-wake').classList.toggle('active', mode === 'wake');
+  document.getElementById('tab-now').classList.toggle('active', mode === 'now');
+  document.getElementById('panel-wake').classList.toggle('active', mode === 'wake');
+  document.getElementById('panel-now').classList.toggle('active', mode === 'now');
+}
+
+function formatTime(totalMin) {
+  var norm = ((totalMin % 1440) + 1440) % 1440;
+  var h = Math.floor(norm / 60);
+  var m = norm % 60;
+  return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+}
+
+function parseTime(val) {
+  var parts = val.split(':');
+  return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+}
+
+function buildItems(baseCycles, baseMin, mode) {
+  return baseCycles.map(function(n) {
+    var t = mode === 'wake'
+      ? baseMin - FALL_ASLEEP - n * CYCLE
+      : baseMin + FALL_ASLEEP + n * CYCLE;
+    return {
+      n: n,
+      time: formatTime(t),
+      hours: (n * CYCLE / 60).toFixed(1),
+      rec: n === 5 || n === 6
+    };
+  });
+}
+
+function renderList(listId, items) {
+  var el = document.getElementById(listId);
+  el.innerHTML = items.map(function(it) {
+    return '<div class="cycle-item' + (it.rec ? ' rec' : '') + '">'
+      + '<div>'
+      + '<div class="cycle-time">' + it.time + '</div>'
+      + '<div class="cycle-sub">' + it.n + 'サイクル &nbsp;|&nbsp; ' + it.hours + '時間</div>'
+      + '</div>'
+      + (it.rec ? '<span class="rec-badge">おすすめ</span>' : '')
+      + '</div>';
+  }).join('');
+}
+
+var lastWakeItems = [];
+var lastNowItems = [];
+var lastNowBase = '';
+
+function calcFromWake() {
+  var wakeVal = document.getElementById('wakeTime').value || '07:00';
+  var wakeMin = parseTime(wakeVal);
+  lastWakeItems = buildItems([6, 5, 4, 3], wakeMin, 'wake');
+
+  document.getElementById('wake-heading').textContent = wakeVal + ' 起きに合わせた就寝時刻 (早いほど深い睡眠が期待できます)';
+  renderList('list-wake', lastWakeItems);
+  document.getElementById('results-wake').classList.add('show');
+}
+
+function calcFromNow() {
+  var now = new Date();
+  var nowMin = now.getHours() * 60 + now.getMinutes();
+  lastNowBase = formatTime(nowMin);
+  lastNowItems = buildItems([4, 5, 6, 7], nowMin, 'now');
+
+  document.getElementById('now-heading').textContent = '今 ' + lastNowBase + ' から寝た場合の最適起床時刻';
+  renderList('list-now', lastNowItems);
+  document.getElementById('results-now').classList.add('show');
+}
+
+function getShareText(mode) {
+  if (mode === 'wake') {
+    var wakeVal = document.getElementById('wakeTime').value || '07:00';
+    var recItems = lastWakeItems.filter(function(it) { return it.rec; });
+    var recTimes = recItems.map(function(it) { return it.time; }).join(' / ');
+    return wakeVal + ' 起きの最適就寝時刻: ' + recTimes + '\n#睡眠サイクル計算機\nhttps://yama-ai-factory.vercel.app/apps/sleep-cycle/';
+  } else {
+    var recItems = lastNowItems.filter(function(it) { return it.rec; });
+    var recTimes = recItems.map(function(it) { return it.time; }).join(' / ');
+    return '今 ' + lastNowBase + ' から寝た場合の最適起床時刻: ' + recTimes + '\n#睡眠サイクル計算機\nhttps://yama-ai-factory.vercel.app/apps/sleep-cycle/';
+  }
+}
+
+function shareX(mode) {
+  var text = getShareText(mode);
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text), '_blank', 'noopener');
+}
+
+function doCopy(mode, btn) {
+  var text = getShareText(mode);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      var orig = btn.textContent;
+      btn.textContent = 'コピーしました';
+      setTimeout(function() { btn.textContent = orig; }, 2000);
+    });
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    var orig = btn.textContent;
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = orig; }, 2000);
+  }
+}
+</script>
+</body>
+</html>
