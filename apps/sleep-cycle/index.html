@@ -138,7 +138,7 @@
   <div class="panel active" id="panel-wake">
     <div class="card">
       <label for="wakeTime">何時に起きたいですか?</label>
-      <input type="time" id="wakeTime" value="07:00">
+      <input type="time" id="wakeTime" value="07:00" onchange="calcFromWake()">
       <button class="btn" onclick="calcFromWake()">就寝時刻を計算する</button>
     </div>
 
@@ -181,6 +181,7 @@ function switchTab(mode) {
   document.getElementById('tab-now').classList.toggle('active', mode === 'now');
   document.getElementById('panel-wake').classList.toggle('active', mode === 'wake');
   document.getElementById('panel-now').classList.toggle('active', mode === 'now');
+  if (mode === 'now') calcFromNow();
 }
 
 function formatTime(totalMin) {
@@ -286,6 +287,8 @@ function doCopy(mode, btn) {
     setTimeout(function() { btn.textContent = orig; }, 2000);
   }
 }
+
+calcFromWake();
 </script>
 </body>
 </html>
