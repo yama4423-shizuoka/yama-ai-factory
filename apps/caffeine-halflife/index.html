@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>カフェイン半減期計算機 | 今飲むと睡眠に響く?</title>
+  <meta name="description" content="飲んだ時刻とカフェイン量から体内カフェイン残量の推移をグラフ表示。今コーヒーを飲むと睡眠に何時間影響するか一目で分かります。無料・登録不要。">
+
+  <meta property="og:title" content="カフェイン半減期計算機 | 今飲むと睡眠に響く?">
+  <meta property="og:description" content="カフェイン半減期5.5時間で体内残量の推移を計算・グラフ表示。就寝時の残量から睡眠への影響度が一目で分かります。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/caffeine-halflife/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back-link {
+      display:inline-block; font-size:.82rem; color:var(--tx2);
+      text-decoration:none; margin-bottom:28px; transition:color .15s;
+    }
+    .back-link:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.6rem,5vw,2.2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:32px; }
+    .card {
+      background:var(--s1); border:1px solid var(--bd);
+      border-radius:16px; padding:24px; margin-bottom:20px;
+    }
+    label { display:block; font-size:.85rem; color:var(--tx3); margin-bottom:8px; font-weight:600; }
+    .presets { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+    .preset-btn {
+      padding:7px 13px; border-radius:8px; cursor:pointer;
+      background:var(--s2); border:1px solid var(--bd);
+      color:var(--tx3); font-size:.8rem; font-weight:600; transition:all .15s;
+    }
+    .preset-btn:hover, .preset-btn.active {
+      border-color:var(--acc); color:var(--acc2); background:rgba(124,111,245,.1);
+    }
+    .field-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+    .field-full { margin-bottom:14px; }
+    input[type="number"], input[type="time"] {
+      width:100%; padding:11px 14px; font-size:1.1rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s;
+    }
+    input[type="number"]:focus, input[type="time"]:focus { border-color:var(--acc); }
+    input[type="time"]::-webkit-calendar-picker-indicator { filter:invert(.7); cursor:pointer; }
+    .btn {
+      display:block; width:100%; padding:13px; margin-top:6px; border-radius:10px;
+      background:var(--acc); border:none; color:#fff;
+      font-size:1rem; font-weight:700; cursor:pointer; transition:opacity .15s;
+    }
+    .btn:hover { opacity:.85; }
+    .results { display:none; }
+    .results.show { display:block; }
+    .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+    .stat {
+      background:var(--s1); border:1px solid var(--bd); border-radius:12px;
+      padding:16px; text-align:center;
+    }
+    .stat-val { font-size:1.8rem; font-weight:900; line-height:1; }
+    .stat-label { font-size:.75rem; color:var(--tx3); margin-top:6px; }
+    .stat.alert .stat-val { color:#f87171; }
+    .stat.warn  .stat-val { color:#fbbf24; }
+    .stat.ok    .stat-val { color:var(--green); }
+    .impact-box {
+      border-radius:12px; padding:14px 16px; margin-bottom:20px;
+      font-size:.88rem; line-height:1.75; font-weight:600; border:1px solid;
+    }
+    .impact-box.alert { background:rgba(248,113,113,.07); border-color:rgba(248,113,113,.3); color:#fca5a5; }
+    .impact-box.warn  { background:rgba(251,191,36,.07);  border-color:rgba(251,191,36,.3);  color:#fde68a; }
+    .impact-box.ok    { background:rgba(52,211,153,.07);  border-color:rgba(52,211,153,.3);  color:#6ee7b7; }
+    .graph-card {
+      background:var(--s1); border:1px solid var(--bd);
+      border-radius:16px; padding:20px 16px 14px; margin-bottom:20px;
+    }
+    .graph-title { font-size:.82rem; color:var(--tx2); font-weight:600; margin-bottom:10px; }
+    #graph-svg { width:100%; display:block; }
+    .legend { display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; }
+    .legend-item { display:flex; align-items:center; gap:5px; font-size:.72rem; color:var(--tx3); }
+    .l-line { width:18px; height:2px; border-radius:1px; }
+    .note {
+      font-size:.78rem; color:var(--tx2); line-height:1.75;
+      padding:12px 14px; background:var(--s2); border-radius:8px;
+      border-left:3px solid var(--bd); margin-bottom:16px;
+    }
+    .share-row { display:flex; gap:10px; }
+    .share-btn {
+      flex:1; padding:11px; border-radius:10px; cursor:pointer;
+      font-size:.88rem; font-weight:700; border:none; transition:opacity .15s;
+    }
+    .share-x    { background:#000; color:#fff; border:1px solid #2a2a2a; }
+    .share-copy { background:var(--s2); color:var(--tx); border:1px solid var(--bd); }
+    .share-btn:hover { opacity:.8; }
+    @media (max-width:520px) {
+      .wrapper { padding:24px 14px 60px; }
+      .field-row { grid-template-columns:1fr; }
+      .stat-val { font-size:1.5rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back-link" href="/">&larr; AIアプリ工房に戻る</a>
+
+  <div class="badge">Caffeine Half-life</div>
+  <h1><span class="grad">カフェイン半減期</span>計算機</h1>
+  <p class="hero-desc">飲んだ時刻とカフェイン量から、体内カフェイン残量の推移をグラフ表示。<br>就寝時にどれだけ残るか一目で確認できます。</p>
+
+  <div class="card">
+    <label>よく飲む飲み物</label>
+    <div class="presets" id="presets">
+      <button class="preset-btn active" data-mg="100" onclick="selectPreset(this)">コーヒー 100mg</button>
+      <button class="preset-btn" data-mg="70"  onclick="selectPreset(this)">エスプレッソ 70mg</button>
+      <button class="preset-btn" data-mg="150" onclick="selectPreset(this)">エナジードリンク 150mg</button>
+      <button class="preset-btn" data-mg="45"  onclick="selectPreset(this)">紅茶 45mg</button>
+      <button class="preset-btn" data-mg="30"  onclick="selectPreset(this)">緑茶 30mg</button>
+      <button class="preset-btn" data-mg="35"  onclick="selectPreset(this)">コーラ 35mg</button>
+    </div>
+
+    <div class="field-row">
+      <div>
+        <label for="mgInput">カフェイン量 (mg)</label>
+        <input type="number" id="mgInput" value="100" min="1" max="2000">
+      </div>
+      <div>
+        <label for="drinkTime">飲んだ時刻</label>
+        <input type="time" id="drinkTime">
+      </div>
+    </div>
+    <div class="field-full">
+      <label for="sleepTime">就寝予定時刻</label>
+      <input type="time" id="sleepTime" value="23:00">
+    </div>
+    <button class="btn" onclick="calculate()">カフェイン推移を計算する</button>
+  </div>
+
+  <div class="results" id="results">
+    <div class="stat-grid">
+      <div class="stat" id="stat-now">
+        <div class="stat-val" id="stat-now-val">--</div>
+        <div class="stat-label">現在の体内残量</div>
+      </div>
+      <div class="stat" id="stat-sleep">
+        <div class="stat-val" id="stat-sleep-val">--</div>
+        <div class="stat-label" id="stat-sleep-label">就寝時の推定残量</div>
+      </div>
+    </div>
+
+    <div class="impact-box" id="impact-box">
+      <span id="impact-text"></span>
+    </div>
+
+    <div class="graph-card">
+      <div class="graph-title">体内カフェイン残量の推移 (摂取後0〜14時間)</div>
+      <svg id="graph-svg" viewBox="0 0 520 190"></svg>
+      <div class="legend">
+        <div class="legend-item"><div class="l-line" style="background:var(--acc)"></div>残量曲線</div>
+        <div class="legend-item"><div class="l-line" style="background:var(--green)"></div>安眠目安(40mg)</div>
+        <div class="legend-item"><div class="l-line" style="background:var(--acc2)"></div>現在時刻</div>
+        <div class="legend-item"><div class="l-line" style="background:var(--blue)"></div>就寝時刻</div>
+      </div>
+    </div>
+
+    <p class="note" id="result-note"></p>
+
+    <div class="share-row">
+      <button class="share-btn share-x"    onclick="shareX()">X でシェア</button>
+      <button class="share-btn share-copy" id="copy-btn" onclick="doCopy()">結果をコピー</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var HALF_LIFE = 5.5;
+var SAFE_MG   = 40;
+var _last     = null;
+
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+function parseT(v) {
+  var p = v.split(':');
+  return parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+}
+
+function fmt(mg) { return Math.round(mg) + 'mg'; }
+
+function decay(amount, hours) {
+  return amount * Math.pow(0.5, hours / HALF_LIFE);
+}
+
+function safeHours(amount) {
+  if (amount <= SAFE_MG) return 0;
+  return HALF_LIFE * Math.log(amount / SAFE_MG) / Math.LN2;
+}
+
+function lvl(mg) {
+  return mg > 80 ? 'alert' : mg > SAFE_MG ? 'warn' : 'ok';
+}
+
+function selectPreset(btn) {
+  document.querySelectorAll('.preset-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('mgInput').value = btn.dataset.mg;
+  calculate();
+}
+
+function calculate() {
+  var mg     = Math.max(1, parseFloat(document.getElementById('mgInput').value) || 100);
+  var drinkV = document.getElementById('drinkTime').value;
+  var sleepV = document.getElementById('sleepTime').value;
+  if (!drinkV || !sleepV) return;
+
+  var drinkM = parseT(drinkV);
+  var sleepM = parseT(sleepV);
+  var now    = new Date();
+  var nowM   = now.getHours() * 60 + now.getMinutes();
+
+  var elH  = (nowM   - drinkM) / 60; if (elH  < 0) elH  += 24;
+  var slH  = (sleepM - drinkM) / 60; if (slH  < 0) slH  += 24;
+
+  var nowMg = decay(mg, elH);
+  var slMg  = decay(mg, slH);
+
+  var shrs     = safeHours(mg);
+  var safeAbsM = (drinkM + shrs * 60) % 1440;
+  var safeHH   = Math.floor(safeAbsM / 60);
+  var safeMM   = Math.floor(safeAbsM % 60);
+
+  _last = {
+    mg: mg, drinkV: drinkV, sleepV: sleepV,
+    nowMg: nowMg, slMg: slMg,
+    elH: elH, slH: slH,
+    shrs: shrs, safeHH: safeHH, safeMM: safeMM
+  };
+
+  document.getElementById('stat-now-val').textContent   = fmt(nowMg);
+  document.getElementById('stat-sleep-val').textContent = fmt(slMg);
+  document.getElementById('stat-sleep-label').textContent = sleepV + ' 頃の推定残量';
+  document.getElementById('stat-now').className   = 'stat ' + lvl(nowMg);
+  document.getElementById('stat-sleep').className = 'stat ' + lvl(slMg);
+
+  var box = document.getElementById('impact-box');
+  var txt = '';
+  if (slMg > 80) {
+    box.className = 'impact-box alert';
+    txt = '就寝時に約' + fmt(slMg) + 'が残り、睡眠に影響する可能性が高いです。';
+    if (shrs > elH) txt += ' ' + pad(safeHH) + ':' + pad(safeMM) + ' 以降に就寝すると影響が和らぎます。';
+  } else if (slMg > SAFE_MG) {
+    box.className = 'impact-box warn';
+    txt = '就寝時に約' + fmt(slMg) + 'が残り、寝つきが悪くなる可能性があります。';
+    if (shrs > elH) txt += ' ' + pad(safeHH) + ':' + pad(safeMM) + ' 頃には40mg以下になる見込みです。';
+  } else {
+    box.className = 'impact-box ok';
+    txt = '就寝時の残量は約' + fmt(slMg) + 'と少なく、睡眠への影響は小さいと考えられます。';
+  }
+  document.getElementById('impact-text').textContent = txt;
+
+  var noteArr = ['カフェインの半減期は個人差があり、一般的に5〜7時間とされています(本ツールは5.5時間で計算)。'];
+  if (mg > SAFE_MG) {
+    noteArr.push('摂取後 約' + shrs.toFixed(1) + '時間(' + pad(safeHH) + ':' + pad(safeMM) + '頃)に40mg以下になる見込みです。');
+  }
+  noteArr.push('年齢・体重・薬の服用状況等で実際の代謝速度は異なります。目安としてご参照ください。');
+  document.getElementById('result-note').textContent = noteArr.join(' ');
+
+  drawGraph(mg, elH, slH);
+  document.getElementById('results').classList.add('show');
+}
+
+function drawGraph(amount, nowH, sleepH) {
+  var W  = 520, H  = 190;
+  var PL = 50,  PR = 16, PT = 16, PB = 34;
+  var cW = W - PL - PR;
+  var cH = H - PT - PB;
+  var maxH = 14;
+
+  function xp(h)  { return PL + Math.min(Math.max(h, 0), maxH) / maxH * cW; }
+  function yp(mg) { return PT + cH - Math.min(Math.max(mg, 0), amount) / amount * cH; }
+
+  var pts = [];
+  for (var i = 0; i <= 140; i++) {
+    var t = i / 10;
+    pts.push([xp(t), yp(decay(amount, t))]);
+  }
+  var pathD = pts.map(function(p, i) {
+    return (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1);
+  }).join('');
+  var areaD = pathD + 'L' + xp(maxH).toFixed(1) + ',' + (PT + cH) + ' L' + PL + ',' + (PT + cH) + ' Z';
+
+  var grid = '', xlab = '';
+  for (var h = 0; h <= 14; h += 2) {
+    var x = xp(h);
+    grid += '<line x1="' + x.toFixed(1) + '" y1="' + PT + '" x2="' + x.toFixed(1) + '" y2="' + (PT + cH) + '" stroke="#22223a" stroke-width="1"/>';
+    xlab += '<text x="' + x.toFixed(1) + '" y="' + (H - 6) + '" fill="#6868a0" font-size="10" text-anchor="middle">' + h + 'h</text>';
+  }
+  var ylab = '';
+  [0, 25, 50, 75, 100].forEach(function(pct) {
+    var mg2 = amount * pct / 100;
+    var y   = yp(mg2);
+    ylab += '<text x="' + (PL - 5) + '" y="' + (y + 4) + '" fill="#6868a0" font-size="10" text-anchor="end">' + Math.round(mg2) + '</text>';
+    if (pct > 0 && pct < 100) {
+      grid += '<line x1="' + PL + '" y1="' + y.toFixed(1) + '" x2="' + (PL + cW) + '" y2="' + y.toFixed(1) + '" stroke="#22223a" stroke-width="1" opacity="0.4"/>';
+    }
+  });
+
+  var sy       = yp(SAFE_MG);
+  var safeLine = '<line x1="' + PL + '" y1="' + sy.toFixed(1) + '" x2="' + (PL + cW) + '" y2="' + sy.toFixed(1) + '" stroke="#34d399" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.8"/>';
+
+  var cnowH   = Math.max(0, Math.min(nowH, maxH));
+  var nx      = xp(cnowH);
+  var nowLine = '<line x1="' + nx.toFixed(1) + '" y1="' + PT + '" x2="' + nx.toFixed(1) + '" y2="' + (PT + cH) + '" stroke="#a89cf7" stroke-width="1.5" stroke-dasharray="3,3"/>'
+    + '<text x="' + nx.toFixed(1) + '" y="' + (PT + 10) + '" fill="#a89cf7" font-size="10" text-anchor="middle">NOW</text>';
+
+  var sleepLine = '';
+  if (sleepH >= 0 && sleepH <= maxH) {
+    var sx = xp(sleepH);
+    sleepLine = '<line x1="' + sx.toFixed(1) + '" y1="' + PT + '" x2="' + sx.toFixed(1) + '" y2="' + (PT + cH) + '" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="3,3"/>'
+      + '<text x="' + sx.toFixed(1) + '" y="' + (PT + 10) + '" fill="#60a5fa" font-size="10" text-anchor="middle">' + (sx - nx > 30 || nx - sx > 30 ? '就寝' : '') + '</text>';
+    if (Math.abs(sx - nx) <= 30) {
+      sleepLine = '<line x1="' + sx.toFixed(1) + '" y1="' + PT + '" x2="' + sx.toFixed(1) + '" y2="' + (PT + cH) + '" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="3,3"/>'
+        + '<text x="' + sx.toFixed(1) + '" y="' + (PT + 22) + '" fill="#60a5fa" font-size="10" text-anchor="middle">就寝</text>';
+    }
+  }
+
+  var axes = '<line x1="' + PL + '" y1="' + PT + '" x2="' + PL + '" y2="' + (PT + cH) + '" stroke="#22223a" stroke-width="2"/>'
+    + '<line x1="' + PL + '" y1="' + (PT + cH) + '" x2="' + (PL + cW) + '" y2="' + (PT + cH) + '" stroke="#22223a" stroke-width="2"/>';
+
+  var defs = '<defs>'
+    + '<linearGradient id="cg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7c6ff5"/><stop offset="100%" stop-color="#60a5fa"/></linearGradient>'
+    + '<linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7c6ff5" stop-opacity="0.18"/><stop offset="100%" stop-color="#7c6ff5" stop-opacity="0"/></linearGradient>'
+    + '</defs>';
+
+  document.getElementById('graph-svg').innerHTML = defs + grid + axes + ylab + xlab
+    + '<path d="' + areaD + '" fill="url(#ag)"/>'
+    + '<path d="' + pathD + '" fill="none" stroke="url(#cg)" stroke-width="2.5"/>'
+    + safeLine + nowLine + sleepLine;
+}
+
+function getShareText() {
+  if (!_last) return '';
+  var impact = lvl(_last.slMg) === 'alert' ? '睡眠に影響大'
+             : lvl(_last.slMg) === 'warn'  ? '寝つきに影響あり'
+             : '睡眠への影響は小さい見込み';
+  return 'カフェイン半減期計算機\n'
+    + _last.drinkV + ' に ' + _last.mg + 'mg摂取 / 就寝' + _last.sleepV + ' の残量: ' + fmt(_last.slMg) + '\n'
+    + '判定: ' + impact + '\n'
+    + '#カフェイン半減期計算機\nhttps://yama-ai-factory.vercel.app/apps/caffeine-halflife/';
+}
+
+function shareX() {
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(getShareText()), '_blank', 'noopener');
+}
+
+function doCopy() {
+  var btn = document.getElementById('copy-btn');
+  var txt = getShareText();
+  function done() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = '結果をコピー'; }, 2000);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(done);
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = txt;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    done();
+  }
+}
+
+(function() {
+  var now = new Date();
+  document.getElementById('drinkTime').value = pad(now.getHours()) + ':' + pad(now.getMinutes());
+  calculate();
+})();
+</script>
+</body>
+</html>
