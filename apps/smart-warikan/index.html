@@ -258,6 +258,10 @@ document.getElementById('unitGroup').addEventListener('click', function(e) {
   selectedUnit = parseInt(btn.dataset.unit, 10);
 });
 
+document.getElementById('totalAmount').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') calculate();
+});
+
 function escHtml(s) {
   return String(s)
     .replace(/&/g, '&amp;')
