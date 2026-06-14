@@ -376,9 +376,7 @@ function doCopy() {
     btn.textContent = 'コピーしました';
     setTimeout(function() { btn.textContent = '結果をコピー'; }, 2000);
   }
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(txt).then(done);
-  } else {
+  function fallback() {
     var ta = document.createElement('textarea');
     ta.value = txt;
     ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
@@ -387,6 +385,11 @@ function doCopy() {
     document.execCommand('copy');
     document.body.removeChild(ta);
     done();
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(done).catch(fallback);
+  } else {
+    fallback();
   }
 }
 
