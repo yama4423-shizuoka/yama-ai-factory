@@ -268,13 +268,12 @@ function shareX(mode) {
 
 function doCopy(mode, btn) {
   var text = getShareText(mode);
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(function() {
-      var orig = btn.textContent;
-      btn.textContent = 'コピーしました';
-      setTimeout(function() { btn.textContent = orig; }, 2000);
-    });
-  } else {
+  var orig = btn.textContent;
+  function done() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = orig; }, 2000);
+  }
+  function fallback() {
     var ta = document.createElement('textarea');
     ta.value = text;
     ta.style.position = 'fixed'; ta.style.opacity = '0';
@@ -282,9 +281,12 @@ function doCopy(mode, btn) {
     ta.select();
     document.execCommand('copy');
     document.body.removeChild(ta);
-    var orig = btn.textContent;
-    btn.textContent = 'コピーしました';
-    setTimeout(function() { btn.textContent = orig; }, 2000);
+    done();
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(fallback);
+  } else {
+    fallback();
   }
 }
 
