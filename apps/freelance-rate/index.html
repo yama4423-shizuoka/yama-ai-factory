@@ -316,6 +316,10 @@ function doCopy() {
     fallback();
   }
 }
+
+document.querySelectorAll('#inputCard input').forEach(function(el) {
+  el.addEventListener('keydown', function(e) { if (e.key === 'Enter') calculate(); });
+});
 </script>
 </body>
 </html>
