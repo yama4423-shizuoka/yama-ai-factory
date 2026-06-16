@@ -338,6 +338,10 @@ function doCopy() {
     fallback();
   }
 }
+
+document.querySelectorAll('#setupCard input').forEach(function(el) {
+  el.addEventListener('keydown', function(e) { if (e.key === 'Enter') startMeter(); });
+});
 </script>
 </body>
 </html>
