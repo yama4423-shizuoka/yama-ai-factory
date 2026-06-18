@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>子ども・子育て支援金 負担額チェッカー | 月収から月額負担を試算</title>
+  <meta name="description" content="2026年4月スタートの子ども・子育て支援金。月収と保険の種類を入力するだけで月額・年額負担の目安を試算。2027・2028年度の見込み額も確認できます。無料・登録不要。">
+  <meta property="og:title" content="子ども・子育て支援金 負担額チェッカー | 月収から月額負担を試算">
+  <meta property="og:description" content="月収を入力するだけで、2026年4月からの子ども・子育て支援金の月額負担を試算。2027・2028年度の見込みも表示します。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/kodomo-shien/">
+  <meta name="twitter:card" content="summary">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back-link {
+      display:inline-block; font-size:.82rem; color:var(--tx2);
+      text-decoration:none; margin-bottom:28px; transition:color .15s;
+    }
+    .back-link:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.45rem,5vw,2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:32px; }
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px; margin-bottom:16px; }
+    .field-label { font-size:.85rem; color:var(--tx3); margin-bottom:8px; font-weight:600; }
+    .income-row { display:flex; gap:10px; align-items:center; margin-bottom:12px; }
+    .income-input {
+      flex:1; padding:13px 16px; font-size:1.5rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:right;
+    }
+    .income-input:focus { border-color:var(--acc); }
+    .unit { font-size:1rem; color:var(--tx3); font-weight:600; white-space:nowrap; }
+    .presets { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+    .preset-btn {
+      padding:5px 13px; border-radius:20px; border:1px solid var(--bd);
+      background:var(--s2); color:var(--tx3); font-size:.8rem; cursor:pointer;
+      transition:all .15s; font-weight:600;
+    }
+    .preset-btn:hover { border-color:var(--acc); color:var(--acc2); }
+    .select-wrap { position:relative; }
+    .insurance-select {
+      width:100%; padding:11px 16px; border-radius:10px; border:1px solid var(--bd);
+      background:var(--s2); color:var(--tx); font-size:.88rem; outline:none;
+      transition:border-color .15s; appearance:none; cursor:pointer;
+    }
+    .insurance-select:focus { border-color:var(--acc); }
+    .select-arrow {
+      position:absolute; right:14px; top:50%; transform:translateY(-50%);
+      pointer-events:none; color:var(--tx3); font-size:.75rem;
+    }
+    .section-title {
+      font-size:.78rem; color:var(--tx2); font-weight:700; letter-spacing:.06em;
+      text-transform:uppercase; margin-bottom:14px;
+    }
+    .years-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+    .year-card {
+      background:var(--s2); border:1px solid var(--bd); border-radius:12px;
+      padding:14px 12px; text-align:center;
+    }
+    .year-card.step2 { border-color:rgba(124,111,245,.35); }
+    .year-card.step3 { border-color:rgba(96,165,250,.35); }
+    .year-label { font-size:.68rem; color:var(--tx2); font-weight:700; letter-spacing:.05em; margin-bottom:8px; }
+    .year-note { font-size:.62rem; color:var(--tx2); margin-top:5px; }
+    .year-monthly { font-size:1.2rem; font-weight:900; color:var(--tx); }
+    .year-monthly.empty { font-size:.95rem; color:var(--tx2); }
+    .year-annual { font-size:.7rem; color:var(--tx3); margin-top:3px; }
+    .disclaimer {
+      font-size:.74rem; color:var(--tx2); line-height:1.75;
+      padding:10px 12px; background:var(--s2); border-radius:8px;
+      border-left:3px solid var(--bd); margin-bottom:14px;
+    }
+    .share-row { display:flex; gap:10px; }
+    .share-btn {
+      flex:1; padding:11px; border-radius:10px; cursor:pointer;
+      font-size:.88rem; font-weight:700; border:none; transition:opacity .15s;
+    }
+    .share-x { background:#000; color:#fff; border:1px solid #2a2a2a; }
+    .share-copy { background:var(--s2); color:var(--tx); border:1px solid var(--bd); }
+    .share-btn:hover:not(:disabled) { opacity:.8; }
+    .share-btn:disabled { opacity:.35; cursor:not-allowed; }
+    .info-box {
+      background:var(--s1); border:1px solid var(--bd); border-radius:14px;
+      padding:18px 20px; font-size:.82rem; color:var(--tx3); line-height:1.8;
+    }
+    .info-box strong { color:var(--tx2); display:block; margin-bottom:4px; font-size:.85rem; }
+    @media (max-width:520px) {
+      .wrapper { padding:24px 14px 60px; }
+      .income-input { font-size:1.25rem; }
+      .years-grid { grid-template-columns:1fr; gap:8px; }
+      .year-card {
+        display:flex; justify-content:space-between; align-items:center;
+        text-align:left; padding:12px 14px;
+      }
+      .year-label { margin-bottom:0; font-size:.72rem; }
+      .year-note { margin-top:2px; }
+      .year-right { text-align:right; }
+      .year-annual { margin-top:2px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back-link" href="/">&larr; AIアプリ工房に戻る</a>
+
+  <div class="badge">Kodomo Shien</div>
+  <h1><span class="grad">子ども・子育て支援金</span><br>負担額チェッカー</h1>
+  <p class="hero-desc">2026年4月から健康保険料に上乗せして徴収が始まった子ども・子育て支援金。<br>月収と保険の種類を入れるだけで月額・年額負担の目安を試算します。</p>
+
+  <div class="card">
+    <div class="field-label">月収(額面・税引き前の総支給額)</div>
+    <div class="income-row">
+      <input type="number" id="incomeInput" class="income-input" min="1" max="9999" placeholder="30" oninput="calc()">
+      <span class="unit">万円</span>
+    </div>
+    <div class="presets">
+      <button class="preset-btn" onclick="setIncome(20)">20万</button>
+      <button class="preset-btn" onclick="setIncome(30)">30万</button>
+      <button class="preset-btn" onclick="setIncome(40)">40万</button>
+      <button class="preset-btn" onclick="setIncome(50)">50万</button>
+      <button class="preset-btn" onclick="setIncome(70)">70万</button>
+    </div>
+    <div class="field-label">加入している健康保険</div>
+    <div class="select-wrap">
+      <select id="insuranceType" class="insurance-select" onchange="calc()">
+        <option value="hiyousha">被用者保険(会社員・公務員 / 協会けんぽ・組合健保・共済)</option>
+        <option value="kokuho">国民健康保険(自営業・フリーランス等)</option>
+      </select>
+      <span class="select-arrow">&#9660;</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">月額負担の目安</div>
+    <div class="years-grid">
+      <div class="year-card">
+        <div class="year-label">2026年度</div>
+        <div class="year-note">(開始年度)</div>
+        <div class="year-right">
+          <div class="year-monthly empty" id="monthly2026">--</div>
+          <div class="year-annual" id="annual2026"></div>
+        </div>
+      </div>
+      <div class="year-card step2">
+        <div class="year-label">2027年度</div>
+        <div class="year-note">(段階増加)</div>
+        <div class="year-right">
+          <div class="year-monthly empty" id="monthly2027">--</div>
+          <div class="year-annual" id="annual2027"></div>
+        </div>
+      </div>
+      <div class="year-card step3">
+        <div class="year-label">2028年度</div>
+        <div class="year-note">(満額)</div>
+        <div class="year-right">
+          <div class="year-monthly empty" id="monthly2028">--</div>
+          <div class="year-annual" id="annual2028"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      政府公表の平均値をもとにした目安の試算です。実際の負担額は標準報酬等級・賞与額・保険者によって異なります。国保は自治体・世帯構成により大きく変わるため特に概算です。医療・社会保障の詳細は公的窓口または加入保険者にご確認ください。
+    </div>
+    <div class="share-row">
+      <button class="share-btn share-x" id="btn-x" onclick="doShareX()" disabled>X でシェア</button>
+      <button class="share-btn share-copy" id="btn-copy" onclick="doCopy(this)" disabled>結果をコピー</button>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>子ども・子育て支援金とは</strong>
+    2024年に成立した子ども・子育て支援法改正により、2026年4月から健康保険料の一部として徴収が開始されました。育児・保育施策の財源として使われます。「独身税」とも呼ばれますが、子育て中の方を含む全加入者が対象です。被用者保険は事業主と折半で拠出し、2028年度に向けて段階的に拠出率が上がります。
+  </div>
+</div>
+
+<script>
+var RATE_2026 = 0.0015;
+var SCALE_2027 = 800 / 450;
+var SCALE_2028 = 1000 / 450;
+
+var currentIncome = 0;
+
+function setIncome(v) {
+  document.getElementById('incomeInput').value = v;
+  calc();
+}
+
+function fmtYen(n) {
+  return Math.round(n).toLocaleString('ja-JP') + '円';
+}
+
+function calc() {
+  var v = parseFloat(document.getElementById('incomeInput').value);
+  if (isNaN(v) || v <= 0) {
+    showEmpty();
+    currentIncome = 0;
+    return;
+  }
+  currentIncome = v;
+
+  var incomeYen = v * 10000;
+  var base2026 = incomeYen * RATE_2026;
+  var m2026 = Math.round(base2026);
+  var m2027 = Math.round(base2026 * SCALE_2027);
+  var m2028 = Math.round(base2026 * SCALE_2028);
+
+  var data = [[2026, m2026], [2027, m2027], [2028, m2028]];
+  data.forEach(function(item) {
+    var yr = item[0], m = item[1];
+    var elM = document.getElementById('monthly' + yr);
+    var elA = document.getElementById('annual' + yr);
+    elM.textContent = fmtYen(m);
+    elM.className = 'year-monthly';
+    elA.textContent = '年額: ' + fmtYen(m * 12);
+  });
+
+  document.getElementById('btn-x').disabled = false;
+  document.getElementById('btn-copy').disabled = false;
+}
+
+function showEmpty() {
+  [2026, 2027, 2028].forEach(function(yr) {
+    var elM = document.getElementById('monthly' + yr);
+    elM.textContent = '--';
+    elM.className = 'year-monthly empty';
+    document.getElementById('annual' + yr).textContent = '';
+  });
+  document.getElementById('btn-x').disabled = true;
+  document.getElementById('btn-copy').disabled = true;
+}
+
+function getShareText() {
+  if (currentIncome <= 0) return '';
+  var incomeYen = currentIncome * 10000;
+  var base = incomeYen * RATE_2026;
+  var lines = [
+    '月収' + currentIncome + '万円の場合の子ども・子育て支援金 負担目安:'
+  ];
+  var pairs = [
+    [2026, Math.round(base)],
+    [2027, Math.round(base * SCALE_2027)],
+    [2028, Math.round(base * SCALE_2028)]
+  ];
+  pairs.forEach(function(p) {
+    var yr = p[0], m = p[1];
+    lines.push('  ' + yr + '年度: 月' + m.toLocaleString('ja-JP') + '円 / 年' + (m * 12).toLocaleString('ja-JP') + '円');
+  });
+  lines.push('#子育て支援金 #社会保険');
+  lines.push('https://yama-ai-factory.vercel.app/apps/kodomo-shien/');
+  return lines.join('\n');
+}
+
+function doShareX() {
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(getShareText()), '_blank', 'noopener');
+}
+
+function doCopy(btn) {
+  var text = getShareText();
+  var orig = btn.textContent;
+  function done() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = orig; }, 2000);
+  }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    done();
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+</script>
+</body>
+</html>
