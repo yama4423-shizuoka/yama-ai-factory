@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ボーナス配分プランナー | 手取りを貯蓄・投資・旅行に賢く振り分ける</title>
+  <meta name="description" content="手取りボーナス額を入力してスライダーで貯蓄・NISA投資・旅行・自己投資を配分。各用途の金額をリアルタイム表示してXでシェアできます。無料・登録不要。">
+  <meta property="og:title" content="ボーナス配分プランナー | 手取りを貯蓄・投資・旅行に賢く振り分ける">
+  <meta property="og:description" content="手取りボーナスをスライダーで配分し金額を即時表示。2026年夏ボーナスの使い道を計画してシェアしよう。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/bonus-planner/">
+  <meta name="twitter:card" content="summary">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back-link {
+      display:inline-block; font-size:.82rem; color:var(--tx2);
+      text-decoration:none; margin-bottom:28px; transition:color .15s;
+    }
+    .back-link:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.6rem,5vw,2.2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:32px; }
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px; margin-bottom:16px; }
+    .field-label { font-size:.85rem; color:var(--tx3); margin-bottom:8px; font-weight:600; }
+    .field-row { display:flex; gap:10px; align-items:center; }
+    .amount-input {
+      flex:1; padding:13px 16px; font-size:1.5rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:right;
+    }
+    .amount-input:focus { border-color:var(--acc); }
+    .unit { font-size:1rem; color:var(--tx3); font-weight:600; white-space:nowrap; }
+    .presets { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .preset-btn {
+      padding:5px 13px; border-radius:20px; border:1px solid var(--bd);
+      background:var(--s2); color:var(--tx3); font-size:.8rem; cursor:pointer;
+      transition:all .15s; font-weight:600;
+    }
+    .preset-btn:hover { border-color:var(--acc); color:var(--acc2); }
+    .section-title {
+      font-size:.78rem; color:var(--tx2); font-weight:700; letter-spacing:.08em;
+      text-transform:uppercase; margin-bottom:16px;
+    }
+    .slider-rows { display:grid; gap:18px; }
+    .slider-header { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
+    .slider-name { font-size:.92rem; font-weight:700; }
+    .slider-right { text-align:right; }
+    .slider-pct { font-size:.88rem; color:var(--acc2); font-weight:800; }
+    .slider-amount { font-size:.76rem; color:var(--tx3); }
+    input[type=range] {
+      -webkit-appearance:none; appearance:none;
+      width:100%; height:6px; border-radius:3px; outline:none; cursor:pointer;
+      background:linear-gradient(to right, var(--acc) 0%, var(--acc) var(--pct,30%), var(--s2) var(--pct,30%), var(--s2) 100%);
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance:none; appearance:none;
+      width:20px; height:20px; border-radius:50%;
+      background:var(--acc); cursor:pointer; border:2px solid var(--bg);
+    }
+    input[type=range]::-moz-range-thumb {
+      width:20px; height:20px; border-radius:50%;
+      background:var(--acc); cursor:pointer; border:2px solid var(--bg);
+    }
+    .other-row {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:14px 0 0; margin-top:14px; border-top:1px solid var(--bd);
+    }
+    .other-name { font-size:.92rem; font-weight:700; color:var(--tx3); }
+    .other-right { text-align:right; }
+    .other-pct { font-size:.88rem; color:var(--tx3); font-weight:800; }
+    .other-amount { font-size:.76rem; color:var(--tx2); }
+    .progress-wrap { margin-top:14px; }
+    .progress-bar { height:8px; background:var(--s2); border-radius:4px; overflow:hidden; }
+    .progress-fill { height:100%; background:linear-gradient(90deg,var(--acc),var(--blue)); border-radius:4px; transition:width .2s; }
+    .progress-label { display:flex; justify-content:space-between; margin-top:6px; font-size:.76rem; }
+    .progress-text { color:var(--tx3); }
+    .progress-ok { color:var(--green); font-weight:700; }
+    .summary-title { font-size:.78rem; color:var(--tx2); font-weight:700; letter-spacing:.06em; text-transform:uppercase; margin-bottom:14px; }
+    .summary-rows { display:grid; gap:10px; }
+    .summary-item { display:flex; justify-content:space-between; align-items:center; }
+    .summary-item-name { font-size:.9rem; color:var(--tx3); }
+    .summary-item-val { font-size:.95rem; font-weight:800; }
+    .summary-item-sub { font-size:.73rem; color:var(--tx2); font-weight:600; }
+    .disclaimer {
+      font-size:.74rem; color:var(--tx2); line-height:1.75;
+      padding:10px 12px; background:var(--s2); border-radius:8px;
+      border-left:3px solid var(--bd); margin-top:14px;
+    }
+    .share-row { display:flex; gap:10px; margin-top:16px; }
+    .share-btn {
+      flex:1; padding:11px; border-radius:10px; cursor:pointer;
+      font-size:.88rem; font-weight:700; border:none; transition:opacity .15s;
+    }
+    .share-x { background:#000; color:#fff; border:1px solid #2a2a2a; }
+    .share-copy { background:var(--s2); color:var(--tx); border:1px solid var(--bd); }
+    .share-btn:hover:not(:disabled) { opacity:.8; }
+    .share-btn:disabled { opacity:.35; cursor:not-allowed; }
+    @media (max-width:520px) {
+      .wrapper { padding:24px 14px 60px; }
+      .amount-input { font-size:1.25rem; }
+      .share-btn { font-size:.82rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back-link" href="/">&larr; AIアプリ工房に戻る</a>
+
+  <div class="badge">Bonus Planner</div>
+  <h1><span class="grad">ボーナス配分</span>プランナー</h1>
+  <p class="hero-desc">手取り額を入力してスライダーを動かすだけ。<br>貯蓄・投資・旅行・自己投資への配分金額をリアルタイムで確認できます。</p>
+
+  <div class="card">
+    <div class="field-label">手取りボーナス額</div>
+    <div class="field-row">
+      <input type="number" id="amountInput" class="amount-input" min="1" max="9999" placeholder="50" oninput="update()">
+      <span class="unit">万円</span>
+    </div>
+    <div class="presets">
+      <button class="preset-btn" onclick="setAmount(30)">30万</button>
+      <button class="preset-btn" onclick="setAmount(50)">50万</button>
+      <button class="preset-btn" onclick="setAmount(80)">80万</button>
+      <button class="preset-btn" onclick="setAmount(100)">100万</button>
+      <button class="preset-btn" onclick="setAmount(150)">150万</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">配分スライダー</div>
+    <div class="slider-rows">
+      <div>
+        <div class="slider-header">
+          <span class="slider-name">貯蓄</span>
+          <div class="slider-right">
+            <div class="slider-pct" id="pct-0">30%</div>
+            <div class="slider-amount" id="amt-0">--</div>
+          </div>
+        </div>
+        <input type="range" id="sl-0" min="0" max="100" value="30" oninput="onSlide(0)">
+      </div>
+      <div>
+        <div class="slider-header">
+          <span class="slider-name">NISA投資</span>
+          <div class="slider-right">
+            <div class="slider-pct" id="pct-1">30%</div>
+            <div class="slider-amount" id="amt-1">--</div>
+          </div>
+        </div>
+        <input type="range" id="sl-1" min="0" max="100" value="30" oninput="onSlide(1)">
+      </div>
+      <div>
+        <div class="slider-header">
+          <span class="slider-name">旅行・レジャー</span>
+          <div class="slider-right">
+            <div class="slider-pct" id="pct-2">15%</div>
+            <div class="slider-amount" id="amt-2">--</div>
+          </div>
+        </div>
+        <input type="range" id="sl-2" min="0" max="100" value="15" oninput="onSlide(2)">
+      </div>
+      <div>
+        <div class="slider-header">
+          <span class="slider-name">自己投資</span>
+          <div class="slider-right">
+            <div class="slider-pct" id="pct-3">15%</div>
+            <div class="slider-amount" id="amt-3">--</div>
+          </div>
+        </div>
+        <input type="range" id="sl-3" min="0" max="100" value="15" oninput="onSlide(3)">
+      </div>
+    </div>
+
+    <div class="other-row">
+      <span class="other-name">その他・自由費</span>
+      <div class="other-right">
+        <div class="other-pct" id="other-pct">10%</div>
+        <div class="other-amount" id="other-amt">--</div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:90%"></div></div>
+      <div class="progress-label">
+        <span class="progress-text">スライダー合計</span>
+        <span id="prog-label" class="progress-ok">90% + その他10% = 100%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="summary-title">配分内訳</div>
+    <div class="summary-rows" id="summaryRows">
+      <div class="summary-item">
+        <span class="summary-item-name" style="color:var(--tx2)">手取り額を入力してください</span>
+      </div>
+    </div>
+    <div class="disclaimer">これは目安の配分計算ツールです。NISA等の投資は元本割れのリスクがあります。金融商品の選択は自己責任でご判断ください。</div>
+    <div class="share-row">
+      <button class="share-btn share-x" id="btn-x" onclick="doShareX()" disabled>X でシェア</button>
+      <button class="share-btn share-copy" id="btn-copy" onclick="doCopy(this)" disabled>結果をコピー</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var NAMES = ['貯蓄', 'NISA投資', '旅行・レジャー', '自己投資'];
+var N = NAMES.length;
+
+function getVals() {
+  var v = [];
+  for (var i = 0; i < N; i++) v.push(parseInt(document.getElementById('sl-' + i).value, 10));
+  return v;
+}
+
+function getAmount() {
+  var v = parseFloat(document.getElementById('amountInput').value);
+  return (isNaN(v) || v <= 0) ? 0 : v;
+}
+
+function fmtMan(man) {
+  if (man <= 0) return '0万円';
+  var r = Math.round(man * 10) / 10;
+  var s = r.toFixed(1);
+  return (s.slice(-2) === '.0' ? s.slice(0, -2) : s) + '万円';
+}
+
+function setSliderTrack(i, pct) {
+  document.getElementById('sl-' + i).style.setProperty('--pct', pct + '%');
+}
+
+function onSlide(idx) {
+  var vals = getVals();
+  var othersSum = 0;
+  for (var i = 0; i < N; i++) if (i !== idx) othersSum += vals[i];
+  var maxVal = Math.max(0, 100 - othersSum);
+  var sl = document.getElementById('sl-' + idx);
+  if (parseInt(sl.value, 10) > maxVal) sl.value = maxVal;
+  update();
+}
+
+function setAmount(v) {
+  document.getElementById('amountInput').value = v;
+  update();
+}
+
+function update() {
+  var vals = getVals();
+  var sum = vals.reduce(function(a, b) { return a + b; }, 0);
+  var other = Math.max(0, 100 - sum);
+  var amount = getAmount();
+
+  for (var i = 0; i < N; i++) {
+    document.getElementById('pct-' + i).textContent = vals[i] + '%';
+    setSliderTrack(i, vals[i]);
+    document.getElementById('amt-' + i).textContent = amount > 0 ? fmtMan(amount * vals[i] / 100) : '--';
+  }
+
+  document.getElementById('other-pct').textContent = other + '%';
+  document.getElementById('other-amt').textContent = amount > 0 ? fmtMan(amount * other / 100) : '--';
+
+  document.getElementById('prog-fill').style.width = Math.min(sum, 100) + '%';
+  var lbl = document.getElementById('prog-label');
+  lbl.className = 'progress-ok';
+  lbl.textContent = sum + '% + その他' + other + '% = 100%';
+
+  var rows = document.getElementById('summaryRows');
+  var btnX = document.getElementById('btn-x');
+  var btnCopy = document.getElementById('btn-copy');
+
+  if (amount <= 0) {
+    rows.innerHTML = '<div class="summary-item"><span class="summary-item-name" style="color:var(--tx2)">手取り額を入力してください</span></div>';
+    btnX.disabled = true; btnCopy.disabled = true;
+    return;
+  }
+
+  var items = [];
+  for (var i = 0; i < N; i++) items.push({ name: NAMES[i], pct: vals[i], man: amount * vals[i] / 100 });
+  items.push({ name: 'その他・自由費', pct: other, man: amount * other / 100 });
+
+  rows.innerHTML = items.map(function(it) {
+    return '<div class="summary-item">'
+      + '<span class="summary-item-name">' + it.name + '</span>'
+      + '<span class="summary-item-val">' + fmtMan(it.man) + ' <span class="summary-item-sub">(' + it.pct + '%)</span></span>'
+      + '</div>';
+  }).join('');
+
+  btnX.disabled = false;
+  btnCopy.disabled = false;
+}
+
+function getShareText() {
+  var amount = getAmount();
+  var vals = getVals();
+  var sum = vals.reduce(function(a, b) { return a + b; }, 0);
+  var other = Math.max(0, 100 - sum);
+  var lines = ['夏ボーナス ' + amount + '万円の配分プラン:'];
+  for (var i = 0; i < N; i++) {
+    lines.push('  ' + NAMES[i] + ': ' + vals[i] + '% (' + fmtMan(amount * vals[i] / 100) + ')');
+  }
+  lines.push('  その他・自由費: ' + other + '% (' + fmtMan(amount * other / 100) + ')');
+  lines.push('#ボーナス配分 #夏ボーナス');
+  lines.push('https://yama-ai-factory.vercel.app/apps/bonus-planner/');
+  return lines.join('\n');
+}
+
+function doShareX() {
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(getShareText()), '_blank', 'noopener');
+}
+
+function doCopy(btn) {
+  var text = getShareText();
+  var orig = btn.textContent;
+  function done() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = orig; }, 2000);
+  }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    done();
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+update();
+</script>
+</body>
+</html>
