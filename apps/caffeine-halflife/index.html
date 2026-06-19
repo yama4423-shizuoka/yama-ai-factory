@@ -139,16 +139,16 @@
     <div class="field-row">
       <div>
         <label for="mgInput">カフェイン量 (mg)</label>
-        <input type="number" id="mgInput" value="100" min="1" max="2000">
+        <input type="number" id="mgInput" value="100" min="1" max="2000" onkeydown="if(event.key==='Enter')calculate();">
       </div>
       <div>
         <label for="drinkTime">飲んだ時刻</label>
-        <input type="time" id="drinkTime">
+        <input type="time" id="drinkTime" onkeydown="if(event.key==='Enter')calculate();">
       </div>
     </div>
     <div class="field-full">
       <label for="sleepTime">就寝予定時刻</label>
-      <input type="time" id="sleepTime" value="23:00">
+      <input type="time" id="sleepTime" value="23:00" onkeydown="if(event.key==='Enter')calculate();">
     </div>
     <button class="btn" onclick="calculate()">カフェイン推移を計算する</button>
   </div>
