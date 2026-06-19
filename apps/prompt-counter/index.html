@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>プロンプト文字数カウンター | AIアプリ工房</title>
+  <meta name="description" content="テキストを貼り付けるだけで文字数・行数・概算トークン数をリアルタイム計測。GPT-4o/Claude/Geminiの上限との比較バーでプロンプトのサイズを一目で確認できます。無料・登録不要。">
+  <meta property="og:title" content="プロンプト文字数カウンター">
+  <meta property="og:description" content="文字数・行数・概算トークン数をリアルタイム表示。主要AIモデルのコンテキスト上限との比較バーで残り余裕が一目で分かります。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/prompt-counter/">
+  <meta name="twitter:card" content="summary">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --red:#f87171; --yellow:#fbbf24;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:720px; margin:0 auto; padding:48px 20px 80px; }
+    .back {
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:.82rem; color:var(--tx2); text-decoration:none; margin-bottom:28px;
+    }
+    .back:hover { color:var(--acc2); }
+    h1 { font-size:clamp(1.4rem,4vw,2rem); font-weight:900; line-height:1.25; margin-bottom:10px; }
+    .sub { color:var(--tx3); font-size:.9rem; line-height:1.7; margin-bottom:24px; }
+
+    textarea {
+      width:100%; min-height:200px; background:var(--s1); border:1.5px solid var(--bd);
+      border-radius:12px; color:var(--tx); font-family:inherit; font-size:.9rem;
+      padding:16px; resize:vertical; line-height:1.7; outline:none;
+      transition:border-color .15s;
+    }
+    textarea:focus { border-color:var(--acc); }
+    textarea::placeholder { color:var(--tx2); }
+
+    .stats-grid {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:16px 0;
+    }
+    .stat-box {
+      background:var(--s1); border:1px solid var(--bd); border-radius:12px;
+      padding:14px 10px; text-align:center;
+    }
+    .stat-box .val {
+      font-size:1.45rem; font-weight:900; color:var(--acc2);
+      font-variant-numeric:tabular-nums; line-height:1.2;
+    }
+    .stat-box .lbl { font-size:.68rem; color:var(--tx2); margin-top:5px; line-height:1.4; }
+
+    .section-title {
+      font-size:.78rem; font-weight:700; letter-spacing:.1em; color:var(--tx2);
+      text-transform:uppercase; margin:24px 0 12px;
+    }
+
+    .model-list { display:flex; flex-direction:column; gap:10px; }
+    .model-row {
+      background:var(--s1); border:1px solid var(--bd); border-radius:10px;
+      padding:12px 14px;
+    }
+    .model-top {
+      display:flex; justify-content:space-between; align-items:baseline;
+      margin-bottom:6px; gap:8px;
+    }
+    .model-name { font-size:.88rem; font-weight:700; }
+    .model-limit { font-size:.72rem; color:var(--tx2); white-space:nowrap; }
+    .model-meta {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:7px;
+    }
+    .model-rem { font-size:.74rem; color:var(--tx3); }
+    .model-pct { font-size:.82rem; font-weight:800; }
+    .bar-bg { height:6px; background:var(--s2); border-radius:999px; overflow:hidden; }
+    .bar-fill { height:100%; border-radius:999px; transition:width .25s ease; }
+    .bar-ok   { background:var(--green); }
+    .bar-warn { background:var(--yellow); }
+    .bar-over { background:var(--red); }
+
+    .token-note {
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      padding:12px 14px; font-size:.78rem; color:var(--tx3); line-height:1.7;
+      margin-top:16px;
+    }
+
+    .actions { display:flex; gap:10px; margin-top:24px; flex-wrap:wrap; }
+    .btn {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:10px 20px; border-radius:8px; font-size:.85rem; font-weight:700;
+      cursor:pointer; border:none; text-decoration:none; transition:opacity .15s;
+    }
+    .btn:hover { opacity:.82; }
+    .btn-primary { background:var(--acc); color:#fff; }
+    .btn-outline {
+      background:transparent; border:1.5px solid var(--bd); color:var(--tx2);
+    }
+    .btn-outline:hover { border-color:var(--acc); color:var(--acc2); }
+
+    @media (max-width:520px) {
+      .wrapper { padding:32px 14px 60px; }
+      .stats-grid { grid-template-columns:repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back" href="/">&larr; AIアプリ工房トップへ</a>
+  <h1>プロンプト文字数カウンター</h1>
+  <p class="sub">テキストを貼り付けると文字数・行数・概算トークン数をリアルタイムで計測します。<br>主要AIモデルのコンテキスト上限との比較バーも表示します。</p>
+
+  <textarea id="inp" placeholder="ここにプロンプトや文章を貼り付けてください…" oninput="update()"></textarea>
+
+  <div class="stats-grid">
+    <div class="stat-box">
+      <div class="val" id="sChar">0</div>
+      <div class="lbl">文字数<br>(空白含む)</div>
+    </div>
+    <div class="stat-box">
+      <div class="val" id="sCharNs">0</div>
+      <div class="lbl">文字数<br>(空白除く)</div>
+    </div>
+    <div class="stat-box">
+      <div class="val" id="sLine">0</div>
+      <div class="lbl">行数</div>
+    </div>
+    <div class="stat-box">
+      <div class="val" id="sToken">0</div>
+      <div class="lbl">概算<br>トークン数</div>
+    </div>
+  </div>
+
+  <div class="section-title">AIモデルのコンテキスト上限との比較</div>
+  <div class="model-list" id="modelList"></div>
+
+  <div class="token-note">
+    概算トークン数はOpenAI / Anthropicのトークナイザを近似したもので、日本語(ひらがな・カタカナ・漢字)は1文字 = 約1.5トークン、ASCII英数字は4文字 = 約1トークンとして計算しています。実際のトークン数はモデルや記号の種類により10〜30%程度の誤差が生じることがあります。
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" onclick="shareX()">Xでシェア</button>
+    <button class="btn btn-outline" id="copyBtn" onclick="copyResult()">結果をコピー</button>
+    <button class="btn btn-outline" onclick="clearAll()">クリア</button>
+  </div>
+</div>
+
+<script>
+const MODELS = [
+  { name: 'GPT-3.5 Turbo',           limit: 16385   },
+  { name: 'GPT-4o',                   limit: 128000  },
+  { name: 'Claude 3.5 / 3.7 Sonnet', limit: 200000  },
+  { name: 'Gemini 1.5 Pro',           limit: 1000000 },
+];
+
+function estimateTokens(text) {
+  if (!text) return 0;
+  let t = 0;
+  for (const ch of text) {
+    const cp = ch.codePointAt(0);
+    if (
+      (cp >= 0x3000 && cp <= 0x9FFF) ||
+      (cp >= 0xF900 && cp <= 0xFAFF) ||
+      (cp >= 0xFF00 && cp <= 0xFFEF) ||
+      (cp >= 0x20000 && cp <= 0x2FA1F)
+    ) {
+      t += 1.5;
+    } else if (cp >= 0x20 && cp <= 0x7E) {
+      t += 0.25;
+    } else if (cp === 0x0A || cp === 0x0D) {
+      t += 0.3;
+    } else {
+      t += 1;
+    }
+  }
+  return Math.round(t);
+}
+
+function fmt(n) { return n.toLocaleString('ja-JP'); }
+
+function update() {
+  const text = document.getElementById('inp').value;
+  const chars   = text.length;
+  const noSp    = text.replace(/\s/g, '').length;
+  const lines   = text === '' ? 0 : text.split('\n').length;
+  const tokens  = estimateTokens(text);
+
+  document.getElementById('sChar').textContent   = fmt(chars);
+  document.getElementById('sCharNs').textContent = fmt(noSp);
+  document.getElementById('sLine').textContent   = fmt(lines);
+  document.getElementById('sToken').textContent  = fmt(tokens);
+
+  document.getElementById('modelList').innerHTML = MODELS.map(m => {
+    const pct    = tokens === 0 ? 0 : Math.round(tokens / m.limit * 100);
+    const barPct = Math.min(pct, 100);
+    const cls    = pct >= 100 ? 'bar-over' : pct >= 75 ? 'bar-warn' : 'bar-ok';
+    const pctCol = pct >= 100 ? 'var(--red)' : pct >= 75 ? 'var(--yellow)' : 'var(--green)';
+    const remTok = m.limit - tokens;
+    const remStr = remTok >= 0
+      ? `残り ${fmt(remTok)} トークン使用可`
+      : `上限を ${fmt(-remTok)} トークン超過`;
+    return `<div class="model-row">
+      <div class="model-top">
+        <span class="model-name">${m.name}</span>
+        <span class="model-limit">上限 ${fmt(m.limit)} トークン</span>
+      </div>
+      <div class="model-meta">
+        <span class="model-rem">${remStr}</span>
+        <span class="model-pct" style="color:${pctCol}">${pct}%</span>
+      </div>
+      <div class="bar-bg">
+        <div class="bar-fill ${cls}" style="width:${barPct}%"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function shareX() {
+  const text   = document.getElementById('inp').value;
+  const tokens = estimateTokens(text);
+  const chars  = text.length;
+  const msg = `プロンプト文字数カウンターで計測しました。\n文字数: ${fmt(chars)} / 概算トークン: ${fmt(tokens)}\nhttps://yama-ai-factory.vercel.app/apps/prompt-counter/`;
+  window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function copyResult() {
+  const text   = document.getElementById('inp').value;
+  const tokens = estimateTokens(text);
+  const chars  = text.length;
+  const noSp   = text.replace(/\s/g, '').length;
+  const lines  = text === '' ? 0 : text.split('\n').length;
+  const result = [
+    `文字数(空白含む): ${fmt(chars)}`,
+    `文字数(空白除く): ${fmt(noSp)}`,
+    `行数: ${fmt(lines)}`,
+    `概算トークン数: ${fmt(tokens)}`,
+  ].join('\n');
+
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = result;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('コピーしました');
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(result).then(() => showToast('コピーしました')).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+function clearAll() {
+  document.getElementById('inp').value = '';
+  update();
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#22223a;color:#f0f0fa;padding:10px 22px;border-radius:8px;font-size:.85rem;z-index:9999;pointer-events:none;';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2000);
+}
+
+update();
+</script>
+</body>
+</html>
