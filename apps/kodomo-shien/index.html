@@ -106,12 +106,12 @@
       .income-input { font-size:1.25rem; }
       .years-grid { grid-template-columns:1fr; gap:8px; }
       .year-card {
-        display:flex; justify-content:space-between; align-items:center;
-        text-align:left; padding:12px 14px;
+        display:grid; grid-template-columns:1fr auto; grid-template-rows:auto auto;
+        align-items:center; text-align:left; padding:12px 14px;
       }
-      .year-label { margin-bottom:0; font-size:.72rem; }
-      .year-note { margin-top:2px; }
-      .year-right { text-align:right; }
+      .year-label { grid-column:1; grid-row:1; margin-bottom:0; font-size:.72rem; }
+      .year-note { grid-column:1; grid-row:2; margin-top:2px; }
+      .year-right { grid-column:2; grid-row:1/3; text-align:right; }
       .year-annual { margin-top:2px; }
     }
   </style>
