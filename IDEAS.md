@@ -38,8 +38,6 @@
 - 完成したら **ルートの index.html の `#appsGrid` の先頭にカードを追加**する(name / desc / date。icon欄と絵文字は使わない)
 - このファイルの該当アイデアにチェックを付ける
 - アイデアが10件を切ったら、似たテイスト(無料・1分で使える・シェアしたくなる)の新アイデアを2件、下に追記してよい
-- コピーボタンを実装する場合は `navigator.clipboard.writeText(text).then(done).catch(fallback)` の形式を使い、fallback(textareaフォールバック)を必ず用意すること(同一バグが5件で発見・修正された実績による)
-- 数値・時刻 input がある計算系アプリには `onkeydown="if(event.key==='Enter')calculate();"` を付けること(後追い修正が4件発生した実績による)
 
 ## 禁止事項
 
