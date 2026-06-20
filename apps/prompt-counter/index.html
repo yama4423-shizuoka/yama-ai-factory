@@ -221,6 +221,7 @@ function update() {
 
 function shareX() {
   const text   = document.getElementById('inp').value;
+  if (!text.trim()) { showToast('テキストを入力してください'); return; }
   const tokens = estimateTokens(text);
   const chars  = text.length;
   const msg = `プロンプト文字数カウンターで計測しました。\n文字数: ${fmt(chars)} / 概算トークン: ${fmt(tokens)}\nhttps://yama-ai-factory.vercel.app/apps/prompt-counter/`;
@@ -229,6 +230,7 @@ function shareX() {
 
 function copyResult() {
   const text   = document.getElementById('inp').value;
+  if (!text.trim()) { showToast('テキストを入力してください'); return; }
   const tokens = estimateTokens(text);
   const chars  = text.length;
   const noSp   = text.replace(/\s/g, '').length;
