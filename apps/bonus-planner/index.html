@@ -131,7 +131,7 @@
   <div class="card">
     <div class="field-label">手取りボーナス額</div>
     <div class="field-row">
-      <input type="number" id="amountInput" class="amount-input" min="1" max="9999" placeholder="50" oninput="update()">
+      <input type="number" id="amountInput" class="amount-input" min="1" max="9999" placeholder="50" onkeydown="if(event.key==='Enter')update();" oninput="update()">
       <span class="unit">万円</span>
     </div>
     <div class="presets">
