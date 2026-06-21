@@ -367,6 +367,7 @@ function selectChoice(idx) {
   buttons[idx].classList.add('selected');
   selectedChoice = idx;
   document.getElementById('nextBtn').disabled = false;
+  document.getElementById('nextBtn').focus();
 }
 
 function nextQuestion() {
