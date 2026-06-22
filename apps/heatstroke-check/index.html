@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>熱中症リスクチェッカー | 気温・活動時間から危険度を判定</title>
+  <meta name="description" content="最高気温・屋外活動時間・年齢区分を入力するだけで熱中症の危険度(3段階)と推奨水分補給間隔を表示。夏の外出やスポーツ前の確認に。無料・登録不要。">
+  <meta property="og:title" content="熱中症リスクチェッカー | 気温・活動時間から危険度を判定">
+  <meta property="og:description" content="最高気温・屋外活動時間・年齢区分を入力するだけで熱中症の危険度(3段階)と推奨水分補給間隔を表示。夏の外出やスポーツ前の確認に。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/heatstroke-check/">
+  <meta name="twitter:card" content="summary">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa; --red:#f87171; --amber:#fbbf24;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:560px; margin:0 auto; padding:40px 20px 80px; }
+    .back-link {
+      display:inline-block; font-size:.82rem; color:var(--tx2);
+      text-decoration:none; margin-bottom:28px; transition:color .15s;
+    }
+    .back-link:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.6rem,5vw,2.2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:32px; }
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px; margin-bottom:16px; }
+    .section-title { font-size:.78rem; color:var(--tx2); font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:14px; }
+
+    .seg-group { display:flex; gap:8px; flex-wrap:wrap; }
+    .seg-btn {
+      flex:1; min-width:70px; padding:10px 10px; border-radius:10px; cursor:pointer;
+      font-size:.86rem; font-weight:700; border:1px solid var(--bd);
+      background:var(--s2); color:var(--tx3); transition:all .15s;
+      text-align:center; line-height:1.5;
+    }
+    .seg-btn.active { background:rgba(124,111,245,.18); border-color:var(--acc); color:var(--acc2); }
+    .seg-btn:hover:not(.active) { border-color:var(--tx2); color:var(--tx); }
+    .seg-sub { font-size:.7rem; font-weight:400; color:var(--tx2); display:block; margin-top:2px; }
+    .seg-btn.active .seg-sub { color:var(--acc2); opacity:.7; }
+
+    .field-row { display:flex; align-items:center; gap:12px; }
+    .field-adj {
+      width:44px; height:44px; border-radius:10px; border:1px solid var(--bd);
+      background:var(--s2); color:var(--tx); font-size:1.5rem;
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      flex-shrink:0; transition:border-color .15s; user-select:none;
+    }
+    .field-adj:hover { border-color:var(--acc); color:var(--acc2); }
+    .field-input {
+      flex:1; padding:10px 14px; font-size:2rem; font-weight:900;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:center;
+    }
+    .field-input:focus { border-color:var(--acc); }
+    .field-unit { font-size:.9rem; color:var(--tx3); font-weight:700; flex-shrink:0; }
+
+    .risk-display { text-align:center; padding:20px 0 18px; border-bottom:1px solid var(--bd); margin-bottom:18px; }
+    .risk-label-text { font-size:.84rem; color:var(--tx3); margin-bottom:12px; }
+    .risk-level-badge {
+      display:inline-block; padding:8px 28px; border-radius:999px;
+      font-size:1.35rem; font-weight:900; letter-spacing:.04em; margin-bottom:12px;
+    }
+    .risk-level-badge.level-1 {
+      background:rgba(96,165,250,.12); border:2px solid rgba(96,165,250,.4); color:var(--blue);
+    }
+    .risk-level-badge.level-2 {
+      background:rgba(251,191,36,.12); border:2px solid rgba(251,191,36,.4); color:var(--amber);
+    }
+    .risk-level-badge.level-3 {
+      background:rgba(248,113,113,.12); border:2px solid rgba(248,113,113,.4); color:var(--red);
+    }
+    .risk-desc { font-size:.88rem; color:var(--tx3); line-height:1.75; }
+
+    .result-rows { display:grid; gap:12px; }
+    .result-row { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .result-name { font-size:.86rem; color:var(--tx3); }
+    .result-val { font-size:.92rem; font-weight:800; white-space:nowrap; color:var(--blue); }
+    .result-val.caution { color:var(--amber); }
+    .result-val.danger { color:var(--red); }
+
+    .tips-section { margin-top:18px; padding-top:16px; border-top:1px solid var(--bd); }
+    .tips-title { font-size:.78rem; color:var(--tx2); font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:10px; }
+    .tip-item { font-size:.84rem; color:var(--tx3); line-height:1.7; padding:4px 0 4px 14px; position:relative; }
+    .tip-item::before { content:'›'; position:absolute; left:0; color:var(--acc2); }
+
+    .placeholder { color:var(--tx2); text-align:center; padding:8px 0; font-size:.88rem; }
+    .disclaimer {
+      font-size:.74rem; color:var(--tx2); line-height:1.75;
+      padding:10px 12px; background:var(--s2); border-radius:8px;
+      border-left:3px solid var(--bd); margin-bottom:14px;
+    }
+    .share-row { display:flex; gap:10px; }
+    .share-btn {
+      flex:1; padding:11px; border-radius:10px; cursor:pointer;
+      font-size:.88rem; font-weight:700; border:none; transition:opacity .15s;
+    }
+    .share-x { background:#000; color:#fff; border:1px solid #2a2a2a; }
+    .share-copy { background:var(--s2); color:var(--tx); border:1px solid var(--bd); }
+    .share-btn:hover:not(:disabled) { opacity:.8; }
+    .share-btn:disabled { opacity:.35; cursor:not-allowed; }
+
+    @media (max-width:520px) {
+      .wrapper { padding:24px 14px 60px; }
+      .seg-btn { font-size:.8rem; padding:9px 7px; min-width:60px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back-link" href="/">&larr; AIアプリ工房に戻る</a>
+
+  <div class="badge">Heatstroke Check</div>
+  <h1><span class="grad">熱中症リスク</span>チェッカー</h1>
+  <p class="hero-desc">最高気温・屋外活動時間・年齢区分から熱中症の危険度(3段階)と<br>推奨水分補給間隔を表示します。外出・スポーツ前にご確認ください。</p>
+
+  <div class="card">
+    <div class="section-title">本日の最高気温</div>
+    <div class="field-row">
+      <button class="field-adj" onclick="adjustTemp(-1)">-</button>
+      <input type="number" id="tempInput" class="field-input" min="10" max="45" value="33"
+        onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
+      <span class="field-unit">°C</span>
+      <button class="field-adj" onclick="adjustTemp(1)">+</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">屋外活動の予定時間</div>
+    <div class="seg-group" id="durationGroup">
+      <button class="seg-btn" onclick="setDuration(0.5, this)">30分未満</button>
+      <button class="seg-btn" onclick="setDuration(1, this)">30〜1時間</button>
+      <button class="seg-btn active" onclick="setDuration(2, this)">1〜2時間</button>
+      <button class="seg-btn" onclick="setDuration(3, this)">2〜4時間</button>
+      <button class="seg-btn" onclick="setDuration(5, this)">4時間以上</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">年齢区分</div>
+    <div class="seg-group" id="ageGroup">
+      <button class="seg-btn" onclick="setAgeGroup('child', this)">子ども<span class="seg-sub">15歳未満</span></button>
+      <button class="seg-btn active" onclick="setAgeGroup('adult', this)">成人<span class="seg-sub">15〜64歳</span></button>
+      <button class="seg-btn" onclick="setAgeGroup('elderly', this)">高齢者<span class="seg-sub">65歳以上</span></button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div id="resultContent">
+      <div class="placeholder">上の条件を選択すると危険度が表示されます</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="disclaimer">この判定はあくまで目安です。環境省の熱中症予防情報サイトや気象庁の熱中症警戒アラートも合わせてご参照ください。体調不良(めまい・頭痛・吐き気など)を感じたら直ちに涼しい場所に移動し、必要に応じて医療機関を受診してください。このツールの結果のみに依拠した判断は避けてください。</div>
+    <div class="share-row">
+      <button class="share-btn share-x" id="btn-x" onclick="doShareX()" disabled>X でシェア</button>
+      <button class="share-btn share-copy" id="btn-copy" onclick="doCopy(this)" disabled>結果をコピー</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var selectedDuration = 2;
+var selectedAgeGroup = 'adult';
+var lastResult = null;
+
+var DUR_LABEL = { '0.5': '30分未満', '1': '30〜1時間', '2': '1〜2時間', '3': '2〜4時間', '5': '4時間以上' };
+
+function setDuration(dur, btn) {
+  selectedDuration = dur;
+  document.querySelectorAll('#durationGroup .seg-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  calculate();
+}
+
+function setAgeGroup(ag, btn) {
+  selectedAgeGroup = ag;
+  document.querySelectorAll('#ageGroup .seg-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  calculate();
+}
+
+function adjustTemp(delta) {
+  var input = document.getElementById('tempInput');
+  var val = parseInt(input.value, 10);
+  if (isNaN(val)) val = 30;
+  val = Math.max(10, Math.min(45, val + delta));
+  input.value = val;
+  calculate();
+}
+
+var RISK_DATA = [
+  {
+    level: 1, label: '注意', cls: 'level-1',
+    desc: '比較的リスクは低めですが、基本的な熱中症対策を心がけましょう。',
+    hydration: '30〜60分ごと', valCls: '',
+    tips: [
+      '日なたと日陰を上手に使い分けましょう',
+      '帽子や日傘で直射日光を防ぎましょう',
+      '喉が渇く前にこまめな水分補給を心がけましょう'
+    ]
+  },
+  {
+    level: 2, label: '警戒', cls: 'level-2',
+    desc: '熱中症が発生しやすい条件です。積極的な対策と水分補給が必要です。',
+    hydration: '20〜30分ごと', valCls: 'caution',
+    tips: [
+      'こまめな休憩と日陰での体温管理が重要です',
+      '水分と塩分を同時に補給しましょう(スポーツ飲料等が有効)',
+      '体調の変化(頭痛・めまい・吐き気)を感じたら直ちに活動を中止してください',
+      'できるだけ涼しい時間帯(早朝・夕方)の活動を検討しましょう'
+    ]
+  },
+  {
+    level: 3, label: '危険', cls: 'level-3',
+    desc: '熱中症の危険が高い状態です。屋外活動を避けるか最小限にとどめてください。',
+    hydration: '15〜20分ごと', valCls: 'danger',
+    tips: [
+      '不要不急の屋外活動は中止または延期を強く推奨します',
+      '活動する場合は必ず複数人で行動し、互いの体調を確認し合ってください',
+      'すぐに水分補給・体冷却できる体制(氷嚢・経口補水液)を整えてください',
+      'めまい・意識の混濁・呼びかけへの反応低下は救急要請の目安です'
+    ]
+  }
+];
+
+function calcScore(temp, duration, ageGroup) {
+  var ts = temp < 28 ? 0 : temp < 31 ? 1 : temp < 33 ? 2 : temp < 35 ? 3 : 4;
+  var ds = duration <= 0.5 ? 0 : duration <= 1 ? 1 : duration <= 2 ? 2 : duration <= 3 ? 3 : 4;
+  var ab = (ageGroup === 'child' || ageGroup === 'elderly') ? 1 : 0;
+  return ts + ds + ab;
+}
+
+function calculate() {
+  var raw = parseFloat(document.getElementById('tempInput').value);
+  if (isNaN(raw)) {
+    document.getElementById('resultContent').innerHTML = '<div class="placeholder">気温を入力してください</div>';
+    document.getElementById('btn-x').disabled = true;
+    document.getElementById('btn-copy').disabled = true;
+    lastResult = null;
+    return;
+  }
+  var temp = Math.max(10, Math.min(45, raw));
+  var score = calcScore(temp, selectedDuration, selectedAgeGroup);
+  var riskIdx = score <= 2 ? 0 : score <= 5 ? 1 : 2;
+  var risk = RISK_DATA[riskIdx];
+
+  var ageLabel = { child: '子ども(15歳未満)', adult: '成人(15〜64歳)', elderly: '高齢者(65歳以上)' }[selectedAgeGroup];
+  var durLabel = DUR_LABEL[String(selectedDuration)] || (selectedDuration + '時間');
+
+  lastResult = { temp: temp, durLabel: durLabel, ageLabel: ageLabel, risk: risk };
+
+  var h = '';
+  h += '<div class="risk-display">';
+  h += '<div class="risk-label-text">入力条件での熱中症危険度</div>';
+  h += '<div class="risk-level-badge ' + risk.cls + '">レベル' + risk.level + '&nbsp;&nbsp;' + risk.label + '</div>';
+  h += '<div class="risk-desc">' + risk.desc + '</div>';
+  h += '</div>';
+  h += '<div class="result-rows">';
+  h += '<div class="result-row"><span class="result-name">推奨水分補給間隔</span><span class="result-val ' + risk.valCls + '">' + risk.hydration + '</span></div>';
+  h += '<div class="result-row"><span class="result-name">1回の目安量</span><span class="result-val">200〜250mL</span></div>';
+  h += '<div class="result-row"><span class="result-name">入力気温</span><span class="result-val">' + temp + '°C</span></div>';
+  h += '<div class="result-row"><span class="result-name">活動時間</span><span class="result-val">' + durLabel + '</span></div>';
+  h += '<div class="result-row"><span class="result-name">年齢区分</span><span class="result-val">' + ageLabel + '</span></div>';
+  h += '</div>';
+  h += '<div class="tips-section"><div class="tips-title">対策のポイント</div>';
+  risk.tips.forEach(function(tip) { h += '<div class="tip-item">' + tip + '</div>'; });
+  h += '</div>';
+
+  document.getElementById('resultContent').innerHTML = h;
+  document.getElementById('btn-x').disabled = false;
+  document.getElementById('btn-copy').disabled = false;
+}
+
+function buildShareText() {
+  var r = lastResult;
+  if (!r) return '';
+  return [
+    '【熱中症リスクチェック】',
+    '気温: ' + r.temp + '°C / 活動時間: ' + r.durLabel + ' / ' + r.ageLabel,
+    '危険度: レベル' + r.risk.level + ' ' + r.risk.label,
+    '推奨水分補給: ' + r.risk.hydration,
+    '',
+    '#熱中症対策 #熱中症予防',
+    'https://yama-ai-factory.vercel.app/apps/heatstroke-check/'
+  ].join('\n');
+}
+
+function doShareX() {
+  if (!lastResult) return;
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(buildShareText()), '_blank', 'noopener');
+}
+
+function doCopy(btn) {
+  if (!lastResult) return;
+  var text = buildShareText();
+  var orig = btn.textContent;
+  function done() { btn.textContent = 'コピーしました'; setTimeout(function() { btn.textContent = orig; }, 2000); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    done();
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(fallback);
+  } else { fallback(); }
+}
+
+calculate();
+</script>
+</body>
+</html>
