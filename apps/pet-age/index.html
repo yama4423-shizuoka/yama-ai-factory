@@ -239,7 +239,7 @@ function calculate() {
   var petLabel = petType === 'dog' ? sizeLabelMap[dogSize] : '猫';
   var hashTag = petType === 'dog' ? '#犬のいる生活' : '#猫のいる生活';
 
-  lastResult = { age: age, humanAge: humanAge, stage: stage.label, petLabel: petLabel, hashTag: hashTag };
+  lastResult = { age: age, humanAge: humanAge, stage: stage.label, stageDesc: stage.desc, petLabel: petLabel, hashTag: hashTag };
 
   var h = '';
   h += '<div class="result-top">';
@@ -266,6 +266,7 @@ function buildShareText() {
   return [
     '【ペット年齢換算】',
     r.petLabel + ' ' + r.age + '歳 = 人間換算 ' + r.humanAge + '歳(' + r.stage + ')',
+    r.stageDesc,
     '',
     '#ペット年齢換算 ' + r.hashTag,
     'https://yama-ai-factory.vercel.app/apps/pet-age/'
