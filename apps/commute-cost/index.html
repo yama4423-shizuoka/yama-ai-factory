@@ -346,6 +346,16 @@ function buildShareText() {
   if (r.monthlyFare > 0) lines.push('年間交通費: ' + fmtYen(r.annualFare));
   if (r.hourlyRate > 0) lines.push('時間コスト: ' + fmtYen(r.timeCost));
   if (r.monthlyFare > 0 || r.hourlyRate > 0) lines.push('年間コスト合計: ' + fmtYen(r.totalCost));
+  var remoteDays = parseInt(document.getElementById('remoteDays').value, 10);
+  if (remoteDays > 0) {
+    var ratio = remoteDays / 5;
+    var savedHours = Math.round(r.annualHours * ratio);
+    var savedTotal = r.annualFare * ratio + r.timeCost * ratio;
+    lines.push('');
+    lines.push('週' + remoteDays + '日リモートにすると:');
+    lines.push('  年間' + savedHours + '時間 節約');
+    if (r.monthlyFare > 0 || r.hourlyRate > 0) lines.push('  コスト節約: ' + fmtYen(savedTotal));
+  }
   lines.push('');
   lines.push('#通勤コスト #リモートワーク');
   lines.push('https://yama-ai-factory.vercel.app/apps/commute-cost/');
