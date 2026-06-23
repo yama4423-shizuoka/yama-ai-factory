@@ -202,7 +202,9 @@
       return;
     }
 
-    var decodedTitle = decodeURIComponent(title);
+    // URLSearchParams.get() already decodes percent-encoded characters;
+    // calling decodeURIComponent() again would cause URIError for titles containing '%'
+    var decodedTitle = title;
     document.getElementById('vTitle').textContent = decodedTitle;
     document.title = decodedTitle + ' | 記念日カウントダウン | AIアプリ工房';
 
