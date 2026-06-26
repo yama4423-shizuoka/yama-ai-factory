@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>引っ越し初期費用概算機 | 敷金・礼金・仲介手数料・引っ越し代をまとめて計算</title>
+  <meta name="description" content="家賃と条件を入力するだけで敷金・礼金・仲介手数料・引っ越し代・前家賃など引っ越し初期費用の目安を一括計算。結果をXでシェアできます。無料・登録不要。">
+  <meta property="og:title" content="引っ越し初期費用概算機 | 敷金・礼金・仲介手数料・引っ越し代をまとめて計算">
+  <meta property="og:description" content="家賃と条件を入力するだけで引っ越しにかかる初期費用の目安を一括計算。敷金・礼金・仲介手数料・引っ越し代・火災保険・保証料までカバー。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/moving-cost/">
+  <meta name="twitter:card" content="summary">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa; --red:#f87171; --yellow:#fbbf24;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back-link {
+      display:inline-block; font-size:.82rem; color:var(--tx2);
+      text-decoration:none; margin-bottom:28px; transition:color .15s;
+    }
+    .back-link:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,5vw,2.1rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:32px; }
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px; margin-bottom:16px; }
+    .section-title { font-size:.78rem; color:var(--tx2); font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:16px; }
+
+    .field-block { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+    .field-block:last-child { margin-bottom:0; }
+    .field-label { font-size:.84rem; color:var(--tx3); font-weight:600; }
+    .field-row { display:flex; align-items:center; gap:10px; }
+    .field-input {
+      flex:1; padding:10px 14px; font-size:1.1rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:right;
+    }
+    .field-input:focus { border-color:var(--acc); }
+    .field-unit { font-size:.82rem; color:var(--tx2); white-space:nowrap; }
+
+    .seg-group { display:flex; gap:6px; flex-wrap:wrap; }
+    .seg-btn {
+      padding:8px 14px; border-radius:8px; cursor:pointer; font-size:.84rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); color:var(--tx3);
+      transition:all .15s; white-space:nowrap;
+    }
+    .seg-btn.active { background:rgba(124,111,245,.2); border-color:var(--acc); color:var(--tx); }
+    .seg-btn:hover:not(.active) { border-color:var(--tx2); color:var(--tx); }
+
+    .field-note { font-size:.72rem; color:var(--tx2); }
+
+    .result-hero { text-align:center; padding:16px 0 18px; border-bottom:1px solid var(--bd); margin-bottom:18px; }
+    .result-label { font-size:.82rem; color:var(--tx3); margin-bottom:6px; }
+    .result-big { font-size:2.6rem; font-weight:900; color:var(--acc2); line-height:1; }
+    .result-sub { font-size:.82rem; color:var(--tx3); margin-top:6px; }
+
+    .result-rows { display:grid; gap:10px; }
+    .result-row { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .result-name { font-size:.86rem; color:var(--tx3); }
+    .result-detail { font-size:.75rem; color:var(--tx2); display:block; }
+    .result-val { font-size:.92rem; font-weight:800; white-space:nowrap; }
+    .result-val.blue { color:var(--blue); }
+    .result-val.red { color:var(--red); }
+    .result-val.yellow { color:var(--yellow); }
+    .result-val.green { color:var(--green); }
+
+    .result-total-row {
+      display:flex; justify-content:space-between; align-items:center;
+      padding-top:14px; margin-top:8px; border-top:1px solid var(--bd);
+    }
+    .result-total-name { font-size:.95rem; font-weight:800; }
+    .result-total-val { font-size:1.2rem; font-weight:900; color:var(--acc2); }
+
+    .placeholder { color:var(--tx2); text-align:center; padding:8px 0; font-size:.88rem; }
+
+    .range-note {
+      margin-top:14px; padding:12px 14px;
+      background:rgba(251,191,36,.05); border:1px solid rgba(251,191,36,.15); border-radius:10px;
+      font-size:.78rem; color:var(--tx2); line-height:1.75;
+    }
+    .range-note strong { color:var(--yellow); }
+
+    .disclaimer {
+      font-size:.74rem; color:var(--tx2); line-height:1.75;
+      padding:10px 12px; background:var(--s2); border-radius:8px;
+      border-left:3px solid var(--bd); margin-bottom:14px;
+    }
+    .share-row { display:flex; gap:10px; }
+    .share-btn {
+      flex:1; padding:11px; border-radius:10px; cursor:pointer;
+      font-size:.88rem; font-weight:700; border:none; transition:opacity .15s;
+    }
+    .share-x { background:#000; color:#fff; border:1px solid #2a2a2a; }
+    .share-copy { background:var(--s2); color:var(--tx); border:1px solid var(--bd); }
+    .share-btn:hover:not(:disabled) { opacity:.8; }
+    .share-btn:disabled { opacity:.35; cursor:not-allowed; }
+
+    @media (max-width:520px) {
+      .wrapper { padding:24px 14px 60px; }
+      .result-big { font-size:2rem; }
+      .seg-btn { padding:7px 10px; font-size:.78rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back-link" href="/">&larr; AIアプリ工房に戻る</a>
+
+  <div class="badge">Moving Cost</div>
+  <h1><span class="grad">引っ越し初期費用</span>概算機</h1>
+  <p class="hero-desc">家賃と条件を入力するだけで、敷金・礼金・仲介手数料・引っ越し代など<br>まとまった初期費用の目安を一括で計算します。</p>
+
+  <div class="card">
+    <div class="section-title">基本情報</div>
+    <div class="field-block">
+      <label class="field-label" for="rent">月額家賃</label>
+      <div class="field-row">
+        <input type="number" id="rent" class="field-input" min="1" max="9999999" placeholder="70000"
+          onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
+        <span class="field-unit">円/月</span>
+      </div>
+    </div>
+
+    <div class="field-block">
+      <span class="field-label">敷金</span>
+      <div class="seg-group" id="seg-shikikin">
+        <button class="seg-btn active" onclick="setSeg('shikikin',0,this)">なし (0か月)</button>
+        <button class="seg-btn" onclick="setSeg('shikikin',1,this)">1か月</button>
+        <button class="seg-btn" onclick="setSeg('shikikin',2,this)">2か月</button>
+      </div>
+    </div>
+
+    <div class="field-block">
+      <span class="field-label">礼金</span>
+      <div class="seg-group" id="seg-reikin">
+        <button class="seg-btn active" onclick="setSeg('reikin',0,this)">なし (0か月)</button>
+        <button class="seg-btn" onclick="setSeg('reikin',1,this)">1か月</button>
+        <button class="seg-btn" onclick="setSeg('reikin',2,this)">2か月</button>
+      </div>
+    </div>
+
+    <div class="field-block">
+      <span class="field-label">仲介手数料</span>
+      <div class="seg-group" id="seg-chukai">
+        <button class="seg-btn" onclick="setSeg('chukai',0,this)">なし</button>
+        <button class="seg-btn active" onclick="setSeg('chukai',0.5,this)">0.5か月+税</button>
+        <button class="seg-btn" onclick="setSeg('chukai',1,this)">1か月+税</button>
+      </div>
+      <div class="field-note">法律上の上限は家賃1か月分+消費税</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">引っ越し条件</div>
+    <div class="field-block">
+      <span class="field-label">間取り・荷物量</span>
+      <div class="seg-group" id="seg-madori">
+        <button class="seg-btn active" onclick="setSeg('madori','small',this)">ワンルーム/1K</button>
+        <button class="seg-btn" onclick="setSeg('madori','medium',this)">1LDK/2K</button>
+        <button class="seg-btn" onclick="setSeg('madori','large',this)">2LDK/3K以上</button>
+      </div>
+    </div>
+    <div class="field-block">
+      <span class="field-label">引っ越し距離</span>
+      <div class="seg-group" id="seg-kyori">
+        <button class="seg-btn active" onclick="setSeg('kyori','near',this)">近場 (同市区町村程度)</button>
+        <button class="seg-btn" onclick="setSeg('kyori','mid',this)">中距離 (同都道府県程度)</button>
+        <button class="seg-btn" onclick="setSeg('kyori','far',this)">遠距離 (他県・長距離)</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div id="resultContent">
+      <div class="placeholder">家賃を入力すると概算が表示されます</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="disclaimer">この計算機は目安の概算ツールです。実際の費用は物件・地域・業者・時期により大きく異なります。引っ越し代は繁忙期(3〜4月)に大幅に上昇します。必ず事前に複数社への見積もりをお取りください。金融・法律上の助言ではありません。</div>
+    <div class="share-row">
+      <button class="share-btn share-x" id="btn-x" onclick="doShareX()" disabled>X でシェア</button>
+      <button class="share-btn share-copy" id="btn-copy" onclick="doCopy(this)" disabled>結果をコピー</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var seg = { shikikin: 0, reikin: 0, chukai: 0.5, madori: 'small', kyori: 'near' };
+var lastResult = null;
+
+var MOVING_COST = {
+  small:  { near: 35000, mid: 55000, far: 85000 },
+  medium: { near: 55000, mid: 85000, far: 130000 },
+  large:  { near: 85000, mid: 130000, far: 200000 }
+};
+var FIRE_INS = 15000;
+var HOSHO_RATE = 0.5;
+
+function setSeg(key, val, btn) {
+  seg[key] = val;
+  var group = document.getElementById('seg-' + key);
+  var btns = group.querySelectorAll('.seg-btn');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+  btn.classList.add('active');
+  calculate();
+}
+
+function getNum(id) {
+  var v = parseFloat(document.getElementById(id).value);
+  return (isNaN(v) || v <= 0) ? 0 : v;
+}
+
+function fmtYen(yen) {
+  if (yen <= 0) return '0円';
+  if (yen >= 10000) {
+    var man = Math.round(yen / 1000) / 10;
+    return man + '万円';
+  }
+  return Math.round(yen).toLocaleString() + '円';
+}
+
+function fmtRange(lo, hi) {
+  if (lo === hi) return fmtYen(lo);
+  return fmtYen(lo) + '〜' + fmtYen(hi);
+}
+
+function calculate() {
+  var rent = getNum('rent');
+  if (rent <= 0) {
+    document.getElementById('resultContent').innerHTML =
+      '<div class="placeholder">家賃を入力すると概算が表示されます</div>';
+    document.getElementById('btn-x').disabled = true;
+    document.getElementById('btn-copy').disabled = true;
+    lastResult = null;
+    return;
+  }
+
+  var shikikin   = rent * seg.shikikin;
+  var reikin     = rent * seg.reikin;
+  var chukai     = Math.floor(rent * seg.chukai * 1.1);
+  var maeyachin  = rent;
+  var hiwari     = Math.floor(rent / 30 * 15);
+  var hosho      = Math.floor(rent * HOSHO_RATE);
+  var fireIns    = FIRE_INS;
+  var moveLo     = MOVING_COST[seg.madori][seg.kyori];
+  var moveHi     = Math.floor(moveLo * 1.6);
+
+  var totalLo = shikikin + reikin + chukai + maeyachin + hiwari + hosho + fireIns + moveLo;
+  var totalHi = shikikin + reikin + chukai + maeyachin + hiwari + hosho + fireIns + moveHi;
+
+  lastResult = {
+    rent: rent, shikikin: shikikin, reikin: reikin,
+    chukai: chukai, maeyachin: maeyachin, hiwari: hiwari,
+    hosho: hosho, fireIns: fireIns, moveLo: moveLo, moveHi: moveHi,
+    totalLo: totalLo, totalHi: totalHi
+  };
+
+  var monthsLo = (totalLo / rent).toFixed(1);
+  var monthsHi = (totalHi / rent).toFixed(1);
+
+  var h = '';
+  h += '<div class="result-hero">';
+  h += '<div class="result-label">引っ越し初期費用の目安</div>';
+  h += '<div class="result-big">' + fmtRange(totalLo, totalHi) + '</div>';
+  h += '<div class="result-sub">家賃の約 ' + monthsLo + '〜' + monthsHi + ' か月分に相当</div>';
+  h += '</div>';
+
+  h += '<div class="result-rows">';
+
+  if (seg.shikikin > 0) {
+    h += row('敷金 (' + seg.shikikin + 'か月分)', '返金される場合あり', fmtYen(shikikin), 'blue');
+  }
+  if (seg.reikin > 0) {
+    h += row('礼金 (' + seg.reikin + 'か月分)', '返金なし', fmtYen(reikin), 'red');
+  }
+  if (seg.chukai > 0) {
+    h += row('仲介手数料 (' + seg.chukai + 'か月+税)', '不動産会社に支払い', fmtYen(chukai), 'red');
+  }
+  h += row('前家賃 (1か月分)', '入居翌月分など', fmtYen(maeyachin), 'red');
+  h += row('日割り家賃 (平均15日分)', '入居日によって変動', fmtYen(hiwari), 'yellow');
+  h += row('保証会社費用 (0.5か月分)', '初回保証料の目安', fmtYen(hosho), 'red');
+  h += row('火災保険料 (1〜2年分)', '年額の目安', fmtYen(fireIns), 'yellow');
+  h += row('引っ越し費用 (' + madoriLabel() + '/' + kyoriLabel() + ')',
+           '繁忙期は1.5〜2倍になる場合あり', fmtRange(moveLo, moveHi), 'green');
+
+  h += '<div class="result-total-row">'
+    + '<span class="result-total-name">合計 (概算)</span>'
+    + '<span class="result-total-val">' + fmtRange(totalLo, totalHi) + '</span>'
+    + '</div>';
+
+  h += '</div>';
+
+  h += '<div class="range-note">';
+  h += '<strong>繁忙期(3〜4月)注意:</strong> 引っ越し費用は1.5〜2倍になることがあります。';
+  h += '早めの予約と相見積もりが費用削減の鍵です。';
+  h += '</div>';
+
+  document.getElementById('resultContent').innerHTML = h;
+  document.getElementById('btn-x').disabled = false;
+  document.getElementById('btn-copy').disabled = false;
+}
+
+function row(name, detail, val, cls) {
+  return '<div class="result-row">'
+    + '<span class="result-name">' + name + '<span class="result-detail">' + detail + '</span></span>'
+    + '<span class="result-val ' + cls + '">' + val + '</span>'
+    + '</div>';
+}
+
+function madoriLabel() {
+  return { small: 'ワンルーム/1K', medium: '1LDK/2K', large: '2LDK/3K以上' }[seg.madori];
+}
+
+function kyoriLabel() {
+  return { near: '近場', mid: '中距離', far: '遠距離' }[seg.kyori];
+}
+
+function buildShareText() {
+  var r = lastResult;
+  if (!r) return '';
+  var lines = [];
+  lines.push('【引っ越し初期費用の概算】');
+  lines.push('家賃: ' + fmtYen(r.rent) + '/月');
+  lines.push('');
+  if (seg.shikikin > 0) lines.push('敷金 (' + seg.shikikin + 'か月): ' + fmtYen(r.shikikin));
+  if (seg.reikin > 0)   lines.push('礼金 (' + seg.reikin + 'か月): ' + fmtYen(r.reikin));
+  if (seg.chukai > 0)   lines.push('仲介手数料: ' + fmtYen(r.chukai));
+  lines.push('前家賃: ' + fmtYen(r.maeyachin));
+  lines.push('日割り家賃: ' + fmtYen(r.hiwari));
+  lines.push('保証会社: ' + fmtYen(r.hosho));
+  lines.push('火災保険: ' + fmtYen(r.fireIns));
+  lines.push('引っ越し費用: ' + fmtRange(r.moveLo, r.moveHi));
+  lines.push('');
+  lines.push('合計の目安: ' + fmtRange(r.totalLo, r.totalHi));
+  lines.push('(家賃の約 ' + (r.totalLo / r.rent).toFixed(1) + '〜' + (r.totalHi / r.rent).toFixed(1) + 'か月分)');
+  lines.push('');
+  lines.push('#引っ越し #初期費用 #節約');
+  lines.push('https://yama-ai-factory.vercel.app/apps/moving-cost/');
+  return lines.join('\n');
+}
+
+function doShareX() {
+  if (!lastResult) return;
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(buildShareText()), '_blank', 'noopener');
+}
+
+function doCopy(btn) {
+  if (!lastResult) return;
+  var text = buildShareText();
+  var orig = btn.textContent;
+  function done() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = orig; }, 2000);
+  }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    done();
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+calculate();
+</script>
+</body>
+</html>
