@@ -252,11 +252,11 @@ function getShareText(mode) {
   if (mode === 'wake') {
     var wakeVal = document.getElementById('wakeTime').value || '07:00';
     var recItems = lastWakeItems.filter(function(it) { return it.rec; });
-    var recTimes = recItems.map(function(it) { return it.time; }).join(' / ');
+    var recTimes = recItems.map(function(it) { return it.time + '(' + it.hours + 'h)'; }).join(' / ');
     return wakeVal + ' 起きの最適就寝時刻: ' + recTimes + '\n#睡眠サイクル計算機\nhttps://yama-ai-factory.vercel.app/apps/sleep-cycle/';
   } else {
     var recItems = lastNowItems.filter(function(it) { return it.rec; });
-    var recTimes = recItems.map(function(it) { return it.time; }).join(' / ');
+    var recTimes = recItems.map(function(it) { return it.time + '(' + it.hours + 'h)'; }).join(' / ');
     return '今 ' + lastNowBase + ' から寝た場合の最適起床時刻: ' + recTimes + '\n#睡眠サイクル計算機\nhttps://yama-ai-factory.vercel.app/apps/sleep-cycle/';
   }
 }
