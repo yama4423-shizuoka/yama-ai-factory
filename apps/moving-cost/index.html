@@ -336,7 +336,7 @@ function buildShareText() {
   if (!r) return '';
   var lines = [];
   lines.push('【引っ越し初期費用の概算】');
-  lines.push('家賃: ' + fmtYen(r.rent) + '/月');
+  lines.push('家賃: ' + fmtYen(r.rent) + '/月 / ' + madoriLabel() + ' / ' + kyoriLabel());
   lines.push('');
   if (seg.shikikin > 0) lines.push('敷金 (' + seg.shikikin + 'か月): ' + fmtYen(r.shikikin));
   if (seg.reikin > 0)   lines.push('礼金 (' + seg.reikin + 'か月): ' + fmtYen(r.reikin));
