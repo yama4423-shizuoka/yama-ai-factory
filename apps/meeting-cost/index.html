@@ -290,7 +290,8 @@ function stopMeter() {
     '<div class="r-row"><span class="r-label">会議時間</span><span class="r-value">' + formatDuration(finalElapsed) + '</span></div>' +
     '<div class="r-row"><span class="r-label">参加人数</span><span class="r-value">' + savedParticipants + '人</span></div>' +
     '<div class="r-row"><span class="r-label">平均時給</span><span class="r-value">' + savedWage.toLocaleString('ja-JP') + '円</span></div>' +
-    '<div class="r-row"><span class="r-label">合計コスト</span><span class="r-value total">' + formatYen(finalCost) + '</span></div>';
+    '<div class="r-row"><span class="r-label">合計コスト</span><span class="r-value total">' + formatYen(finalCost) + '</span></div>' +
+    (savedParticipants > 1 ? '<div class="r-row"><span class="r-label">1人あたりコスト</span><span class="r-value">' + formatYen(finalCost / savedParticipants) + '</span></div>' : '');
 }
 
 function resetMeter() {
@@ -308,7 +309,8 @@ function resetMeter() {
 }
 
 function getShareText() {
-  return '会議コスト: ' + formatYen(finalCost) + '\n' +
+  return '会議コスト: ' + formatYen(finalCost) +
+    (savedParticipants > 1 ? '(1人あたり ' + formatYen(finalCost / savedParticipants) + ')' : '') + '\n' +
     savedParticipants + '人 x 時給' + savedWage.toLocaleString('ja-JP') + '円 x ' + formatDuration(finalElapsed) + '\n' +
     '#会議コストメーター\nhttps://yama-ai-factory.vercel.app/apps/meeting-cost/';
 }
