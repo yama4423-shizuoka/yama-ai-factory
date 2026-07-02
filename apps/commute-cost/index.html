@@ -138,13 +138,13 @@
     <div class="field-grid">
       <div class="field-block">
         <label class="field-label" for="oneWayMin">片道通勤時間</label>
-        <input type="number" id="oneWayMin" class="field-input" min="1" max="300" placeholder="30"
+        <input type="number" id="oneWayMin" class="field-input" min="1" max="300" value="30"
           onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
         <div class="field-unit">分</div>
       </div>
       <div class="field-block">
         <label class="field-label" for="monthlyFare">月の交通費</label>
-        <input type="number" id="monthlyFare" class="field-input" min="0" max="999999" placeholder="12000"
+        <input type="number" id="monthlyFare" class="field-input" min="0" max="999999" value="12000"
           onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
         <div class="field-unit">円</div>
       </div>
