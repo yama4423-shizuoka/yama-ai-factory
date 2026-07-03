@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>家事労働コスト換算機 | 家事に費やす時間を機会費用で計算</title>
+  <meta name="description" content="週あたりの家事時間を時給換算し、年間の機会費用を計算します。「家事に年間○万円相当の時間をかけている」という気づきをシェアできます。ひとり暮らし・共働き世帯向け。無料・登録不要。">
+
+  <meta property="og:title" content="家事労働コスト換算機 | 家事に費やす時間を機会費用で計算">
+  <meta property="og:description" content="週あたりの家事時間を時給換算し、年間の機会費用を計算。家事に年間いくら相当の時間をかけているか確認できます。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/housework-cost/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+
+    .back-link {
+      display:inline-block; font-size:.82rem; color:var(--tx2);
+      text-decoration:none; margin-bottom:28px; transition:color .15s;
+    }
+    .back-link:hover { color:var(--acc2); }
+
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.6rem,5vw,2.2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:32px; }
+
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px; margin-bottom:20px; }
+
+    .field { margin-bottom:22px; }
+    .field:last-of-type { margin-bottom:0; }
+    label { display:block; font-size:.84rem; color:var(--tx3); font-weight:600; margin-bottom:8px; }
+
+    .input-row { display:flex; align-items:center; gap:10px; }
+    .input-row input[type="number"] {
+      width:100px; padding:11px 14px; font-size:1.2rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:center;
+      flex-shrink:0;
+    }
+    .input-row input[type="number"]:focus { border-color:var(--acc); }
+    input[type="range"] { flex:1; accent-color:var(--acc); cursor:pointer; height:4px; }
+    .input-unit { font-size:.85rem; color:var(--tx3); flex-shrink:0; }
+
+    .chore-grid {
+      display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px;
+    }
+    .chore-item {
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      padding:12px 14px; cursor:pointer; transition:all .15s; user-select:none;
+    }
+    .chore-item.checked { border-color:var(--acc); background:rgba(124,111,245,.12); }
+    .chore-name { font-size:.85rem; font-weight:700; color:var(--tx); margin-bottom:2px; }
+    .chore-time { font-size:.75rem; color:var(--tx2); }
+    .chore-item.checked .chore-name { color:var(--acc2); }
+
+    .preset-label { font-size:.78rem; color:var(--tx2); margin-bottom:8px; }
+    .preset-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+    .preset-btn {
+      padding:6px 14px; border-radius:8px; border:1px solid var(--bd);
+      background:var(--s2); color:var(--tx3); font-size:.8rem; font-weight:700;
+      cursor:pointer; transition:all .15s;
+    }
+    .preset-btn:hover { border-color:var(--acc2); color:var(--acc2); }
+
+    .btn {
+      display:block; width:100%; padding:14px; margin-top:4px; border-radius:10px;
+      background:var(--acc); border:none; color:#fff;
+      font-size:1rem; font-weight:700; cursor:pointer; transition:opacity .15s;
+    }
+    .btn:hover { opacity:.85; }
+    .btn-sub {
+      background:transparent; border:1px solid var(--bd); color:var(--tx3);
+      font-size:.9rem; margin-top:10px; padding:11px;
+    }
+    .btn-sub:hover { border-color:var(--acc2); color:var(--acc2); opacity:1; }
+
+    .error { color:#f87171; font-size:.87rem; margin-top:10px; display:none; }
+
+    #resultCard { display:none; }
+
+    .result-hero { text-align:center; padding:16px 0 20px; border-bottom:1px solid var(--bd); margin-bottom:20px; }
+    .result-hero .cond { font-size:.78rem; color:var(--tx2); margin-bottom:8px; }
+    .result-hero .big { font-size:clamp(2.8rem,10vw,4rem); font-weight:900; color:var(--acc2); line-height:1; }
+    .result-hero .big-unit { font-size:1.1rem; }
+    .result-hero .sub { font-size:.84rem; color:var(--tx3); margin-top:8px; }
+
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+    .stat { background:var(--s2); border-radius:12px; padding:14px 8px; text-align:center; }
+    .stat .val { font-size:1.15rem; font-weight:800; color:var(--tx); }
+    .stat .lbl { font-size:.68rem; color:var(--tx2); margin-top:5px; line-height:1.5; }
+
+    .comp-title { font-size:.76rem; color:var(--tx2); font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:12px; }
+    .comp-list { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+    .comp-row {
+      display:flex; align-items:center; justify-content:space-between;
+      background:var(--s2); border-radius:10px; padding:12px 16px;
+    }
+    .comp-label { font-size:.84rem; color:var(--tx3); font-weight:600; }
+    .comp-val { font-size:.95rem; font-weight:800; color:var(--acc2); white-space:nowrap; margin-left:8px; }
+
+    .disclaimer { font-size:.74rem; color:var(--tx2); line-height:1.7; margin-bottom:16px; }
+
+    @media (max-width:520px) {
+      .chore-grid { grid-template-columns:1fr 1fr; gap:8px; }
+      .stats { gap:7px; }
+      .stat .val { font-size:1rem; }
+      .input-row input[type="number"] { width:80px; font-size:1rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back-link" href="/">&larr; AIアプリ工房トップへ</a>
+
+  <div class="badge">生活コストツール</div>
+  <h1><span class="grad">家事労働コスト</span>換算機</h1>
+  <p class="hero-desc">週あたりの家事時間と時給設定を入力すると、家事に費やしている年間の機会費用を計算します。「見えない労働コスト」を数字で把握しましょう。</p>
+
+  <div class="card">
+    <div class="field">
+      <label>週あたりの家事時間 <span style="font-size:.75rem;color:var(--tx2);font-weight:400;">以下から選ぶか、直接入力できます</span></label>
+      <div class="preset-label">よくある家事を選んでまとめて計算</div>
+      <div class="chore-grid" id="choreGrid">
+        <div class="chore-item" data-hours="3.5" onclick="toggleChore(this)">
+          <div class="chore-name">料理・食事準備</div>
+          <div class="chore-time">週 3.5h 目安</div>
+        </div>
+        <div class="chore-item" data-hours="1.5" onclick="toggleChore(this)">
+          <div class="chore-name">食器洗い・片付け</div>
+          <div class="chore-time">週 1.5h 目安</div>
+        </div>
+        <div class="chore-item" data-hours="1.5" onclick="toggleChore(this)">
+          <div class="chore-name">掃除・片付け</div>
+          <div class="chore-time">週 1.5h 目安</div>
+        </div>
+        <div class="chore-item" data-hours="2.0" onclick="toggleChore(this)">
+          <div class="chore-name">洗濯・乾燥・たたむ</div>
+          <div class="chore-time">週 2h 目安</div>
+        </div>
+        <div class="chore-item" data-hours="1.0" onclick="toggleChore(this)">
+          <div class="chore-name">買い物・食料調達</div>
+          <div class="chore-time">週 1h 目安</div>
+        </div>
+        <div class="chore-item" data-hours="0.5" onclick="toggleChore(this)">
+          <div class="chore-name">ゴミ出し・その他</div>
+          <div class="chore-time">週 0.5h 目安</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="weekHours">週の家事時間(合計)</label>
+      <div class="input-row">
+        <input type="number" id="weekHours" value="10" min="1" max="100" step="0.5"
+          onkeydown="if(event.key==='Enter')calculate();"
+          oninput="syncSlider(this.value)">
+        <input type="range" id="weekSlider" min="1" max="60" step="0.5" value="10"
+          oninput="syncInput(this.value)">
+        <span class="input-unit">時間 / 週</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="hourlyRate">換算時給</label>
+      <div class="preset-row">
+        <button class="preset-btn" onclick="setRate(1000)">1,000円</button>
+        <button class="preset-btn" onclick="setRate(1500)">1,500円</button>
+        <button class="preset-btn" onclick="setRate(2000)">2,000円</button>
+        <button class="preset-btn" onclick="setRate(3000)">3,000円</button>
+      </div>
+      <div class="input-row">
+        <input type="number" id="hourlyRate" value="1500" min="500" max="10000" step="100"
+          onkeydown="if(event.key==='Enter')calculate();">
+        <span class="input-unit">円 / 時間</span>
+      </div>
+    </div>
+
+    <div class="error" id="errorMsg"></div>
+    <button class="btn" onclick="calculate()" style="margin-top:8px;">計算する</button>
+  </div>
+
+  <div class="card" id="resultCard">
+    <div class="result-hero">
+      <div class="cond" id="rCond"></div>
+      <div class="big" id="rTotal">—<span class="big-unit">万円</span></div>
+      <div class="sub" id="rSub"></div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="val" id="rWeekCost">—</div>
+        <div class="lbl">円<br>週あたり</div>
+      </div>
+      <div class="stat">
+        <div class="val" id="rMonthCost">—</div>
+        <div class="lbl">円<br>月あたり</div>
+      </div>
+      <div class="stat">
+        <div class="val" id="rYearHours">—</div>
+        <div class="lbl">時間<br>年間の家事時間</div>
+      </div>
+    </div>
+
+    <div class="comp-title">時給を変えた場合の年間コスト</div>
+    <div class="comp-list" id="compList"></div>
+
+    <p class="disclaimer">※ 家事の目安時間は総務省「社会生活基本調査」等を参考にした参考値です。個人差があります。機会費用は「同じ時間を別の用途に使った場合の価値」であり、実際に支出する金額ではありません。</p>
+
+    <button class="btn" onclick="share()">Xでシェアする</button>
+    <button class="btn btn-sub" onclick="copyText(this)">テキストをコピー</button>
+  </div>
+</div>
+
+<script>
+var _shareText = '';
+
+function toggleChore(el) {
+  el.classList.toggle('checked');
+  var total = 0;
+  document.querySelectorAll('#choreGrid .chore-item.checked').forEach(function(item) {
+    total += parseFloat(item.getAttribute('data-hours'));
+  });
+  total = Math.round(total * 10) / 10;
+  if (total > 0) {
+    document.getElementById('weekHours').value = total;
+    document.getElementById('weekSlider').value = Math.min(total, 60);
+  }
+}
+
+function syncSlider(val) {
+  document.getElementById('weekSlider').value = Math.min(val, 60);
+}
+
+function syncInput(val) {
+  document.getElementById('weekHours').value = val;
+}
+
+function setRate(rate) {
+  document.getElementById('hourlyRate').value = rate;
+  if (document.getElementById('resultCard').style.display !== 'none') calculate();
+}
+
+function fmtNum(n) {
+  return Math.round(n).toLocaleString('ja-JP');
+}
+
+function fmtMan(yen) {
+  return Math.round(yen / 10000).toLocaleString('ja-JP');
+}
+
+function calculate() {
+  var weekHours = parseFloat(document.getElementById('weekHours').value);
+  var hourlyRate = parseFloat(document.getElementById('hourlyRate').value);
+  var errEl = document.getElementById('errorMsg');
+
+  if (!weekHours || weekHours < 0.5) {
+    errEl.style.display = 'block';
+    errEl.textContent = '週の家事時間を0.5時間以上入力してください。';
+    document.getElementById('resultCard').style.display = 'none';
+    return;
+  }
+  if (!hourlyRate || hourlyRate < 500) {
+    errEl.style.display = 'block';
+    errEl.textContent = '換算時給は500円以上を入力してください。';
+    document.getElementById('resultCard').style.display = 'none';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  var yearHours = Math.round(weekHours * 52 * 10) / 10;
+  var weekCost  = Math.round(weekHours * hourlyRate);
+  var monthCost = Math.round(weekCost * 52 / 12);
+  var yearCost  = Math.round(weekCost * 52);
+
+  document.getElementById('rCond').textContent =
+    '週' + weekHours + '時間 x 時給' + fmtNum(hourlyRate) + '円で計算';
+  document.getElementById('rTotal').innerHTML =
+    '<span>' + fmtMan(yearCost) + '</span><span class="big-unit">万円</span>';
+  document.getElementById('rSub').textContent =
+    '年間' + yearHours + '時間の家事労働の機会費用';
+
+  document.getElementById('rWeekCost').textContent  = fmtNum(weekCost);
+  document.getElementById('rMonthCost').textContent = fmtNum(monthCost);
+  document.getElementById('rYearHours').textContent = yearHours;
+
+  var rates = [1000, 1500, 2000, 3000];
+  var compHtml = '';
+  for (var i = 0; i < rates.length; i++) {
+    var r = rates[i];
+    var yCost = Math.round(weekHours * r * 52);
+    var isMe = (r === hourlyRate) ? ' style="background:rgba(124,111,245,.1);border:1px solid rgba(124,111,245,.3);"' : '';
+    compHtml += '<div class="comp-row"' + isMe + '>'
+      + '<div class="comp-label">時給 ' + fmtNum(r) + '円の場合</div>'
+      + '<div class="comp-val">年間 ' + fmtMan(yCost) + '万円</div>'
+      + '</div>';
+  }
+  document.getElementById('compList').innerHTML = compHtml;
+
+  _shareText = '【家事労働コスト換算機】\n'
+    + '週' + weekHours + '時間の家事 x 時給' + fmtNum(hourlyRate) + '円で計算すると...\n'
+    + '年間' + yearHours + '時間 = 約' + fmtMan(yearCost) + '万円相当の時間をかけています\n'
+    + '(月' + fmtNum(monthCost) + '円 / 週' + fmtNum(weekCost) + '円)\n'
+    + '#家事 #時間管理\n'
+    + 'https://yama-ai-factory.vercel.app/apps/housework-cost/';
+
+  document.getElementById('resultCard').style.display = 'block';
+}
+
+function share() {
+  if (!_shareText) return;
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(_shareText), '_blank', 'noopener');
+}
+
+function copyText(btn) {
+  if (!_shareText) return;
+  navigator.clipboard.writeText(_shareText).then(function() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'テキストをコピー'; }, 2000);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = _shareText;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'テキストをコピー'; }, 2000);
+  });
+}
+
+calculate();
+</script>
+</body>
+</html>
