@@ -420,9 +420,11 @@ function resetCalc() {
 
 function getShareText() {
   if (!lastResult) return '';
+  var n = lastResult.results.length;
+  var avg = Math.round(lastResult.total / n);
   var lines = [
-    '割り勘計算結果（合計: ' + lastResult.total.toLocaleString('ja-JP') + '円）',
-    '------------------------'
+    'スマート割り勘メーカー: 合計' + lastResult.total.toLocaleString('ja-JP') + '円を' + n + '人で割り勘',
+    '(1人あたり平均 ' + avg.toLocaleString('ja-JP') + '円)'
   ];
   lastResult.results.forEach(function(r) {
     var line = r.name + ': ' + r.amount.toLocaleString('ja-JP') + '円';
@@ -432,8 +434,7 @@ function getShareText() {
   if (lastResult.trueRemainder > 0) {
     lines.push('端数 ' + lastResult.trueRemainder + '円は幹事負担');
   }
-  lines.push('------------------------');
-  lines.push('#スマート割り勘');
+  lines.push('#スマート割り勘 #割り勘 #飲み会');
   lines.push('https://yama-ai-factory.vercel.app/apps/smart-warikan/');
   return lines.join('\n');
 }
