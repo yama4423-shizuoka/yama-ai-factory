@@ -245,6 +245,7 @@ function toggleChore(el) {
     document.getElementById('weekHours').value = total;
     document.getElementById('weekSlider').value = Math.min(total, 60);
   }
+  calculate();
 }
 
 function syncSlider(val) {
@@ -253,6 +254,7 @@ function syncSlider(val) {
 
 function syncInput(val) {
   document.getElementById('weekHours').value = val;
+  calculate();
 }
 
 function setRate(rate) {
