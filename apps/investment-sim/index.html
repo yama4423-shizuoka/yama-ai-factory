@@ -208,7 +208,7 @@
       </div>
       <div class="stat-box">
         <div class="val clr-orange" id="rGainRate">—</div>
-        <div class="lbl">運用益率</div>
+        <div class="lbl">元本比(倍率)</div>
       </div>
     </div>
 
@@ -324,8 +324,9 @@ function calculate() {
   var total     = calcFV(monthly, rate, years);
   var principal = monthly * years * 12;
   var gain      = total - principal;
-  var gainRate  = gain / principal * 100;
-  var pPct      = Math.round(principal / total * 100);
+  var gainRate   = gain / principal * 100;
+  var multiplier = Math.round(total / principal * 10) / 10;
+  var pPct       = Math.round(principal / total * 100);
   var gPct      = 100 - pPct;
 
   document.getElementById('rCond').textContent =
@@ -333,7 +334,7 @@ function calculate() {
   document.getElementById('rTotal').textContent     = fmt(Math.round(total));
   document.getElementById('rPrincipal').textContent = fmtMan(principal) + '円';
   document.getElementById('rGain').textContent      = fmtMan(gain) + '円';
-  document.getElementById('rGainRate').textContent  = Math.round(gainRate) + '%';
+  document.getElementById('rGainRate').textContent  = multiplier + '倍';
   document.getElementById('rPPct').textContent      = pPct + '%';
   document.getElementById('rGPct').textContent      = gPct + '%';
   document.getElementById('barP').style.width       = pPct + '%';
@@ -360,8 +361,8 @@ function calculate() {
 
   _shareText = '【積み立て投資シミュレーター】\n'
     + '毎月' + fmt(monthly) + '円 x 年利' + rate + '% x ' + years + '年間\n'
-    + '-> 元本' + fmtMan(principal) + '円が ' + fmt(Math.round(total)) + '円に!\n'
-    + '運用益 ' + fmtMan(gain) + '円(' + Math.round(gainRate) + '%増)\n'
+    + '-> 元本' + fmtMan(principal) + '円が ' + fmtMan(Math.round(total)) + '円(約' + multiplier + '倍)に!\n'
+    + '運用益 +' + fmtMan(gain) + '円\n'
     + '#積立投資 #NISA #複利\n'
     + 'https://yama-ai-factory.vercel.app/apps/investment-sim/';
 
