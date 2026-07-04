@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ふるさと納税 上限額チェッカー | 年収と家族構成から控除上限を計算</title>
+  <meta name="description" content="年収と家族構成(配偶者・子ども人数)を入力するだけでふるさと納税の上限控除額の目安を即計算。「今年は◯万円まで節税できる」をXでシェアできます。無料・登録不要。">
+  <meta property="og:title" content="ふるさと納税 上限額チェッカー | 年収と家族構成から控除上限を計算">
+  <meta property="og:description" content="年収と家族構成を入力するだけでふるさと納税の控除上限額の目安を即計算。実質負担2,000円で節税できる金額を確認してXでシェアできます。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/furusato-limit/">
+  <meta name="twitter:card" content="summary">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa; --red:#f87171; --yellow:#fbbf24;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back-link {
+      display:inline-block; font-size:.82rem; color:var(--tx2);
+      text-decoration:none; margin-bottom:28px; transition:color .15s;
+    }
+    .back-link:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,5vw,2.1rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:32px; }
+
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px; margin-bottom:16px; }
+    .section-title { font-size:.78rem; color:var(--tx2); font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:16px; }
+
+    .field-block { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+    .field-block:last-child { margin-bottom:0; }
+    .field-label { font-size:.84rem; color:var(--tx3); font-weight:600; }
+    .field-row { display:flex; align-items:center; gap:10px; }
+    .field-input {
+      flex:1; padding:10px 14px; font-size:1.1rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:right;
+    }
+    .field-input:focus { border-color:var(--acc); }
+    .field-unit { font-size:.82rem; color:var(--tx2); white-space:nowrap; }
+
+    .seg-group { display:flex; gap:6px; flex-wrap:wrap; }
+    .seg-btn {
+      padding:8px 14px; border-radius:8px; cursor:pointer; font-size:.84rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); color:var(--tx3);
+      transition:all .15s; white-space:nowrap;
+    }
+    .seg-btn.active { background:rgba(124,111,245,.2); border-color:var(--acc); color:var(--tx); }
+    .seg-btn:hover:not(.active) { border-color:var(--tx2); color:var(--tx); }
+
+    .result-hero { text-align:center; padding:16px 0 20px; border-bottom:1px solid var(--bd); margin-bottom:20px; }
+    .result-label { font-size:.82rem; color:var(--tx3); margin-bottom:6px; }
+    .result-big { font-size:2.8rem; font-weight:900; color:var(--green); line-height:1; }
+    .result-sub { font-size:.82rem; color:var(--tx3); margin-top:8px; }
+
+    .result-rows { display:grid; gap:10px; }
+    .result-row { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .result-name { font-size:.86rem; color:var(--tx3); }
+    .result-detail { font-size:.75rem; color:var(--tx2); display:block; }
+    .result-val { font-size:.92rem; font-weight:800; white-space:nowrap; }
+    .result-val.blue { color:var(--blue); }
+    .result-val.green { color:var(--green); }
+    .result-val.yellow { color:var(--yellow); }
+    .result-val.acc { color:var(--acc2); }
+
+    .highlight-box {
+      margin-top:16px; padding:14px 16px;
+      background:rgba(52,211,153,.06); border:1px solid rgba(52,211,153,.2); border-radius:10px;
+    }
+    .highlight-box-title { font-size:.75rem; color:var(--green); font-weight:700; margin-bottom:6px; letter-spacing:.05em; }
+    .highlight-box-body { font-size:.88rem; color:var(--tx); line-height:1.75; }
+    .highlight-box-body strong { color:var(--green); }
+
+    .placeholder { color:var(--tx2); text-align:center; padding:8px 0; font-size:.88rem; }
+
+    .disclaimer {
+      font-size:.74rem; color:var(--tx2); line-height:1.75;
+      padding:10px 12px; background:var(--s2); border-radius:8px;
+      border-left:3px solid var(--bd); margin-bottom:14px;
+    }
+    .share-row { display:flex; gap:10px; }
+    .share-btn {
+      flex:1; padding:11px; border-radius:10px; cursor:pointer;
+      font-size:.88rem; font-weight:700; border:none; transition:opacity .15s;
+    }
+    .share-x { background:#000; color:#fff; border:1px solid #2a2a2a; }
+    .share-copy { background:var(--s2); color:var(--tx); border:1px solid var(--bd); }
+    .share-btn:hover:not(:disabled) { opacity:.8; }
+    .share-btn:disabled { opacity:.35; cursor:not-allowed; }
+
+    @media (max-width:520px) {
+      .wrapper { padding:24px 14px 60px; }
+      .result-big { font-size:2.2rem; }
+      .seg-btn { padding:7px 10px; font-size:.78rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back-link" href="/">&larr; AIアプリ工房に戻る</a>
+
+  <div class="badge">Furusato Limit</div>
+  <h1><span class="grad">ふるさと納税</span>上限額チェッカー</h1>
+  <p class="hero-desc">年収と家族構成を入力するだけで、ふるさと納税の控除上限額の目安を即計算。<br>実質負担2,000円で今年いくら寄付できるかすぐ分かります。</p>
+
+  <div class="card">
+    <div class="section-title">あなたの情報</div>
+
+    <div class="field-block">
+      <label class="field-label" for="income">年収(額面・給与収入)</label>
+      <div class="field-row">
+        <input type="number" id="income" class="field-input" min="100" max="10000" placeholder="500"
+          value="500" onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
+        <span class="field-unit">万円</span>
+      </div>
+    </div>
+
+    <div class="field-block">
+      <span class="field-label">配偶者の有無</span>
+      <div class="seg-group" id="seg-spouse">
+        <button class="seg-btn active" onclick="setSeg('spouse',false,this)">独身・配偶者なし</button>
+        <button class="seg-btn" onclick="setSeg('spouse',true,this)">配偶者あり (年収103万円以下)</button>
+      </div>
+    </div>
+
+    <div class="field-block">
+      <span class="field-label">扶養している子どもの人数</span>
+      <div class="seg-group" id="seg-children">
+        <button class="seg-btn active" onclick="setSeg('children',0,this)">0人</button>
+        <button class="seg-btn" onclick="setSeg('children',1,this)">1人</button>
+        <button class="seg-btn" onclick="setSeg('children',2,this)">2人</button>
+        <button class="seg-btn" onclick="setSeg('children',3,this)">3人</button>
+        <button class="seg-btn" onclick="setSeg('children',4,this)">4人以上</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div id="resultContent">
+      <div class="placeholder">年収を入力すると上限額が表示されます</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="disclaimer">この計算は給与所得者(会社員・公務員)を対象とした目安ツールです。社会保険料は年収の約15%で概算しています。実際の控除上限は確定申告または住民税決定通知書で確認してください。自営業・フリーランスの方は所得によって異なります。医療費控除・住宅ローン控除等の適用がある場合はさらに上限が下がる場合があります。金融・税務上の助言ではありません。</div>
+    <div class="share-row">
+      <button class="share-btn share-x" id="btn-x" onclick="doShareX()" disabled>X でシェア</button>
+      <button class="share-btn share-copy" id="btn-copy" onclick="doCopy(this)" disabled>結果をコピー</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var seg = { spouse: false, children: 0 };
+var lastResult = null;
+
+function setSeg(key, val, btn) {
+  seg[key] = val;
+  var group = document.getElementById('seg-' + key);
+  var btns = group.querySelectorAll('.seg-btn');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+  btn.classList.add('active');
+  calculate();
+}
+
+function calcEmploymentIncome(gross) {
+  var deduction;
+  if (gross <= 1625000) {
+    deduction = Math.min(gross, 550000);
+  } else if (gross <= 1800000) {
+    deduction = Math.round(gross * 0.4) - 100000;
+  } else if (gross <= 3600000) {
+    deduction = Math.round(gross * 0.3) + 80000;
+  } else if (gross <= 6600000) {
+    deduction = Math.round(gross * 0.2) + 440000;
+  } else if (gross <= 8500000) {
+    deduction = Math.round(gross * 0.1) + 1100000;
+  } else {
+    deduction = 1950000;
+  }
+  return Math.max(0, gross - deduction);
+}
+
+function getIncomeTaxRate(taxable) {
+  if (taxable <= 0)         return 0;
+  if (taxable <= 1950000)   return 0.05;
+  if (taxable <= 3300000)   return 0.10;
+  if (taxable <= 6950000)   return 0.20;
+  if (taxable <= 9000000)   return 0.23;
+  if (taxable <= 18000000)  return 0.33;
+  if (taxable <= 40000000)  return 0.40;
+  return 0.45;
+}
+
+function getIncomeTaxLabel(rate) {
+  var labels = {0:'-', 0.05:'5%', 0.10:'10%', 0.20:'20%', 0.23:'23%', 0.33:'33%', 0.40:'40%', 0.45:'45%'};
+  return labels[rate] || (rate * 100 + '%');
+}
+
+function calcAll(incomeMan, spouse, children) {
+  var gross = incomeMan * 10000;
+  var empIncome = calcEmploymentIncome(gross);
+  var shakai = Math.round(gross * 0.15);
+
+  var basicSotoku = 480000;
+  var spouseSotoku = (spouse && gross <= 10000000) ? 380000 : 0;
+  var fuyouSotoku  = 380000 * children;
+  var taxable = Math.max(0, empIncome - basicSotoku - spouseSotoku - fuyouSotoku - shakai);
+
+  var basicJumin = 430000;
+  var spouseJumin = (spouse && gross <= 10000000) ? 330000 : 0;
+  var fuyouJumin  = 330000 * children;
+  var juminTaxable = Math.max(0, empIncome - basicJumin - spouseJumin - fuyouJumin - shakai);
+  var juminWari = juminTaxable * 0.10;
+
+  var taxRate = getIncomeTaxRate(taxable);
+  var denom = 0.90 - taxRate * 1.021;
+  var limit = denom > 0 ? (juminWari * 0.20) / denom + 2000 : 0;
+  var limitRounded = Math.max(0, Math.round(limit / 1000) * 1000);
+
+  return {
+    gross: gross,
+    empIncome: empIncome,
+    shakai: shakai,
+    taxable: taxable,
+    juminTaxable: juminTaxable,
+    juminWari: juminWari,
+    taxRate: taxRate,
+    limit: limitRounded
+  };
+}
+
+function fmtYen(v) {
+  if (v <= 0) return '0円';
+  if (v >= 10000) {
+    var man = Math.floor(v / 10000);
+    var sen = Math.round((v % 10000) / 1000);
+    if (sen === 10) { man++; sen = 0; }
+    return sen > 0 ? man + '万' + sen + '千円' : man + '万円';
+  }
+  return v.toLocaleString() + '円';
+}
+
+function fmtMan(v) {
+  return (v / 10000).toFixed(1) + '万円';
+}
+
+function row(name, detail, val, cls) {
+  return '<div class="result-row">'
+    + '<span class="result-name">' + name + (detail ? '<span class="result-detail">' + detail + '</span>' : '') + '</span>'
+    + '<span class="result-val ' + (cls||'') + '">' + val + '</span>'
+    + '</div>';
+}
+
+function calculate() {
+  var incomeStr = document.getElementById('income').value;
+  var incomeMan = parseFloat(incomeStr);
+  if (isNaN(incomeMan) || incomeMan <= 0) {
+    document.getElementById('resultContent').innerHTML =
+      '<div class="placeholder">年収を入力すると上限額が表示されます</div>';
+    document.getElementById('btn-x').disabled = true;
+    document.getElementById('btn-copy').disabled = true;
+    lastResult = null;
+    return;
+  }
+
+  var r = calcAll(incomeMan, seg.spouse, seg.children);
+  lastResult = { incomeMan: incomeMan, r: r };
+
+  var limitMan = (r.limit / 10000).toFixed(1);
+  var monthlyGuide = Math.round(r.limit / 12 / 1000) * 1000;
+
+  var h = '';
+  h += '<div class="result-hero">';
+  h += '<div class="result-label">ふるさと納税 上限額の目安</div>';
+  h += '<div class="result-big">' + fmtYen(r.limit) + '</div>';
+  h += '<div class="result-sub">実質負担はこのうち 2,000円 のみ / 月換算 約' + fmtYen(monthlyGuide) + '/月</div>';
+  h += '</div>';
+
+  h += '<div class="result-rows">';
+  h += row('給与所得', '給与所得控除後', fmtYen(r.empIncome), 'blue');
+  h += row('社会保険料控除(概算)', '年収の約15%', fmtYen(r.shakai), 'yellow');
+  h += row('課税所得(住民税用)', '各種控除差引後', fmtYen(r.juminTaxable), 'blue');
+  h += row('住民税所得割(概算)', '課税所得 × 10%', fmtYen(r.juminWari), 'blue');
+  h += row('適用所得税率', '所得税の限界税率', getIncomeTaxLabel(r.taxRate), 'acc');
+
+  h += '<div class="result-row" style="padding-top:12px; margin-top:4px; border-top:1px solid var(--bd);">';
+  h += '<span class="result-name" style="font-weight:800; font-size:.95rem;">ふるさと納税 上限の目安</span>';
+  h += '<span class="result-val green" style="font-size:1.2rem;">' + fmtYen(r.limit) + '</span>';
+  h += '</div>';
+  h += '</div>';
+
+  h += '<div class="highlight-box">';
+  h += '<div class="highlight-box-title">節税のポイント</div>';
+  h += '<div class="highlight-box-body">';
+  h += '<strong>' + fmtYen(r.limit) + '</strong>まで寄付すると、';
+  h += '実質負担は2,000円だけで' + fmtYen(r.limit - 2000) + '分の税金が控除されます。';
+  if (monthlyGuide > 0) {
+    h += '<br>月に約<strong>' + fmtYen(monthlyGuide) + '</strong>ずつ分散して寄付するのがおすすめです。';
+  }
+  h += '</div></div>';
+
+  document.getElementById('resultContent').innerHTML = h;
+  document.getElementById('btn-x').disabled = false;
+  document.getElementById('btn-copy').disabled = false;
+}
+
+function buildShareText() {
+  if (!lastResult) return '';
+  var r = lastResult.r;
+  var incomeMan = lastResult.incomeMan;
+  var spouseLabel = seg.spouse ? '配偶者あり' : '独身';
+  var childLabel = seg.children === 0 ? '子どもなし' : ('子ども' + seg.children + '人');
+  var lines = [];
+  lines.push('【ふるさと納税 上限額チェック】');
+  lines.push('年収: ' + incomeMan + '万円 / ' + spouseLabel + ' / ' + childLabel);
+  lines.push('');
+  lines.push('上限の目安: ' + fmtYen(r.limit));
+  lines.push('実質負担: 2,000円のみ');
+  lines.push('節税効果の目安: ' + fmtYen(r.limit - 2000));
+  lines.push('');
+  lines.push('#ふるさと納税 #節税 #お金の話');
+  lines.push('https://yama-ai-factory.vercel.app/apps/furusato-limit/');
+  return lines.join('\n');
+}
+
+function doShareX() {
+  if (!lastResult) return;
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(buildShareText()), '_blank', 'noopener');
+}
+
+function doCopy(btn) {
+  if (!lastResult) return;
+  var text = buildShareText();
+  var orig = btn.textContent;
+  function done() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = orig; }, 2000);
+  }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    done();
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+calculate();
+</script>
+</body>
+</html>
