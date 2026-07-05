@@ -412,7 +412,10 @@ function showResult() {
 function getShareText() {
   var type = getWinningType();
   var info = TYPES[type];
-  return '私のAI活用タイプは「' + info.name + '」でした!\n' + info.desc + '\n#AI活用タイプ診断\nhttps://yama-ai-factory.vercel.app/apps/ai-type-shindan/';
+  var cnt = { A: 0, B: 0, C: 0, D: 0 };
+  for (var i = 0; i < answers.length; i++) { cnt[answers[i]]++; }
+  var shortName = info.name.split('—')[0].trim();
+  return '私のAI活用タイプは「' + info.name + '」でした!(全' + answers.length + '問中' + cnt[type] + '問が' + shortName + ')\n' + info.desc + '\n#AI活用タイプ診断 #AI活用 #ChatGPT\nhttps://yama-ai-factory.vercel.app/apps/ai-type-shindan/';
 }
 
 function shareX() {
