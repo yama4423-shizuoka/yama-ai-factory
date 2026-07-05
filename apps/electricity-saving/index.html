@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>電気代節約シミュレーター | 月の節電で年間いくら節約できる?</title>
+  <meta name="description" content="月の電気代と節電率を入力するだけで、月・年間・10年間の節約額を即計算。LED照明・エアコン管理など節電対策ごとの効果もチェックできます。物価高の今こそ電気代の見直しを。無料・登録不要。">
+
+  <meta property="og:title" content="電気代節約シミュレーター | 月の節電で年間いくら節約できる?">
+  <meta property="og:description" content="月の電気代と節電率を入力するだけで年間節約額を即計算。節電対策の効果を確認して電気代を見直しましょう。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/electricity-saving/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+
+    .back-link {
+      display:inline-block; font-size:.82rem; color:var(--tx2);
+      text-decoration:none; margin-bottom:28px; transition:color .15s;
+    }
+    .back-link:hover { color:var(--acc2); }
+
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.6rem,5vw,2.2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:32px; }
+
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px; margin-bottom:20px; }
+
+    .field { margin-bottom:22px; }
+    .field:last-of-type { margin-bottom:0; }
+    label { display:block; font-size:.84rem; color:var(--tx3); font-weight:600; margin-bottom:8px; }
+
+    .input-row { display:flex; align-items:center; gap:10px; }
+    .input-row input[type="number"] {
+      width:110px; padding:11px 14px; font-size:1.2rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:center;
+      flex-shrink:0;
+    }
+    .input-row input[type="number"]:focus { border-color:var(--acc); }
+    input[type="range"] { flex:1; accent-color:var(--acc); cursor:pointer; height:4px; }
+    .input-unit { font-size:.85rem; color:var(--tx3); flex-shrink:0; }
+
+    .measure-label { font-size:.78rem; color:var(--tx2); margin-bottom:8px; }
+    .measure-grid {
+      display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;
+    }
+    .measure-item {
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      padding:11px 14px; cursor:pointer; transition:all .15s; user-select:none;
+    }
+    .measure-item.checked { border-color:var(--green); background:rgba(52,211,153,.08); }
+    .measure-name { font-size:.84rem; font-weight:700; color:var(--tx); margin-bottom:2px; }
+    .measure-pct { font-size:.75rem; color:var(--tx2); }
+    .measure-item.checked .measure-name { color:var(--green); }
+    .measure-item.checked .measure-pct { color:rgba(52,211,153,.8); }
+
+    .rate-display {
+      display:inline-block; font-size:1.5rem; font-weight:900; color:var(--green);
+      margin-right:6px; min-width:3ch; text-align:right;
+    }
+
+    .preset-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+    .preset-btn {
+      padding:6px 14px; border-radius:8px; border:1px solid var(--bd);
+      background:var(--s2); color:var(--tx3); font-size:.8rem; font-weight:700;
+      cursor:pointer; transition:all .15s;
+    }
+    .preset-btn:hover { border-color:var(--acc2); color:var(--acc2); }
+
+    .btn {
+      display:block; width:100%; padding:14px; margin-top:4px; border-radius:10px;
+      background:var(--acc); border:none; color:#fff;
+      font-size:1rem; font-weight:700; cursor:pointer; transition:opacity .15s;
+    }
+    .btn:hover { opacity:.85; }
+    .btn-sub {
+      background:transparent; border:1px solid var(--bd); color:var(--tx3);
+      font-size:.9rem; margin-top:10px; padding:11px;
+    }
+    .btn-sub:hover { border-color:var(--acc2); color:var(--acc2); opacity:1; }
+
+    .error { color:#f87171; font-size:.87rem; margin-top:10px; display:none; }
+
+    #resultCard { display:none; }
+
+    .result-hero { text-align:center; padding:16px 0 20px; border-bottom:1px solid var(--bd); margin-bottom:20px; }
+    .result-hero .cond { font-size:.78rem; color:var(--tx2); margin-bottom:8px; }
+    .result-hero .big { font-size:clamp(2.8rem,10vw,4rem); font-weight:900; color:var(--green); line-height:1; }
+    .result-hero .big-unit { font-size:1.1rem; }
+    .result-hero .sub { font-size:.84rem; color:var(--tx3); margin-top:8px; }
+
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+    .stat { background:var(--s2); border-radius:12px; padding:14px 8px; text-align:center; }
+    .stat .val { font-size:1.15rem; font-weight:800; color:var(--tx); }
+    .stat .lbl { font-size:.68rem; color:var(--tx2); margin-top:5px; line-height:1.5; }
+
+    .comp-title { font-size:.76rem; color:var(--tx2); font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:12px; }
+    .comp-list { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+    .comp-row {
+      display:flex; align-items:center; justify-content:space-between;
+      background:var(--s2); border-radius:10px; padding:12px 16px;
+    }
+    .comp-label { font-size:.84rem; color:var(--tx3); font-weight:600; }
+    .comp-val { font-size:.95rem; font-weight:800; color:var(--green); white-space:nowrap; margin-left:8px; }
+
+    .after-bill {
+      text-align:center; background:rgba(52,211,153,.06); border:1px solid rgba(52,211,153,.2);
+      border-radius:12px; padding:14px; margin-bottom:20px;
+    }
+    .after-bill .lbl { font-size:.78rem; color:var(--tx2); margin-bottom:4px; }
+    .after-bill .val { font-size:1.3rem; font-weight:900; color:var(--green); }
+
+    .disclaimer { font-size:.74rem; color:var(--tx2); line-height:1.7; margin-bottom:16px; }
+
+    @media (max-width:520px) {
+      .measure-grid { grid-template-columns:1fr 1fr; gap:8px; }
+      .stats { gap:7px; }
+      .stat .val { font-size:1rem; }
+      .input-row input[type="number"] { width:90px; font-size:1rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back-link" href="/">&larr; AIアプリ工房トップへ</a>
+
+  <div class="badge">節約・家計ツール</div>
+  <h1><span class="grad">電気代節約</span>シミュレーター</h1>
+  <p class="hero-desc">月の電気代と節電率を入力するだけで、月・年間・10年間の節約額を即計算。節電対策を選んで節約率を積み上げることもできます。</p>
+
+  <div class="card">
+    <div class="field">
+      <label for="monthlyBill">月の電気代</label>
+      <div class="preset-row">
+        <button class="preset-btn" onclick="setBill(6000)">6,000円</button>
+        <button class="preset-btn" onclick="setBill(10000)">1万円</button>
+        <button class="preset-btn" onclick="setBill(15000)">1.5万円</button>
+        <button class="preset-btn" onclick="setBill(20000)">2万円</button>
+      </div>
+      <div class="input-row">
+        <input type="number" id="monthlyBill" value="10000" min="500" max="100000" step="500"
+          onkeydown="if(event.key==='Enter')calculate();"
+          oninput="calculate()">
+        <span class="input-unit">円 / 月</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>節電対策を選ぶ <span style="font-size:.75rem;color:var(--tx2);font-weight:400;">クリックで節電率に自動加算されます</span></label>
+      <div class="measure-label">よくある節電対策</div>
+      <div class="measure-grid" id="measureGrid">
+        <div class="measure-item" data-pct="10" onclick="toggleMeasure(this)">
+          <div class="measure-name">LED照明に交換</div>
+          <div class="measure-pct">約 10% 削減</div>
+        </div>
+        <div class="measure-item" data-pct="10" onclick="toggleMeasure(this)">
+          <div class="measure-name">エアコン設定温度±1度</div>
+          <div class="measure-pct">約 10% 削減</div>
+        </div>
+        <div class="measure-item" data-pct="5" onclick="toggleMeasure(this)">
+          <div class="measure-name">待機電力カット</div>
+          <div class="measure-pct">約 5% 削減</div>
+        </div>
+        <div class="measure-item" data-pct="5" onclick="toggleMeasure(this)">
+          <div class="measure-name">洗濯は夜間・まとめ洗い</div>
+          <div class="measure-pct">約 5% 削減</div>
+        </div>
+        <div class="measure-item" data-pct="5" onclick="toggleMeasure(this)">
+          <div class="measure-name">冷蔵庫の設定を弱に</div>
+          <div class="measure-pct">約 5% 削減</div>
+        </div>
+        <div class="measure-item" data-pct="8" onclick="toggleMeasure(this)">
+          <div class="measure-name">省エネ家電に買い替え</div>
+          <div class="measure-pct">約 8% 削減</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="savingRate">節電率
+        <span class="rate-display" id="rateDisplay">20</span>%
+      </label>
+      <div class="input-row">
+        <input type="range" id="savingSlider" min="1" max="50" step="1" value="20"
+          oninput="syncRate(this.value)">
+        <input type="number" id="savingRate" value="20" min="1" max="50" step="1"
+          style="width:72px;"
+          onkeydown="if(event.key==='Enter')calculate();"
+          oninput="syncSlider2(this.value)">
+        <span class="input-unit">%</span>
+      </div>
+    </div>
+
+    <div class="error" id="errorMsg"></div>
+    <button class="btn" onclick="calculate()" style="margin-top:8px;">節約額を計算する</button>
+  </div>
+
+  <div class="card" id="resultCard">
+    <div class="result-hero">
+      <div class="cond" id="rCond"></div>
+      <div class="big" id="rAnnual">—<span class="big-unit">円</span></div>
+      <div class="sub">年間の節約額</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="val" id="rMonthly">—</div>
+        <div class="lbl">円<br>月の節約額</div>
+      </div>
+      <div class="stat">
+        <div class="val" id="rAnnualStat">—</div>
+        <div class="lbl">円<br>年間の節約額</div>
+      </div>
+      <div class="stat">
+        <div class="val" id="rTenYear">—</div>
+        <div class="lbl">万円<br>10年間の節約額</div>
+      </div>
+    </div>
+
+    <div class="after-bill">
+      <div class="lbl">節電後の月の電気代</div>
+      <div class="val" id="rAfterBill">—円 / 月</div>
+    </div>
+
+    <div class="comp-title">節電率別シミュレーション(年間)</div>
+    <div class="comp-list" id="compList"></div>
+
+    <p class="disclaimer">※ 節電効果はあくまで目安です。実際の削減額は家電の種類・使用状況・電力プランによって異なります。電力会社・機器メーカーの公表値を参考に設定していますが、保証するものではありません。</p>
+
+    <button class="btn" onclick="share()">Xでシェアする</button>
+    <button class="btn btn-sub" onclick="copyText(this)">テキストをコピー</button>
+  </div>
+</div>
+
+<script>
+var _shareText = '';
+
+function setBill(val) {
+  document.getElementById('monthlyBill').value = val;
+  calculate();
+}
+
+function toggleMeasure(el) {
+  el.classList.toggle('checked');
+  var total = 0;
+  document.querySelectorAll('#measureGrid .measure-item.checked').forEach(function(item) {
+    total += parseInt(item.getAttribute('data-pct'), 10);
+  });
+  total = Math.min(total, 50);
+  document.getElementById('savingRate').value = total || 20;
+  document.getElementById('savingSlider').value = total || 20;
+  document.getElementById('rateDisplay').textContent = total || 20;
+  calculate();
+}
+
+function syncRate(val) {
+  document.getElementById('savingRate').value = val;
+  document.getElementById('rateDisplay').textContent = val;
+  calculate();
+}
+
+function syncSlider2(val) {
+  var v = Math.min(Math.max(parseInt(val, 10) || 1, 1), 50);
+  document.getElementById('savingSlider').value = v;
+  document.getElementById('rateDisplay').textContent = v;
+  calculate();
+}
+
+function fmtNum(n) {
+  return Math.round(n).toLocaleString('ja-JP');
+}
+
+function fmtMan(yen) {
+  return Math.round(yen / 10000).toLocaleString('ja-JP');
+}
+
+function calculate() {
+  var bill = parseFloat(document.getElementById('monthlyBill').value);
+  var rate = parseFloat(document.getElementById('savingRate').value);
+  var errEl = document.getElementById('errorMsg');
+
+  if (!bill || bill < 500) {
+    errEl.style.display = 'block';
+    errEl.textContent = '月の電気代を500円以上入力してください。';
+    document.getElementById('resultCard').style.display = 'none';
+    return;
+  }
+  if (!rate || rate < 1 || rate > 50) {
+    errEl.style.display = 'block';
+    errEl.textContent = '節電率は1〜50%の範囲で入力してください。';
+    document.getElementById('resultCard').style.display = 'none';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  var monthly = Math.round(bill * rate / 100);
+  var annual = monthly * 12;
+  var tenYear = annual * 10;
+  var afterBill = Math.round(bill - monthly);
+
+  document.getElementById('rCond').textContent =
+    '月' + fmtNum(bill) + '円 × 節電率' + rate + '%で計算';
+
+  var annualDisp = annual >= 10000
+    ? fmtMan(annual) + '<span class="big-unit">万円</span>'
+    : fmtNum(annual) + '<span class="big-unit">円</span>';
+  document.getElementById('rAnnual').innerHTML = annualDisp;
+
+  document.getElementById('rMonthly').textContent = fmtNum(monthly);
+  document.getElementById('rAnnualStat').textContent = fmtNum(annual);
+  document.getElementById('rTenYear').textContent = fmtMan(tenYear);
+  document.getElementById('rAfterBill').textContent = fmtNum(afterBill) + '円 / 月';
+
+  var rates = [5, 10, 20, 30, 50];
+  var compHtml = '';
+  for (var i = 0; i < rates.length; i++) {
+    var r = rates[i];
+    var yAmt = Math.round(bill * r / 100) * 12;
+    var isMe = (r === rate) ? ' style="background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.25);"' : '';
+    compHtml += '<div class="comp-row"' + isMe + '>'
+      + '<div class="comp-label">節電率 ' + r + '%</div>'
+      + '<div class="comp-val">年間 ' + fmtNum(yAmt) + '円 節約</div>'
+      + '</div>';
+  }
+  document.getElementById('compList').innerHTML = compHtml;
+
+  var annualText = annual >= 10000
+    ? '約' + fmtMan(annual) + '万円'
+    : fmtNum(annual) + '円';
+
+  _shareText = '【電気代節約シミュレーター】\n'
+    + '月' + fmtNum(bill) + '円の電気代を' + rate + '%節電すると...\n'
+    + '月' + fmtNum(monthly) + '円 → 年間' + annualText + 'の節約!\n'
+    + '10年間では' + fmtMan(tenYear) + '万円になります\n'
+    + '#電気代節約 #節電\n'
+    + 'https://yama-ai-factory.vercel.app/apps/electricity-saving/';
+
+  document.getElementById('resultCard').style.display = 'block';
+}
+
+function share() {
+  if (!_shareText) return;
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(_shareText), '_blank', 'noopener');
+}
+
+function copyText(btn) {
+  if (!_shareText) return;
+  navigator.clipboard.writeText(_shareText).then(function() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'テキストをコピー'; }, 2000);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = _shareText;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'テキストをコピー'; }, 2000);
+  });
+}
+
+calculate();
+</script>
+</body>
+</html>
