@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>電気代補助金割引額チェッカー(2026年夏版) | 7〜9月の政府補助金を即計算</title>
+  <meta name="description" content="2026年7月再開の政府補助金で電気代がいくら安くなる? 月間電気使用量(kWh)を入力するだけで7・8・9月それぞれの割引額と3ヶ月合計を即計算。都市ガスの補助金も合算できます。無料・登録不要。">
+
+  <meta property="og:title" content="電気代補助金割引額チェッカー(2026年夏版) | 7〜9月の政府補助金を即計算">
+  <meta property="og:description" content="2026年夏の電気代補助金、自分の家はいくら安くなる? kWhを入力するだけで7・8・9月の割引額を一覧表示。都市ガス補助金も合算可能。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/electricity-subsidy/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+
+    .back-link {
+      display:inline-block; font-size:.82rem; color:var(--tx2);
+      text-decoration:none; margin-bottom:28px; transition:color .15s;
+    }
+    .back-link:hover { color:var(--acc2); }
+
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.6rem,5vw,2.2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:24px; }
+
+    .info-box {
+      background:rgba(251,191,36,.05); border:1px solid rgba(251,191,36,.22);
+      border-radius:12px; padding:14px 16px; margin-bottom:24px;
+      font-size:.82rem; color:var(--tx3); line-height:1.8;
+    }
+    .info-box strong { color:var(--yellow); font-weight:700; }
+
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px; margin-bottom:20px; }
+
+    .field { margin-bottom:22px; }
+    .field:last-of-type { margin-bottom:0; }
+    label { display:block; font-size:.84rem; color:var(--tx3); font-weight:600; margin-bottom:8px; }
+    .opt-badge {
+      display:inline-block; font-size:.68rem; color:var(--tx2); font-weight:400;
+      border:1px solid var(--bd); border-radius:4px; padding:1px 6px; margin-left:6px; vertical-align:middle;
+    }
+
+    .preset-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+    .preset-btn {
+      padding:6px 14px; border-radius:8px; border:1px solid var(--bd);
+      background:var(--s2); color:var(--tx3); font-size:.8rem; font-weight:700;
+      cursor:pointer; transition:all .15s;
+    }
+    .preset-btn:hover { border-color:var(--acc2); color:var(--acc2); }
+
+    .input-row { display:flex; align-items:center; gap:10px; }
+    .input-row input[type="number"] {
+      width:120px; padding:11px 14px; font-size:1.2rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:center;
+      flex-shrink:0;
+    }
+    .input-row input[type="number"]:focus { border-color:var(--acc); }
+    .input-unit { font-size:.85rem; color:var(--tx3); flex-shrink:0; }
+
+    .btn {
+      display:block; width:100%; padding:14px; margin-top:4px; border-radius:10px;
+      background:var(--acc); border:none; color:#fff;
+      font-size:1rem; font-weight:700; cursor:pointer; transition:opacity .15s;
+    }
+    .btn:hover { opacity:.85; }
+    .btn-sub {
+      background:transparent; border:1px solid var(--bd); color:var(--tx3);
+      font-size:.9rem; margin-top:10px; padding:11px;
+    }
+    .btn-sub:hover { border-color:var(--acc2); color:var(--acc2); opacity:1; }
+
+    .error { color:#f87171; font-size:.87rem; margin-top:10px; display:none; }
+
+    #resultCard { display:none; }
+
+    .result-hero { text-align:center; padding:16px 0 20px; border-bottom:1px solid var(--bd); margin-bottom:20px; }
+    .result-hero .cond { font-size:.78rem; color:var(--tx2); margin-bottom:8px; }
+    .result-hero .big { font-size:clamp(2.8rem,10vw,4rem); font-weight:900; color:var(--green); line-height:1; }
+    .result-hero .big-unit { font-size:1.1rem; }
+    .result-hero .sub { font-size:.84rem; color:var(--tx3); margin-top:8px; }
+
+    .section-title { font-size:.75rem; color:var(--tx2); font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:12px; }
+
+    .month-table { width:100%; border-collapse:collapse; margin-bottom:20px; }
+    .month-table th {
+      font-size:.74rem; color:var(--tx2); font-weight:700; text-align:left;
+      padding:8px 12px 10px; border-bottom:1px solid var(--bd);
+    }
+    .month-table th:last-child { text-align:right; }
+    .month-table td { padding:13px 12px; font-size:.88rem; border-bottom:1px solid rgba(34,34,58,.5); }
+    .month-table tr:last-child td { border-bottom:none; }
+    .month-table .month-name { font-weight:700; color:var(--tx); }
+    .month-table .rate-cell { color:var(--tx3); font-size:.78rem; }
+    .month-table .amount-cell { font-weight:800; color:var(--green); text-align:right; white-space:nowrap; }
+    .month-table .peak-row td { background:rgba(251,191,36,.03); }
+    .peak-badge { font-size:.68rem; color:var(--yellow); font-weight:700; margin-left:5px; }
+    .month-table .total-row td {
+      border-top:2px solid var(--bd); font-weight:900;
+      background:rgba(52,211,153,.06); padding-top:14px; padding-bottom:14px;
+    }
+    .month-table .total-row .month-name { color:var(--green); font-size:.95rem; }
+    .month-table .total-row .amount-cell { font-size:1.05rem; color:var(--green); }
+
+    .breakdown-row {
+      display:flex; align-items:center; justify-content:space-between;
+      background:var(--s2); border-radius:10px; padding:11px 16px; margin-bottom:8px;
+    }
+    .breakdown-label { font-size:.84rem; color:var(--tx3); }
+    .breakdown-val { font-size:.95rem; font-weight:800; color:var(--blue); white-space:nowrap; }
+
+    .disclaimer { font-size:.74rem; color:var(--tx2); line-height:1.75; margin-bottom:16px; }
+
+    @media (max-width:520px) {
+      .wrapper { padding:32px 14px 60px; }
+      .month-table th, .month-table td { padding:10px 8px; }
+      .input-row input[type="number"] { width:100px; font-size:1.05rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back-link" href="/">&larr; AIアプリ工房トップへ</a>
+
+  <div class="badge">節約・家計ツール</div>
+  <h1><span class="grad">電気代補助金</span>割引額チェッカー</h1>
+  <p class="hero-desc">2026年7月から再開した政府の電気代補助金。月間電気使用量(kWh)を入力するだけで、7月・8月・9月それぞれの割引額と3ヶ月合計を即計算します。</p>
+
+  <div class="info-box">
+    補助単価(政府発表): <strong>7月・9月 3.5円/kWh</strong>、<strong>8月 4.5円/kWh</strong><br>
+    都市ガス(参考): <strong>7月・9月 7.5円/m&#179;</strong>、<strong>8月 10円/m&#179;</strong>
+  </div>
+
+  <div class="card">
+    <div class="field">
+      <label for="kwh">月間電気使用量</label>
+      <div class="preset-row">
+        <button class="preset-btn" onclick="setKwh(150)">150kWh</button>
+        <button class="preset-btn" onclick="setKwh(250)">250kWh</button>
+        <button class="preset-btn" onclick="setKwh(350)">350kWh</button>
+        <button class="preset-btn" onclick="setKwh(500)">500kWh</button>
+      </div>
+      <div class="input-row">
+        <input type="number" id="kwh" value="300" min="1" max="9999" step="10"
+          onkeydown="if(event.key==='Enter')calculate();"
+          oninput="calculate()">
+        <span class="input-unit">kWh / 月</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="gas">都市ガス使用量<span class="opt-badge">任意</span></label>
+      <div class="preset-row">
+        <button class="preset-btn" onclick="setGas(0)">なし</button>
+        <button class="preset-btn" onclick="setGas(15)">15m&#179;</button>
+        <button class="preset-btn" onclick="setGas(25)">25m&#179;</button>
+        <button class="preset-btn" onclick="setGas(40)">40m&#179;</button>
+      </div>
+      <div class="input-row">
+        <input type="number" id="gas" value="0" min="0" max="9999" step="1"
+          onkeydown="if(event.key==='Enter')calculate();"
+          oninput="calculate()">
+        <span class="input-unit">m&#179; / 月</span>
+      </div>
+    </div>
+
+    <div class="error" id="errorMsg"></div>
+    <button class="btn" onclick="calculate()" style="margin-top:8px;">割引額を計算する</button>
+  </div>
+
+  <div class="card" id="resultCard">
+    <div class="result-hero">
+      <div class="cond" id="rCond"></div>
+      <div class="big">-<span id="rTotal">—</span><span class="big-unit">円</span></div>
+      <div class="sub">7〜9月 3ヶ月合計の割引額</div>
+    </div>
+
+    <div class="section-title">月別 割引額の内訳</div>
+    <table class="month-table">
+      <thead>
+        <tr>
+          <th>月</th>
+          <th>補助単価</th>
+          <th>割引額</th>
+        </tr>
+      </thead>
+      <tbody id="monthTableBody"></tbody>
+    </table>
+
+    <div id="gasSection" style="display:none; margin-bottom:20px;">
+      <div class="section-title">電気・ガス別 内訳(3ヶ月計)</div>
+      <div id="breakdownList"></div>
+    </div>
+
+    <p class="disclaimer">※ 割引額は電力会社・ガス会社が請求書上で代理適用します。実際の割引額は使用量確定値や端数処理により異なる場合があります。都市ガスの補助単価は政府発表の参考値であり、ご利用のガス会社によって異なる場合があります。補助金の実施期間・単価は政府の決定に依存するため、最新情報は資源エネルギー庁の公式発表をご確認ください。本ツールの計算結果は目安であり、補助額を保証するものではありません。</p>
+
+    <button class="btn" onclick="share()">Xでシェアする</button>
+    <button class="btn btn-sub" onclick="copyText(this)">テキストをコピー</button>
+  </div>
+</div>
+
+<script>
+var _shareText = '';
+
+var ELEC = { jul: 3.5, aug: 4.5, sep: 3.5 };
+var GAS  = { jul: 7.5, aug: 10,  sep: 7.5 };
+var MONTHS = [
+  { key: 'jul', label: '7月', peak: false },
+  { key: 'aug', label: '8月', peak: true  },
+  { key: 'sep', label: '9月', peak: false }
+];
+
+function setKwh(v) {
+  document.getElementById('kwh').value = v;
+  calculate();
+}
+
+function setGas(v) {
+  document.getElementById('gas').value = v;
+  calculate();
+}
+
+function fmt(n) {
+  return Math.round(n).toLocaleString('ja-JP');
+}
+
+function calculate() {
+  var kwh = parseFloat(document.getElementById('kwh').value) || 0;
+  var gas = parseFloat(document.getElementById('gas').value) || 0;
+  var errEl = document.getElementById('errorMsg');
+
+  if (kwh < 1) {
+    errEl.style.display = 'block';
+    errEl.textContent = '電気使用量を1kWh以上入力してください。';
+    document.getElementById('resultCard').style.display = 'none';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  var totalElec = 0;
+  var totalGas  = 0;
+  var rows = [];
+
+  for (var i = 0; i < MONTHS.length; i++) {
+    var m = MONTHS[i];
+    var ea = Math.round(kwh * ELEC[m.key]);
+    var ga = Math.round(gas * GAS[m.key]);
+    totalElec += ea;
+    totalGas  += ga;
+    rows.push({ label: m.label, peak: m.peak, er: ELEC[m.key], gr: GAS[m.key], ea: ea, ga: ga, tot: ea + ga });
+  }
+
+  var grand = totalElec + totalGas;
+
+  document.getElementById('rCond').textContent =
+    '電気 ' + fmt(kwh) + 'kWh/月' + (gas > 0 ? ' + ガス ' + fmt(gas) + 'm³/月' : '');
+  document.getElementById('rTotal').textContent = fmt(grand);
+
+  var html = '';
+  for (var j = 0; j < rows.length; j++) {
+    var r = rows[j];
+    var rateStr = '電気 ' + r.er + '円/kWh' + (gas > 0 ? ' / ガス ' + r.gr + '円/m³' : '');
+    html += '<tr' + (r.peak ? ' class="peak-row"' : '') + '>'
+      + '<td class="month-name">' + r.label + (r.peak ? '<span class="peak-badge">最大補助</span>' : '') + '</td>'
+      + '<td class="rate-cell">' + rateStr + '</td>'
+      + '<td class="amount-cell">-' + fmt(r.tot) + '円</td>'
+      + '</tr>';
+  }
+  html += '<tr class="total-row">'
+    + '<td class="month-name" colspan="2">3ヶ月合計</td>'
+    + '<td class="amount-cell">-' + fmt(grand) + '円</td>'
+    + '</tr>';
+  document.getElementById('monthTableBody').innerHTML = html;
+
+  var gasSection = document.getElementById('gasSection');
+  if (gas > 0) {
+    gasSection.style.display = 'block';
+    document.getElementById('breakdownList').innerHTML =
+      '<div class="breakdown-row"><div class="breakdown-label">電気代補助金(3ヶ月計)</div><div class="breakdown-val">-' + fmt(totalElec) + '円</div></div>'
+      + '<div class="breakdown-row"><div class="breakdown-label">ガス代補助金(3ヶ月計)</div><div class="breakdown-val">-' + fmt(totalGas) + '円</div></div>';
+  } else {
+    gasSection.style.display = 'none';
+  }
+
+  var gasLine = gas > 0
+    ? '\nガス ' + fmt(gas) + 'm³/月 → ガス補助金 -' + fmt(totalGas) + '円(3ヶ月)\n'
+    : '\n';
+
+  _shareText = '【2026年夏の電気代補助金チェッカー】\n'
+    + '電気 ' + fmt(kwh) + 'kWh/月 → 電気補助金 -' + fmt(totalElec) + '円(3ヶ月)\n'
+    + gasLine
+    + '7月: -' + fmt(rows[0].tot) + '円 / 8月: -' + fmt(rows[1].tot) + '円 / 9月: -' + fmt(rows[2].tot) + '円\n'
+    + '3ヶ月合計 -' + fmt(grand) + '円の割引!\n'
+    + '#電気代補助金 #電気代節約\n'
+    + 'https://yama-ai-factory.vercel.app/apps/electricity-subsidy/';
+
+  document.getElementById('resultCard').style.display = 'block';
+}
+
+function share() {
+  if (!_shareText) return;
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(_shareText), '_blank', 'noopener');
+}
+
+function copyText(btn) {
+  if (!_shareText) return;
+  navigator.clipboard.writeText(_shareText).then(function() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'テキストをコピー'; }, 2000);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = _shareText;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'テキストをコピー'; }, 2000);
+  });
+}
+
+calculate();
+</script>
+</body>
+</html>
