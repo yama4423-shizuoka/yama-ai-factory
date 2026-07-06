@@ -280,10 +280,10 @@ function calculate() {
   }
 
   var r = calcAll(incomeMan, seg.spouse, seg.children);
-  lastResult = { incomeMan: incomeMan, r: r };
+  var monthlyGuide = Math.round(r.limit / 12 / 1000) * 1000;
+  lastResult = { incomeMan: incomeMan, r: r, monthlyGuide: monthlyGuide };
 
   var limitMan = (r.limit / 10000).toFixed(1);
-  var monthlyGuide = Math.round(r.limit / 12 / 1000) * 1000;
 
   var h = '';
   h += '<div class="result-hero">';
@@ -333,6 +333,9 @@ function buildShareText() {
   lines.push('上限の目安: ' + fmtYen(r.limit));
   lines.push('実質負担: 2,000円のみ');
   lines.push('節税効果の目安: ' + fmtYen(r.limit - 2000));
+  if (lastResult.monthlyGuide > 0) {
+    lines.push('月換算: 約' + fmtYen(lastResult.monthlyGuide) + '/月がおすすめペース');
+  }
   lines.push('');
   lines.push('#ふるさと納税 #節税 #お金の話');
   lines.push('https://yama-ai-factory.vercel.app/apps/furusato-limit/');
