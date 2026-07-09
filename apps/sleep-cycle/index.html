@@ -138,7 +138,7 @@
   <div class="panel active" id="panel-wake">
     <div class="card">
       <label for="wakeTime">何時に起きたいですか?</label>
-      <input type="time" id="wakeTime" value="07:00" onchange="calcFromWake()">
+      <input type="time" id="wakeTime" value="07:00" onchange="calcFromWake()" oninput="calcFromWake()" onkeydown="if(event.key==='Enter')calcFromWake();">
       <button class="btn" onclick="calcFromWake()">就寝時刻を計算する</button>
     </div>
 
