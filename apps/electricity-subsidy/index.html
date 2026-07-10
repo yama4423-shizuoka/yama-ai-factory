@@ -195,6 +195,7 @@
       <div class="cond" id="rCond"></div>
       <div class="big">-<span id="rTotal">—</span><span class="big-unit">円</span></div>
       <div class="sub">7〜9月 3ヶ月合計の割引額</div>
+      <div class="sub" id="rMonthAvg" style="margin-top:4px;opacity:.75;"></div>
     </div>
 
     <div class="section-title">月別 割引額の内訳</div>
@@ -277,6 +278,7 @@ function calculate() {
   document.getElementById('rCond').textContent =
     '電気 ' + fmt(kwh) + 'kWh/月' + (gas > 0 ? ' + ガス ' + fmt(gas) + 'm³/月' : '');
   document.getElementById('rTotal').textContent = fmt(grand);
+  document.getElementById('rMonthAvg').textContent = '(月平均 約' + fmt(Math.round(grand / 3)) + '円の節約)';
 
   var html = '';
   for (var j = 0; j < rows.length; j++) {
@@ -312,7 +314,7 @@ function calculate() {
     + '電気 ' + fmt(kwh) + 'kWh/月 → 電気補助金 -' + fmt(totalElec) + '円(3ヶ月)\n'
     + gasLine
     + '7月: -' + fmt(rows[0].tot) + '円 / 8月: -' + fmt(rows[1].tot) + '円 / 9月: -' + fmt(rows[2].tot) + '円\n'
-    + '3ヶ月合計 -' + fmt(grand) + '円の割引!\n'
+    + '3ヶ月合計 -' + fmt(grand) + '円の割引(月平均 約' + fmt(Math.round(grand / 3)) + '円)!\n'
     + '#電気代補助金 #電気代節約\n'
     + 'https://yama-ai-factory.vercel.app/apps/electricity-subsidy/';
 
