@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatGPT プラン選び診断 | Free/Go/Plus/Proどれがいい? | AIアプリ工房</title>
+  <meta name="description" content="利用用途・週あたり使用頻度・月の予算を選ぶだけで、ChatGPT Free/Go/Plus/Pro のどのプランが最適かを即診断。2026年最新プラン対応。無料・登録不要。">
+  <meta property="og:title" content="ChatGPT プラン選び診断 | Free/Go/Plus/Proどれがいい?">
+  <meta property="og:description" content="利用用途・使用頻度・予算からChatGPTの最適プランを瞬時に診断。Free/Go/Plus/Proを比較して最安で最適なプランを提案します。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/chatgpt-plan-shindan/">
+  <meta name="twitter:card" content="summary">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:680px; margin:0 auto; padding:40px 20px 80px; }
+    .back { display:inline-block; font-size:.82rem; color:var(--tx2); text-decoration:none; margin-bottom:26px; transition:color .15s; }
+    .back:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,4.5vw,2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:32px; }
+
+    /* sections */
+    .section {
+      background:var(--s1); border:1px solid var(--bd); border-radius:16px;
+      padding:22px 20px; margin-bottom:14px;
+    }
+    .q-label { font-weight:800; font-size:.97rem; margin-bottom:4px; }
+    .q-sub { font-size:.78rem; color:var(--tx2); margin-bottom:14px; }
+
+    /* option buttons */
+    .opt-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+    .opt-grid.single-col { grid-template-columns:1fr; }
+    @media(max-width:440px) { .opt-grid { grid-template-columns:1fr; } }
+
+    .opt {
+      position:relative; display:flex; align-items:center; gap:10px;
+      background:var(--s2); border:1.5px solid var(--bd); border-radius:10px;
+      padding:11px 14px; cursor:pointer; font-size:.87rem; line-height:1.4;
+      transition:border-color .12s, background .12s;
+      user-select:none;
+    }
+    .opt:hover { border-color:var(--acc); }
+    .opt input { position:absolute; opacity:0; width:0; height:0; }
+    .opt-mark {
+      width:17px; height:17px; flex-shrink:0;
+      border:2px solid var(--bd); border-radius:4px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.7rem; font-weight:900; transition:all .12s;
+    }
+    .opt.is-radio .opt-mark { border-radius:50%; }
+    .opt.selected { border-color:var(--acc); background:rgba(124,111,245,.1); }
+    .opt.selected .opt-mark { background:var(--acc); border-color:var(--acc); color:#fff; }
+
+    /* diagnose button */
+    .diag-btn {
+      display:block; width:100%; padding:15px; border-radius:12px; border:none;
+      background:var(--acc); color:#fff; font-size:1.02rem; font-weight:800;
+      cursor:pointer; margin-top:18px; transition:opacity .15s;
+      letter-spacing:.03em;
+    }
+    .diag-btn:hover { opacity:.85; }
+
+    /* result */
+    #result { display:none; }
+    .result-header { text-align:center; padding-bottom:20px; margin-bottom:20px; border-bottom:1px solid var(--bd); }
+    .result-label { font-size:.7rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--acc2); margin-bottom:10px; }
+    .result-plan-name { font-size:1.9rem; font-weight:900; line-height:1.2; }
+    .result-plan-price { font-size:1rem; color:var(--acc2); font-weight:700; margin-top:6px; }
+    .result-reason { font-size:.85rem; color:var(--tx3); line-height:1.75; margin-top:12px; }
+    .result-note { font-size:.8rem; color:var(--yellow); line-height:1.7; margin-top:8px; }
+
+    /* plan features */
+    .features-title { font-size:.78rem; font-weight:800; color:var(--tx2); letter-spacing:.06em; text-transform:uppercase; margin-bottom:10px; }
+    .feature-list { list-style:none; }
+    .feature-list li {
+      font-size:.85rem; color:var(--tx3); padding:6px 0;
+      border-bottom:1px solid var(--bd); display:flex; gap:8px; align-items:flex-start;
+    }
+    .feature-list li:last-child { border-bottom:none; }
+    .feature-list li::before { content:'+'; color:var(--green); font-weight:900; flex-shrink:0; }
+
+    /* plan comparison */
+    .compare-title { font-size:.78rem; font-weight:800; color:var(--tx2); letter-spacing:.06em; text-transform:uppercase; margin:20px 0 10px; }
+    .compare-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+    @media(max-width:480px) { .compare-grid { grid-template-columns:repeat(2,1fr); } }
+    .c-card {
+      background:var(--s2); border:1px solid var(--bd); border-radius:12px;
+      padding:13px 10px; text-align:center;
+    }
+    .c-card.c-active { border-color:var(--acc); background:rgba(124,111,245,.08); }
+    .c-name { font-weight:800; font-size:.88rem; margin-bottom:3px; }
+    .c-price { font-size:.73rem; color:var(--tx2); }
+    .c-tag { font-size:.65rem; color:var(--acc2); font-weight:700; margin-top:4px; letter-spacing:.05em; }
+
+    /* share / actions */
+    .action-row { display:flex; gap:10px; margin-top:20px; }
+    .action-btn {
+      flex:1; padding:12px 8px; border-radius:10px; border:1.5px solid var(--bd);
+      background:var(--s1); color:var(--tx); font-size:.87rem; font-weight:700;
+      cursor:pointer; transition:border-color .12s;
+    }
+    .action-btn:hover { border-color:var(--acc); }
+    .action-btn.x-btn { background:#000; border-color:#333; color:#fff; }
+    .action-btn.x-btn:hover { border-color:#888; }
+
+    /* subs banner */
+    .subs-banner {
+      background:rgba(124,111,245,.07); border:1px solid rgba(124,111,245,.3);
+      border-radius:14px; padding:18px 20px; margin-top:16px; text-align:center;
+    }
+    .subs-banner p { font-size:.84rem; color:var(--tx3); line-height:1.7; margin-bottom:12px; }
+    .subs-link {
+      display:inline-block; background:var(--acc); color:#fff; text-decoration:none;
+      padding:9px 22px; border-radius:9px; font-size:.87rem; font-weight:700;
+      transition:opacity .15s;
+    }
+    .subs-link:hover { opacity:.85; }
+
+    .reset-btn {
+      display:block; width:100%; margin-top:14px; padding:11px;
+      border-radius:10px; border:1.5px solid var(--bd);
+      background:transparent; color:var(--tx2); font-size:.87rem;
+      cursor:pointer; transition:border-color .12s, color .12s;
+    }
+    .reset-btn:hover { border-color:var(--acc2); color:var(--acc2); }
+
+    /* disclaimer */
+    .disclaimer { font-size:.72rem; color:var(--tx2); line-height:1.7; margin-top:18px; padding-top:14px; border-top:1px solid var(--bd); }
+
+    footer { margin-top:40px; padding-top:20px; border-top:1px solid var(--bd); text-align:center; font-size:.78rem; color:var(--tx2); }
+    footer a { color:var(--acc2); text-decoration:none; }
+
+    @media(max-width:520px) { .wrapper { padding:28px 14px 60px; } .section { padding:18px 16px; } }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back" href="/">← AIアプリ工房トップへ</a>
+  <div class="badge">Plan Diagnosis</div>
+  <h1>ChatGPT <span class="grad">プラン選び診断</span></h1>
+  <p class="hero-desc">利用用途・使用頻度・月の予算を選ぶだけで、ChatGPT Free / Go / Plus / Pro のどのプランが最適かを診断します。3問・30秒で完了。</p>
+
+  <!-- フォーム -->
+  <div id="formArea">
+    <div class="section">
+      <div class="q-label">Q1. どんな用途で使いますか?</div>
+      <div class="q-sub">当てはまるものをすべて選んでください(任意)</div>
+      <div class="opt-grid" id="purposeGrid">
+        <label class="opt" data-group="purpose" data-value="text">
+          <input type="checkbox" name="purpose" value="text">
+          <span class="opt-mark"></span>文章作成・要約・翻訳
+        </label>
+        <label class="opt" data-group="purpose" data-value="code">
+          <input type="checkbox" name="purpose" value="code">
+          <span class="opt-mark"></span>コーディング・プログラミング
+        </label>
+        <label class="opt" data-group="purpose" data-value="image">
+          <input type="checkbox" name="purpose" value="image">
+          <span class="opt-mark"></span>画像生成(DALL-E)
+        </label>
+        <label class="opt" data-group="purpose" data-value="voice">
+          <input type="checkbox" name="purpose" value="voice">
+          <span class="opt-mark"></span>音声会話・リアルタイム対話
+        </label>
+        <label class="opt" data-group="purpose" data-value="search">
+          <input type="checkbox" name="purpose" value="search">
+          <span class="opt-mark"></span>調査・ウェブ検索
+        </label>
+        <label class="opt" data-group="purpose" data-value="data">
+          <input type="checkbox" name="purpose" value="data">
+          <span class="opt-mark"></span>データ分析・ファイル解析
+        </label>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="q-label">Q2. 週あたりの利用頻度は?</div>
+      <div class="q-sub">最も近いものを1つ選んでください</div>
+      <div class="opt-grid">
+        <label class="opt is-radio" data-group="freq" data-value="1">
+          <input type="radio" name="freq" value="1">
+          <span class="opt-mark"></span>週1〜2回(ライト)
+        </label>
+        <label class="opt is-radio" data-group="freq" data-value="2">
+          <input type="radio" name="freq" value="2">
+          <span class="opt-mark"></span>週3〜4回(ふつう)
+        </label>
+        <label class="opt is-radio" data-group="freq" data-value="3">
+          <input type="radio" name="freq" value="3">
+          <span class="opt-mark"></span>ほぼ毎日(ヘビー)
+        </label>
+        <label class="opt is-radio" data-group="freq" data-value="4">
+          <input type="radio" name="freq" value="4">
+          <span class="opt-mark"></span>毎日複数回(プロ級)
+        </label>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="q-label">Q3. AIに使える月の予算は?</div>
+      <div class="q-sub">1つ選んでください</div>
+      <div class="opt-grid single-col">
+        <label class="opt is-radio" data-group="budget" data-value="0">
+          <input type="radio" name="budget" value="0">
+          <span class="opt-mark"></span>無料のみ(¥0)
+        </label>
+        <label class="opt is-radio" data-group="budget" data-value="1">
+          <input type="radio" name="budget" value="1">
+          <span class="opt-mark"></span>〜¥1,500/月(Goプランに手が届く)
+        </label>
+        <label class="opt is-radio" data-group="budget" data-value="2">
+          <input type="radio" name="budget" value="2">
+          <span class="opt-mark"></span>〜¥3,500/月(Plusプランに手が届く)
+        </label>
+        <label class="opt is-radio" data-group="budget" data-value="3">
+          <input type="radio" name="budget" value="3">
+          <span class="opt-mark"></span>月3,500円以上でも問題なし
+        </label>
+      </div>
+    </div>
+
+    <button class="diag-btn" id="diagBtn" onclick="runDiagnosis()">診断する</button>
+  </div>
+
+  <!-- 結果 -->
+  <div id="result">
+    <div class="section">
+      <div class="result-header">
+        <div class="result-label">診断結果</div>
+        <div class="result-plan-name" id="rName"></div>
+        <div class="result-plan-price" id="rPrice"></div>
+        <div class="result-reason" id="rReason"></div>
+        <div class="result-note" id="rNote"></div>
+      </div>
+
+      <div class="features-title">このプランに含まれる主な機能</div>
+      <ul class="feature-list" id="rFeatures"></ul>
+
+      <div class="compare-title">プラン比較</div>
+      <div class="compare-grid" id="compareGrid"></div>
+
+      <div class="action-row">
+        <button class="action-btn x-btn" onclick="shareX()">X でシェア</button>
+        <button class="action-btn" id="copyBtn" onclick="copyResult()">結果をコピー</button>
+      </div>
+
+      <div class="subs-banner">
+        <p>ChatGPT以外のClaude・Gemini・Perplexityなども含めて<br>あなたに最適なAIサブスクを総合診断したい方へ</p>
+        <a class="subs-link" href="https://ai-subs-shindan.vercel.app/" target="_blank" rel="noopener">AIサブスク総合診断を試す</a>
+      </div>
+
+      <button class="reset-btn" onclick="resetForm()">もう一度診断する</button>
+
+      <p class="disclaimer">
+        ※ 本ツールは2026年1月時点の公開情報をもとに作成した参考診断です。プラン内容・料金はOpenAIの公式サイトで必ずご確認ください。円換算は1ドル≒150円で計算しています。医療・法律・金融に関する専門的な助言ではありません。
+      </p>
+    </div>
+  </div>
+
+  <footer>
+    <a href="/">← AIアプリ工房トップへ</a>
+  </footer>
+</div>
+
+<script>
+  const PLANS = {
+    free: {
+      name: 'ChatGPT Free',
+      price: '¥0 / 月',
+      features: [
+        'GPT-4oへの制限付きアクセス(1日あたりのメッセージ数上限あり)',
+        'ウェブ検索(ChatGPT Search)・画像生成(DALL-E)は回数制限あり',
+        '音声会話機能(基本)',
+        'ファイル・画像のアップロード(制限あり)',
+      ],
+    },
+    go: {
+      name: 'ChatGPT Go',
+      price: '¥1,200 / 月(約$8)',
+      features: [
+        'GPT-4oへのアクセス増加(Freeより多いメッセージ数)',
+        'ChatGPT Search(ウェブ検索)が毎日使える',
+        '音声会話機能',
+        '画像・ファイルのアップロード',
+        'ライト〜ふつうの頻度でコスパ重視の方に最適',
+      ],
+    },
+    plus: {
+      name: 'ChatGPT Plus',
+      price: '¥3,000 / 月(約$20)',
+      features: [
+        'GPT-4oフルアクセス(メッセージ上限が大幅に緩和)',
+        'DALL-E 3による高品質な画像生成',
+        '高度なデータ分析・Pythonコード実行・ファイル解析',
+        'ChatGPT Search(ウェブ検索)フルアクセス',
+        '音声会話機能(高度モード)',
+        '最新モデルへの優先アクセス',
+      ],
+    },
+    pro: {
+      name: 'ChatGPT Pro',
+      price: '¥30,000 / 月(約$200)',
+      features: [
+        '全モデル・全機能への無制限アクセス',
+        'o1 Proモード(最高品質の推論・複雑なタスクに最適)',
+        '最優先レスポンス処理',
+        '高度な音声会話(Advanced Voice)',
+        '大量タスクをこなすビジネス・研究用途向け',
+      ],
+    },
+  };
+
+  const REASONS = {
+    free: '選択した用途と利用頻度であれば、無料プランで十分に対応できます。まずFreeで使い始めて、制限が気になったときにGoやPlusへアップグレードする方法がコスト面でも安心です。',
+    go:   '毎日のちょっとした調査や文章作成など基本的なAI利用なら、Goプランがベストバランスです。Freeよりメッセージ数が増え、ウェブ検索も毎日使えます。月¥1,200と手頃な点も魅力です。',
+    plus: 'ほぼ毎日使い、画像生成・データ分析・コーディングなど多機能を活用するならPlusが最適です。GPT-4oをフル活用でき、最新モデルにも優先的にアクセスできます。',
+    pro:  '毎日大量に利用し、o1 Proモードなど最高品質の推論が必要なプロ・ビジネスユーザーにはProが最適です。全機能無制限で、品質と速度の両立ができます。',
+  };
+
+  let lastResult = null;
+
+  function runDiagnosis() {
+    const freqEl = document.querySelector('input[name="freq"]:checked');
+    const budgetEl = document.querySelector('input[name="budget"]:checked');
+
+    if (!freqEl || !budgetEl) {
+      alert('Q2(利用頻度)とQ3(月の予算)を選択してください。');
+      return;
+    }
+
+    const purposes = [...document.querySelectorAll('input[name="purpose"]:checked')].map(el => el.value);
+    const freq = parseInt(freqEl.value);
+    const budget = parseInt(budgetEl.value);
+
+    const needsAdvanced = purposes.includes('image') || purposes.includes('data');
+    const needsCode = purposes.includes('code');
+    const wantsSearch = purposes.includes('search');
+
+    let planKey;
+    let note = '';
+
+    if (budget === 0) {
+      planKey = 'free';
+    } else if (budget === 1) {
+      planKey = 'go';
+      if (freq >= 3 || needsAdvanced) {
+        note = '利用頻度と用途を考えると Plus(¥3,000/月) が理想的ですが、予算内の Go をおすすめします。余裕ができたら Plus へのアップグレードも検討してみてください。';
+      }
+    } else if (budget === 2) {
+      if (freq === 1 && !needsAdvanced && !needsCode && !wantsSearch) {
+        planKey = 'go';
+        note = '利用頻度が低めなので、予算を抑えて Go(¥1,200/月) でも十分です。将来的に使用頻度が増えたら Plus に切り替えるのがおすすめです。';
+      } else {
+        planKey = 'plus';
+      }
+    } else {
+      if (freq === 4 && (needsAdvanced || needsCode)) {
+        planKey = 'pro';
+      } else {
+        planKey = 'plus';
+        if (freq <= 2) {
+          note = '予算に余裕があっても、ご利用頻度であれば Plus で十分です。Pro(¥30,000/月) は毎日大量に使うビジネス用途向けです。';
+        }
+      }
+    }
+
+    lastResult = { planKey, purposes, freq, budget };
+    renderResult(planKey, note);
+  }
+
+  function renderResult(planKey, note) {
+    const plan = PLANS[planKey];
+
+    document.getElementById('rName').textContent = plan.name;
+    document.getElementById('rPrice').textContent = plan.price;
+    document.getElementById('rReason').textContent = REASONS[planKey];
+    document.getElementById('rNote').textContent = note || '';
+    document.getElementById('rNote').style.display = note ? 'block' : 'none';
+
+    document.getElementById('rFeatures').innerHTML =
+      plan.features.map(f => `<li>${f}</li>`).join('');
+
+    const keys = ['free', 'go', 'plus', 'pro'];
+    const labels = { free:'Free', go:'Go', plus:'Plus', pro:'Pro' };
+    const prices = { free:'¥0', go:'¥1,200', plus:'¥3,000', pro:'¥30,000' };
+    document.getElementById('compareGrid').innerHTML = keys.map(k =>
+      `<div class="c-card ${k === planKey ? 'c-active' : ''}">
+        <div class="c-name">${labels[k]}</div>
+        <div class="c-price">${prices[k]}/月</div>
+        ${k === planKey ? '<div class="c-tag">おすすめ</div>' : ''}
+      </div>`
+    ).join('');
+
+    document.getElementById('formArea').style.display = 'none';
+    document.getElementById('result').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function shareX() {
+    if (!lastResult) return;
+    const plan = PLANS[lastResult.planKey];
+    const freqMap = { 1:'週1〜2回', 2:'週3〜4回', 3:'ほぼ毎日', 4:'毎日複数回' };
+    const freq = freqMap[lastResult.freq];
+    const text = `ChatGPTプラン診断の結果\n利用頻度: ${freq}\n診断結果: ${plan.name}(${plan.price})\n\n#ChatGPT #AIツール #AIサブスク\nhttps://yama-ai-factory.vercel.app/apps/chatgpt-plan-shindan/`;
+    window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text), '_blank', 'noopener');
+  }
+
+  function copyResult() {
+    if (!lastResult) return;
+    const plan = PLANS[lastResult.planKey];
+    const freqMap = { 1:'週1〜2回', 2:'週3〜4回', 3:'ほぼ毎日', 4:'毎日複数回' };
+    const freq = freqMap[lastResult.freq];
+    const text = `ChatGPTプラン診断結果: ${plan.name}(${plan.price})\n利用頻度: ${freq}\nhttps://yama-ai-factory.vercel.app/apps/chatgpt-plan-shindan/`;
+
+    const btn = document.getElementById('copyBtn');
+    const orig = btn.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'コピーしました';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try { document.execCommand('copy'); } catch(e) {}
+      document.body.removeChild(ta);
+      btn.textContent = 'コピーしました';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    });
+  }
+
+  function resetForm() {
+    document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(el => { el.checked = false; });
+    document.querySelectorAll('.opt.selected').forEach(el => el.classList.remove('selected'));
+    lastResult = null;
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('formArea').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // custom option toggle
+  document.querySelectorAll('.opt').forEach(label => {
+    label.addEventListener('click', () => {
+      const input = label.querySelector('input');
+      const group = label.dataset.group;
+      const isRadio = input.type === 'radio';
+
+      if (isRadio) {
+        document.querySelectorAll(`.opt[data-group="${group}"]`).forEach(el => el.classList.remove('selected'));
+        label.classList.add('selected');
+        input.checked = true;
+      } else {
+        label.classList.toggle('selected');
+        input.checked = !input.checked;
+      }
+    });
+  });
+</script>
+</body>
+</html>
