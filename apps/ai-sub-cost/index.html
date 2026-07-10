@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIサブスク月額コスト集計ツール | 契約中のAIの月額合計をチェック | AIアプリ工房</title>
+  <meta name="description" content="ChatGPT・Claude・Gemini・Perplexityなど契約しているAIサービスをチェックするだけで月額合計と年間コストを即計算。重複している用途も自動検出して削減候補を提示。無料・登録不要。">
+  <meta property="og:title" content="AIサブスク月額コスト集計ツール | 契約中のAIの月額合計をチェック">
+  <meta property="og:description" content="チェックを入れるだけで月額合計・年間コストを即計算。重複用途も自動検出。ChatGPT・Claude・Gemini・GitHub Copilot等に対応。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/ai-sub-cost/">
+  <meta name="twitter:card" content="summary">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24; --red:#f87171;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:680px; margin:0 auto; padding:40px 20px 80px; }
+    .back { display:inline-block; font-size:.82rem; color:var(--tx2); text-decoration:none; margin-bottom:26px; transition:color .15s; }
+    .back:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,4.5vw,2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:8px; }
+    .disclaimer {
+      font-size:.75rem; color:var(--tx2); margin-bottom:28px; padding:8px 12px;
+      background:var(--s2); border-radius:8px; border-left:3px solid var(--bd);
+    }
+
+    .group { margin-bottom:20px; }
+    .group-label {
+      font-size:.72rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+      color:var(--tx2); margin-bottom:10px;
+    }
+    .service-list { display:flex; flex-direction:column; gap:8px; }
+
+    .service-item {
+      display:flex; align-items:center; gap:12px;
+      background:var(--s1); border:1px solid var(--bd); border-radius:12px;
+      padding:14px 16px; cursor:pointer; transition:border-color .15s, background .15s;
+      user-select:none;
+    }
+    .service-item:hover { border-color:rgba(124,111,245,.4); }
+    .service-item.checked { border-color:var(--acc); background:rgba(124,111,245,.06); }
+    .service-item input[type=checkbox] {
+      width:18px; height:18px; accent-color:var(--acc); flex-shrink:0; cursor:pointer;
+    }
+    .service-info { flex:1; min-width:0; }
+    .service-name { font-weight:700; font-size:.95rem; }
+    .service-sub { font-size:.75rem; color:var(--tx2); margin-top:2px; }
+    .service-price { font-weight:800; font-size:.95rem; color:var(--acc2); white-space:nowrap; flex-shrink:0; }
+
+    .custom-section {
+      background:var(--s1); border:1px solid var(--bd); border-radius:16px;
+      padding:18px; margin-bottom:20px;
+    }
+    .custom-section h3 { font-size:.88rem; font-weight:700; margin-bottom:12px; }
+    .custom-row { display:flex; gap:8px; align-items:center; }
+    .custom-row input[type=text] {
+      flex:2; min-width:0; background:var(--s2); border:1px solid var(--bd);
+      color:var(--tx); border-radius:8px; padding:9px 12px; font-size:.88rem;
+    }
+    .custom-row input[type=number] {
+      width:120px; background:var(--s2); border:1px solid var(--bd);
+      color:var(--tx); border-radius:8px; padding:9px 12px; font-size:.88rem;
+      flex-shrink:0;
+    }
+    .custom-row input:focus { outline:none; border-color:var(--acc); }
+    .add-btn {
+      background:rgba(124,111,245,.2); border:1px solid rgba(124,111,245,.4);
+      color:var(--acc2); border-radius:8px; padding:9px 14px; font-size:.85rem;
+      font-weight:700; cursor:pointer; white-space:nowrap; transition:background .15s; flex-shrink:0;
+    }
+    .add-btn:hover { background:rgba(124,111,245,.3); }
+    .custom-items { margin-top:10px; display:flex; flex-direction:column; gap:6px; }
+    .custom-tag {
+      display:flex; align-items:center; gap:8px;
+      background:rgba(124,111,245,.08); border:1px solid rgba(124,111,245,.2);
+      border-radius:8px; padding:8px 12px;
+    }
+    .custom-tag-info { flex:1; font-size:.85rem; }
+    .del-btn {
+      background:none; border:1px solid var(--bd); color:var(--tx2);
+      cursor:pointer; font-size:.78rem; padding:3px 8px; border-radius:6px;
+      transition:color .15s, border-color .15s; flex-shrink:0;
+    }
+    .del-btn:hover { color:var(--red); border-color:var(--red); }
+
+    .summary {
+      background:var(--s1); border:1px solid rgba(124,111,245,.35);
+      border-radius:16px; padding:22px 20px; margin-bottom:16px;
+    }
+    .summary-label { font-size:.8rem; color:var(--tx2); margin-bottom:6px; }
+    .total-row { display:flex; align-items:baseline; gap:10px; margin-bottom:4px; }
+    .total-amount { font-size:2.4rem; font-weight:900; color:var(--acc2); }
+    .total-unit { font-size:.95rem; color:var(--tx3); }
+    .annual-row { font-size:.88rem; color:var(--tx3); margin-bottom:16px; }
+    .annual-value { color:var(--green); font-weight:700; }
+    .detail-list { display:flex; flex-direction:column; gap:5px; margin-bottom:16px; }
+    .detail-row {
+      display:flex; justify-content:space-between; font-size:.82rem;
+      padding-bottom:5px; border-bottom:1px solid var(--bd);
+    }
+    .detail-row:last-child { border-bottom:none; padding-bottom:0; }
+    .detail-name { color:var(--tx3); }
+    .detail-price { color:var(--tx); font-weight:600; }
+    .empty-hint { font-size:.82rem; color:var(--tx2); padding:4px 0; }
+
+    .warning-list { display:flex; flex-direction:column; gap:8px; }
+    .warning {
+      background:rgba(251,191,36,.07); border:1px solid rgba(251,191,36,.3);
+      border-radius:10px; padding:12px 14px; font-size:.82rem; line-height:1.6;
+    }
+    .warning-title { font-weight:700; color:var(--yellow); margin-bottom:3px; }
+    .warning-body { color:var(--tx3); }
+
+    .actions { display:flex; flex-direction:column; gap:10px; margin-top:16px; }
+    .btn {
+      display:block; width:100%; border-radius:10px; padding:14px 20px;
+      font-size:.95rem; font-weight:700; cursor:pointer; text-align:center;
+      text-decoration:none; border:none; transition:opacity .15s, background .15s;
+    }
+    .btn:hover { opacity:.85; }
+    .btn-x { background:#000; color:#fff; border:1px solid #333; }
+    .btn-copy { background:rgba(52,211,153,.12); color:var(--green); border:1px solid rgba(52,211,153,.3); }
+    .btn-link { background:linear-gradient(135deg,var(--acc),#60a5fa); color:#fff; }
+    .copy-msg { text-align:center; font-size:.8rem; color:var(--green); margin-top:6px; min-height:1.2em; }
+
+    @media (max-width:520px) {
+      .wrapper { padding:28px 14px 60px; }
+      .total-amount { font-size:1.9rem; }
+      .custom-row { flex-wrap:wrap; }
+      .custom-row input[type=number] { width:110px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back" href="/">← AIアプリ工房 トップへ</a>
+  <div class="badge">AI Cost</div>
+  <h1>AIサブスク<br><span class="grad">月額コスト集計ツール</span></h1>
+  <p class="hero-desc">契約中のAIサービスにチェックを入れるだけで、月額合計・年間コストを即計算。重複している用途も自動で検出して削減候補を提示します。</p>
+  <div class="disclaimer">価格はすべて目安です(USD建てのサービスは1USD≒150円換算)。実際の請求額・為替レートは各サービスの公式サイトでご確認ください。</div>
+
+  <div class="group">
+    <div class="group-label">汎用チャット・文章生成</div>
+    <div class="service-list" id="list-chat"></div>
+  </div>
+  <div class="group">
+    <div class="group-label">検索・リサーチ特化</div>
+    <div class="service-list" id="list-search"></div>
+  </div>
+  <div class="group">
+    <div class="group-label">コーディング支援</div>
+    <div class="service-list" id="list-code"></div>
+  </div>
+  <div class="group">
+    <div class="group-label">画像生成</div>
+    <div class="service-list" id="list-image"></div>
+  </div>
+
+  <div class="custom-section">
+    <h3>リストにないサービスを追加</h3>
+    <div class="custom-row">
+      <input type="text" id="customName" placeholder="サービス名" maxlength="40"
+             onkeydown="if(event.key==='Enter')addCustom();">
+      <input type="number" id="customPrice" placeholder="月額(円)" min="0" max="9999999"
+             onkeydown="if(event.key==='Enter')addCustom();">
+      <button class="add-btn" onclick="addCustom()">追加</button>
+    </div>
+    <div class="custom-items" id="customItems"></div>
+  </div>
+
+  <div class="summary">
+    <div class="summary-label">月額合計(選択中のサービス)</div>
+    <div class="total-row">
+      <span class="total-amount" id="totalAmount">0</span>
+      <span class="total-unit">円/月</span>
+    </div>
+    <div class="annual-row">年間コスト: <span class="annual-value" id="annualAmount">0円</span></div>
+    <div class="detail-list" id="detailList"></div>
+    <div class="warning-list" id="warningList"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-x" onclick="shareX()">X でシェア</button>
+    <button class="btn btn-copy" onclick="doCopy()">結果をコピー</button>
+    <a class="btn btn-link" href="https://ai-subs-shindan.vercel.app/" target="_blank" rel="noopener">どのAIサブスクが自分に合う? → 診断へ</a>
+  </div>
+  <div class="copy-msg" id="copyMsg"></div>
+</div>
+
+<script>
+const SERVICES = [
+  { id:'chatgpt-go',   name:'ChatGPT Go',               price:1500,  group:'chat',   tier:'chatgpt',     uses:['chat','search'],              sub:'OpenAI - $10/月相当' },
+  { id:'chatgpt-plus', name:'ChatGPT Plus',             price:3000,  group:'chat',   tier:'chatgpt',     uses:['chat','search','image','code'], sub:'OpenAI - $20/月相当 / 画像生成・コード解析含む' },
+  { id:'chatgpt-pro',  name:'ChatGPT Pro',              price:30000, group:'chat',   tier:'chatgpt',     uses:['chat','search','image','code'], sub:'OpenAI - $200/月相当 / o1 Pro・高優先アクセス' },
+  { id:'claude-pro',   name:'Claude Pro',               price:3000,  group:'chat',   tier:'claude',      uses:['chat','code'],                  sub:'Anthropic - $20/月相当' },
+  { id:'claude-max',   name:'Claude Max (5x)',          price:15000, group:'chat',   tier:'claude',      uses:['chat','code'],                  sub:'Anthropic - $100/月相当 / 5倍使用量枠' },
+  { id:'gemini-adv',   name:'Gemini Advanced',          price:3000,  group:'chat',   tier:'gemini',      uses:['chat','search','image'],        sub:'Google One AI Premium - Workspace連携' },
+  { id:'copilot-pro',  name:'Microsoft Copilot Pro',   price:3200,  group:'chat',   tier:'mscopilot',   uses:['chat','image'],                  sub:'$22/月相当 / Officeアプリ連携・Designer含む' },
+  { id:'perplexity',   name:'Perplexity Pro',           price:3000,  group:'search', tier:'perplexity',  uses:['search'],                        sub:'$20/月相当 / リアルタイム検索・引用付き回答' },
+  { id:'gh-copilot',   name:'GitHub Copilot Individual',price:1500,  group:'code',   tier:'ghcopilot',   uses:['code'],                          sub:'$10/月相当 / IDE統合コード補完' },
+  { id:'midjourney-b', name:'Midjourney Basic',         price:1500,  group:'image',  tier:'midjourney',  uses:['image'],                         sub:'$10/月相当 / 200枚/月' },
+  { id:'midjourney-s', name:'Midjourney Standard',      price:3600,  group:'image',  tier:'midjourney',  uses:['image'],                         sub:'$24/月相当 / 無制限(低速)生成' },
+];
+
+let customItems = [];
+let customIdSeq = 0;
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function buildUI() {
+  ['chat','search','code','image'].forEach(g => {
+    const el = document.getElementById('list-' + g);
+    SERVICES.filter(s => s.group === g).forEach(s => {
+      const label = document.createElement('label');
+      label.className = 'service-item';
+      label.id = 'item-' + s.id;
+      label.innerHTML =
+        '<input type="checkbox" id="cb-' + s.id + '" onchange="onToggle(\'' + s.id + '\')">' +
+        '<div class="service-info">' +
+          '<div class="service-name">' + esc(s.name) + '</div>' +
+          '<div class="service-sub">' + esc(s.sub) + '</div>' +
+        '</div>' +
+        '<div class="service-price">¥' + s.price.toLocaleString() + '/月</div>';
+      el.appendChild(label);
+    });
+  });
+}
+
+function onToggle(id) {
+  const cb = document.getElementById('cb-' + id);
+  document.getElementById('item-' + id).classList.toggle('checked', cb.checked);
+  update();
+}
+
+function addCustom() {
+  const nameEl = document.getElementById('customName');
+  const priceEl = document.getElementById('customPrice');
+  const name = nameEl.value.trim();
+  const price = parseInt(priceEl.value, 10);
+  if (!name || isNaN(price) || price < 0) return;
+  customItems.push({ id: 'custom-' + (++customIdSeq), name, price });
+  nameEl.value = '';
+  priceEl.value = '';
+  renderCustomItems();
+  update();
+}
+
+function removeCustom(cid) {
+  customItems = customItems.filter(c => c.id !== cid);
+  renderCustomItems();
+  update();
+}
+
+function renderCustomItems() {
+  document.getElementById('customItems').innerHTML = customItems.map(c =>
+    '<div class="custom-tag">' +
+      '<div class="custom-tag-info">' + esc(c.name) + ' — ¥' + c.price.toLocaleString() + '/月</div>' +
+      '<button class="del-btn" onclick="removeCustom(\'' + c.id + '\')">削除</button>' +
+    '</div>'
+  ).join('');
+}
+
+function getSelected() {
+  return SERVICES.filter(s => {
+    const cb = document.getElementById('cb-' + s.id);
+    return cb && cb.checked;
+  });
+}
+
+function update() {
+  const selected = getSelected();
+  const listTotal = selected.reduce((a, s) => a + s.price, 0);
+  const customTotal = customItems.reduce((a, c) => a + c.price, 0);
+  const total = listTotal + customTotal;
+  const annual = total * 12;
+
+  document.getElementById('totalAmount').textContent = total.toLocaleString();
+  document.getElementById('annualAmount').textContent = annual.toLocaleString() + '円';
+
+  const all = [...selected, ...customItems];
+  const detailEl = document.getElementById('detailList');
+  if (all.length === 0) {
+    detailEl.innerHTML = '<div class="empty-hint">サービスを選択するとここに内訳が表示されます</div>';
+  } else {
+    detailEl.innerHTML = all.map(s =>
+      '<div class="detail-row">' +
+        '<span class="detail-name">' + esc(s.name) + '</span>' +
+        '<span class="detail-price">¥' + s.price.toLocaleString() + '</span>' +
+      '</div>'
+    ).join('');
+  }
+
+  document.getElementById('warningList').innerHTML = detectOverlaps(selected).map(w =>
+    '<div class="warning">' +
+      '<div class="warning-title">削減候補: ' + esc(w.title) + '</div>' +
+      '<div class="warning-body">' + esc(w.body) + '</div>' +
+    '</div>'
+  ).join('');
+}
+
+function detectOverlaps(selected) {
+  const warns = [];
+
+  // 同一サービスの複数プラン
+  const byTier = {};
+  selected.forEach(s => { (byTier[s.tier] = byTier[s.tier] || []).push(s); });
+  Object.values(byTier).forEach(svcs => {
+    if (svcs.length < 2) return;
+    const names = svcs.map(s => s.name).join(' と ');
+    const cheaper = svcs.slice(0, -1).reduce((a, s) => a + s.price, 0);
+    warns.push({
+      title: svcs[0].name.replace(/ (Go|Plus|Pro|Basic|Standard|Max.*)$/, '') + ' 複数プランの重複',
+      body: names + ' を同時に選択しています。上位プランに統一すると月' + cheaper.toLocaleString() + '円の削減余地があります。'
+    });
+  });
+
+  // 汎用チャット3サービス以上
+  const chatSvcs = selected.filter(s => s.uses.includes('chat'));
+  if (chatSvcs.length >= 3) {
+    const cheapestPrice = Math.min(...chatSvcs.map(s => s.price));
+    const savings = chatSvcs.reduce((a, s) => a + s.price, 0) - cheapestPrice;
+    warns.push({
+      title: '汎用チャット・文章生成ツールの重複',
+      body: chatSvcs.map(s => s.name).join(' / ') + ' の' + chatSvcs.length + 'サービスを契約中。1つに絞れると月' + savings.toLocaleString() + '円以上の削減余地があります。'
+    });
+  }
+
+  // ChatGPT Plus/Pro(画像生成含む) + Midjourney
+  const chatgptWithImage = selected.find(s => s.tier === 'chatgpt' && s.uses.includes('image'));
+  const midjourney = selected.find(s => s.tier === 'midjourney');
+  if (chatgptWithImage && midjourney) {
+    warns.push({
+      title: '画像生成用途の重複の可能性',
+      body: chatgptWithImage.name + ' はDALL-E 3による画像生成機能を含んでいます。' + midjourney.name + ' との用途が一部重複する場合があります。'
+    });
+  }
+
+  // Perplexity + 他の検索対応サービス
+  const perp = selected.find(s => s.id === 'perplexity');
+  if (perp) {
+    const othersSearch = selected.filter(s => s.id !== 'perplexity' && s.uses.includes('search'));
+    if (othersSearch.length >= 1) {
+      warns.push({
+        title: 'Web検索用途の重複の可能性',
+        body: othersSearch.map(s => s.name).join(' / ') + ' もWeb検索機能を備えています。Perplexity Pro との用途が一部重複する場合があります。'
+      });
+    }
+  }
+
+  return warns;
+}
+
+function buildShareText() {
+  const selected = getSelected();
+  const total = selected.reduce((a, s) => a + s.price, 0) + customItems.reduce((a, c) => a + c.price, 0);
+  const count = selected.length + customItems.length;
+  const url = 'https://yama-ai-factory.vercel.app/apps/ai-sub-cost/';
+  if (count === 0) {
+    return 'AIサブスク月額コスト集計ツールで自分のAI課金を棚卸ししてみました。\n#AIアプリ工房 #AIサブスク\n' + url;
+  }
+  const names = [...selected.map(s => s.name), ...customItems.map(c => c.name)].join(' / ');
+  const annual = total * 12;
+  return 'AIサブスク月額合計: ' + total.toLocaleString() + '円/月(年間' + annual.toLocaleString() + '円)\n' +
+    '契約中(' + count + 'サービス): ' + names + '\n' +
+    '#AIアプリ工房 #AIサブスク\n' + url;
+}
+
+function shareX() {
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(buildShareText()), '_blank', 'noopener');
+}
+
+function doCopy() {
+  const text = buildShareText();
+  const msg = document.getElementById('copyMsg');
+  function done() { msg.textContent = 'コピーしました'; setTimeout(() => { msg.textContent = ''; }, 2500); }
+  function fallback() {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch(e) { msg.textContent = 'コピーできませんでした'; }
+    document.body.removeChild(ta);
+  }
+  navigator.clipboard.writeText(text).then(done).catch(fallback);
+}
+
+buildUI();
+update();
+</script>
+</body>
+</html>
