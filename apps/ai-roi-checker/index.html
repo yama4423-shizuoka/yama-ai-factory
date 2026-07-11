@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI費用対効果チェッカー | AIサブスクの元が取れているか即チェック | AIアプリ工房</title>
+  <meta name="description" content="AIサブスクの月額合計・1日の利用時間・時給を入力するだけで「AI利用1時間あたりのコスト」と「月に何時間の作業削減で元が取れるか」を即計算。無料・登録不要。">
+  <meta property="og:title" content="AI費用対効果チェッカー | AIサブスクの元が取れているか即チェック">
+  <meta property="og:description" content="月額・1日利用時間・時給を入れるだけ。AI利用コスト(円/時間)と損益分岐点を即計算してXでシェアできます。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/ai-roi-checker/">
+  <meta name="twitter:card" content="summary">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24; --red:#f87171;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back { display:inline-block; font-size:.82rem; color:var(--tx2); text-decoration:none; margin-bottom:26px; transition:color .15s; }
+    .back:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,4.5vw,2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:8px; }
+    .disclaimer {
+      font-size:.75rem; color:var(--tx2); margin-bottom:28px; padding:8px 12px;
+      background:var(--s2); border-radius:8px; border-left:3px solid var(--bd);
+    }
+
+    .input-card {
+      background:var(--s1); border:1px solid var(--bd); border-radius:16px;
+      padding:22px 20px; margin-bottom:20px;
+    }
+    .field { margin-bottom:18px; }
+    .field:last-child { margin-bottom:0; }
+    .field-label {
+      display:block; font-size:.8rem; font-weight:700; color:var(--tx2);
+      margin-bottom:8px; letter-spacing:.04em;
+    }
+    .input-row { display:flex; align-items:center; gap:10px; }
+    .input-row input[type=number] {
+      flex:1; background:var(--s2); border:1px solid var(--bd);
+      color:var(--tx); border-radius:10px; padding:12px 14px;
+      font-size:1.1rem; font-weight:700; transition:border-color .15s;
+    }
+    .input-row input[type=number]:focus { outline:none; border-color:var(--acc); }
+    .input-unit { font-size:.88rem; color:var(--tx2); white-space:nowrap; }
+    .field-hint { font-size:.75rem; color:var(--tx2); margin-top:6px; line-height:1.5; }
+    .field-hint a { color:var(--acc2); text-decoration:none; }
+    .field-hint a:hover { text-decoration:underline; }
+
+    .result-card {
+      background:var(--s1); border:1px solid rgba(124,111,245,.35);
+      border-radius:16px; padding:22px 20px; margin-bottom:16px;
+    }
+
+    .verdict-box {
+      text-align:center; padding:16px 12px; border-radius:12px;
+      margin-bottom:20px; border:1px solid transparent;
+    }
+    .verdict-box.great { background:rgba(52,211,153,.08); border-color:rgba(52,211,153,.3); }
+    .verdict-box.good  { background:rgba(96,165,250,.08); border-color:rgba(96,165,250,.3); }
+    .verdict-box.ok    { background:rgba(251,191,36,.07); border-color:rgba(251,191,36,.3); }
+    .verdict-box.warn  { background:rgba(248,113,113,.08); border-color:rgba(248,113,113,.3); }
+    .verdict-label {
+      font-size:.72rem; font-weight:800; letter-spacing:.1em;
+      text-transform:uppercase; margin-bottom:6px;
+    }
+    .verdict-box.great .verdict-label { color:var(--green); }
+    .verdict-box.good  .verdict-label { color:var(--blue); }
+    .verdict-box.ok    .verdict-label { color:var(--yellow); }
+    .verdict-box.warn  .verdict-label { color:var(--red); }
+    .verdict-text { font-size:.95rem; font-weight:700; color:var(--tx); line-height:1.5; }
+
+    .metrics { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+    .metric {
+      background:var(--s2); border:1px solid var(--bd); border-radius:12px;
+      padding:14px;
+    }
+    .metric-label { font-size:.7rem; color:var(--tx2); margin-bottom:6px; line-height:1.4; }
+    .metric-value { font-size:1.5rem; font-weight:900; color:var(--acc2); line-height:1; }
+    .metric-unit { font-size:.72rem; color:var(--tx3); margin-top:3px; }
+
+    .bar-section { margin-bottom:4px; }
+    .bar-header { font-size:.75rem; color:var(--tx2); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; }
+    .bar-header-label { font-weight:700; }
+    .bar-pct { font-weight:800; }
+    .bar-track {
+      background:var(--s2); border-radius:999px; height:10px;
+      overflow:hidden; border:1px solid var(--bd);
+    }
+    .bar-fill { height:100%; border-radius:999px; transition:width .5s ease; min-width:2px; }
+    .bar-fill.great { background:var(--green); }
+    .bar-fill.good  { background:var(--blue); }
+    .bar-fill.ok    { background:var(--yellow); }
+    .bar-fill.warn  { background:var(--red); }
+    .bar-note { font-size:.73rem; color:var(--tx2); margin-top:8px; line-height:1.6; }
+
+    .actions { display:flex; flex-direction:column; gap:10px; }
+    .btn {
+      display:block; width:100%; border-radius:10px; padding:13px 20px;
+      font-size:.95rem; font-weight:700; cursor:pointer; text-align:center;
+      text-decoration:none; border:none; transition:opacity .15s;
+    }
+    .btn:hover { opacity:.85; }
+    .btn-x    { background:#000; color:#fff; border:1px solid #333; }
+    .btn-copy { background:rgba(52,211,153,.12); color:var(--green); border:1px solid rgba(52,211,153,.3); }
+    .btn-link { background:rgba(124,111,245,.18); color:var(--acc2); border:1px solid rgba(124,111,245,.35); }
+    .copy-msg { text-align:center; font-size:.8rem; color:var(--green); margin-top:6px; min-height:1.2em; }
+
+    @media (max-width:520px) {
+      .wrapper { padding:28px 14px 60px; }
+      .metric-value { font-size:1.3rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back" href="/">← AIアプリ工房 トップへ</a>
+  <div class="badge">AI ROI</div>
+  <h1>AI費用対効果<br><span class="grad">チェッカー</span></h1>
+  <p class="hero-desc">AIサブスクの月額合計・1日の利用時間・あなたの時給を入力すると、「AI利用1時間あたりのコスト」と「月に何時間の作業削減で元が取れるか」を即計算します。</p>
+  <div class="disclaimer">計算結果はあくまで目安です。実際の費用対効果は利用内容・用途によって異なります。プランの解約・変更判断には各サービスの公式情報もご参照ください。</div>
+
+  <div class="input-card">
+    <div class="field">
+      <label class="field-label" for="monthlyFee">AIサブスク月額合計</label>
+      <div class="input-row">
+        <input type="number" id="monthlyFee" value="3000" min="0" max="9999999" step="100"
+               oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+        <span class="input-unit">円/月</span>
+      </div>
+      <p class="field-hint">複数サービスを合算した月額。合計が分からない方は<a href="/apps/ai-sub-cost/">AIサブスク集計ツール</a>をご利用ください。</p>
+    </div>
+    <div class="field">
+      <label class="field-label" for="dailyMinutes">1日の平均AI利用時間</label>
+      <div class="input-row">
+        <input type="number" id="dailyMinutes" value="30" min="1" max="720" step="5"
+               oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+        <span class="input-unit">分/日</span>
+      </div>
+      <p class="field-hint">チャット・コード生成・画像生成・翻訳など、AIに触れている1日の総時間の目安</p>
+    </div>
+    <div class="field">
+      <label class="field-label" for="hourlyRate">あなたの時給目安</label>
+      <div class="input-row">
+        <input type="number" id="hourlyRate" value="1500" min="1" max="99999" step="100"
+               oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+        <span class="input-unit">円/時間</span>
+      </div>
+      <p class="field-hint">会社員なら年収÷2080が目安。フリーランスなら実質時給。損益分岐点の算出に使います。</p>
+    </div>
+  </div>
+
+  <div class="result-card" id="resultCard">
+    <div class="verdict-box" id="verdictBox">
+      <div class="verdict-label" id="verdictLabel"></div>
+      <div class="verdict-text" id="verdictText"></div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-label">月間AI利用時間</div>
+        <div class="metric-value" id="metMonthlyHours">—</div>
+        <div class="metric-unit">時間/月</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">AI利用コスト</div>
+        <div class="metric-value" id="metCostPerHour">—</div>
+        <div class="metric-unit">円/時間</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">損益分岐点</div>
+        <div class="metric-value" id="metBreakeven">—</div>
+        <div class="metric-unit">時間/月の作業削減</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">1日あたり換算</div>
+        <div class="metric-value" id="metBreakevenDaily">—</div>
+        <div class="metric-unit">分/日の効率化で元取れ</div>
+      </div>
+    </div>
+
+    <div class="bar-section">
+      <div class="bar-header">
+        <span class="bar-header-label">効率化余裕度</span>
+        <span class="bar-pct" id="barPct">—</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" id="barFill" style="width:0%"></div>
+      </div>
+      <div class="bar-note" id="barNote"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-x" onclick="shareX()">X でシェア</button>
+    <button class="btn btn-copy" onclick="doCopy()">結果をコピー</button>
+    <a class="btn btn-link" href="/apps/ai-sub-cost/">月額合計を集計する → AIサブスク集計ツール</a>
+  </div>
+  <div class="copy-msg" id="copyMsg"></div>
+</div>
+
+<script>
+var lastResult = null;
+
+function calculate() {
+  var fee  = parseFloat(document.getElementById('monthlyFee').value) || 0;
+  var mins = parseFloat(document.getElementById('dailyMinutes').value) || 0;
+  var rate = parseFloat(document.getElementById('hourlyRate').value) || 1;
+
+  if (fee <= 0 || mins <= 0 || rate <= 0) {
+    lastResult = null;
+    return;
+  }
+
+  var monthlyHours   = mins * 30 / 60;           // 月間利用時間(時間)
+  var costPerHour    = fee / monthlyHours;        // AI利用コスト(円/時間)
+  var breakevenHours = fee / rate;                // 損益分岐点(時間/月)
+  var breakevenMins  = breakevenHours * 60 / 30; // 1日あたり換算(分/日)
+
+  // ratio = 損益分岐点 / 月間利用時間 (小さいほど元が取りやすい)
+  var ratio = breakevenHours / monthlyHours;
+
+  var verdictClass, verdictLabel, verdictText, barClass;
+
+  if (ratio < 0.2) {
+    verdictClass = 'great';
+    verdictLabel = '費用対効果バツグン';
+    verdictText  = 'AI利用時間の2割未満の作業削減で元が取れます。AIを積極的に使いこなせています。';
+    barClass = 'great';
+  } else if (ratio < 0.5) {
+    verdictClass = 'good';
+    verdictLabel = '費用対効果良好';
+    verdictText  = '利用時間の半分以下の作業削減で元が取れる水準です。引き続き活用を続けましょう。';
+    barClass = 'good';
+  } else if (ratio < 1.0) {
+    verdictClass = 'ok';
+    verdictLabel = '元は取れる水準';
+    verdictText  = '利用時間の多くを効率化に活かせれば元が取れます。もう少し使い方を工夫すると余裕が生まれます。';
+    barClass = 'ok';
+  } else {
+    verdictClass = 'warn';
+    verdictLabel = '利用頻度・プランを見直し推奨';
+    verdictText  = '現在の利用頻度では元を取るのが難しい状態です。AIをより頻繁に使うか、プランの見直しを検討しましょう。';
+    barClass = 'warn';
+  }
+
+  var fillPct = Math.max(0, Math.round((1 - ratio) * 100));
+  var barPctText = ratio < 1 ? '余裕度 ' + fillPct + '%' : '未達(要見直し)';
+  var barNoteText = '月間利用 ' + monthlyHours.toFixed(1) + '時間 に対して損益分岐点は ' +
+    breakevenHours.toFixed(1) + '時間/月 の作業削減(= 1日 ' + breakevenMins.toFixed(0) + '分 の効率化)';
+
+  var vb = document.getElementById('verdictBox');
+  vb.className = 'verdict-box ' + verdictClass;
+  document.getElementById('verdictLabel').textContent = verdictLabel;
+  document.getElementById('verdictText').textContent  = verdictText;
+
+  document.getElementById('metMonthlyHours').textContent  = monthlyHours.toFixed(1);
+  document.getElementById('metCostPerHour').textContent   = Math.round(costPerHour).toLocaleString();
+  document.getElementById('metBreakeven').textContent     = breakevenHours.toFixed(1);
+  document.getElementById('metBreakevenDaily').textContent = breakevenMins.toFixed(0);
+
+  var fill = document.getElementById('barFill');
+  fill.className   = 'bar-fill ' + barClass;
+  fill.style.width = fillPct + '%';
+  document.getElementById('barPct').textContent  = barPctText;
+  document.getElementById('barNote').textContent = barNoteText;
+
+  lastResult = {
+    fee: fee,
+    monthlyHours: monthlyHours,
+    costPerHour: costPerHour,
+    breakevenHours: breakevenHours,
+    breakevenMins: breakevenMins,
+    verdictLabel: verdictLabel
+  };
+}
+
+function buildShareText() {
+  var url = 'https://yama-ai-factory.vercel.app/apps/ai-roi-checker/';
+  if (!lastResult) {
+    return 'AI費用対効果チェッカーで自分のAI投資効率をチェックしました。\n#AIアプリ工房 #AIサブスク\n' + url;
+  }
+  var r = lastResult;
+  return [
+    'AI費用対効果チェッカーで計算しました。',
+    'AIサブスク: 月' + r.fee.toLocaleString() + '円 / 月間' + r.monthlyHours.toFixed(1) + '時間利用',
+    'AI利用コスト: ' + Math.round(r.costPerHour).toLocaleString() + '円/時間',
+    '月' + r.breakevenHours.toFixed(1) + '時間(' + r.breakevenMins.toFixed(0) + '分/日)の作業削減で元が取れます',
+    '判定: ' + r.verdictLabel,
+    '#AIアプリ工房 #AIサブスク',
+    url
+  ].join('\n');
+}
+
+function shareX() {
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(buildShareText()), '_blank', 'noopener');
+}
+
+function doCopy() {
+  var text = buildShareText();
+  var msg = document.getElementById('copyMsg');
+  function done() { msg.textContent = 'コピーしました'; setTimeout(function() { msg.textContent = ''; }, 2500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); } catch(e) { msg.textContent = 'コピーできませんでした'; }
+    document.body.removeChild(ta);
+  }
+  navigator.clipboard.writeText(text).then(done).catch(fallback);
+}
+
+calculate();
+</script>
+</body>
+</html>
