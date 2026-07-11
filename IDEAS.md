@@ -58,6 +58,7 @@
 - コピーボタンを実装する場合は `navigator.clipboard.writeText(text).then(done).catch(fallback)` の形式を使い、fallback(textareaフォールバック)を必ず用意すること(同一バグが5件で発見・修正された実績による)
 - 数値・時刻 input がある計算系アプリには `onkeydown="if(event.key==='Enter')calculate();"` を付けること(後追い修正が4件発生した実績による)
 - シェアテキストには計算・診断の主要結果(数値・レベル・判定ラベル等)を含めること。アプリ名だけの定型文にならないよう、ユーザーの入力値・判定結果を埋め込む(シェアテキスト改善のauto-improveが1週間で5件連続発生した実績による)
+- XシェアURLは必ず `https://x.com/intent/tweet` を使用すること(`https://twitter.com/intent/tweet` は使用禁止)。twitter.comを誤使用したauto-improve修正がプロンプト文字数カウンター(2026-06-29)・ChatGPT診断(2026-07-10)の2件で発生した実績による
 - 計算系アプリはスクリプト末尾で `calculate()` を呼び出し、ページロード時に初期値で自動計算してゼロクリックで結果が表示される状態にすること(auto-improve による後追い修正が複数件発生した実績による)
 
 ## 禁止事項
