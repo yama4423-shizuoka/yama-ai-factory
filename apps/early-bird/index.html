@@ -115,12 +115,12 @@
       <div>
         <label for="currentTime">現在の起床時刻</label>
         <input type="time" id="currentTime" value="07:00"
-          onkeydown="if(event.key==='Enter')calculate();">
+          oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
       </div>
       <div>
         <label for="targetTime">目標起床時刻</label>
         <input type="time" id="targetTime" value="05:30"
-          onkeydown="if(event.key==='Enter')calculate();">
+          oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
       </div>
     </div>
     <div class="error" id="errorMsg">目標起床時刻は現在の起床時刻より早い時刻を入力してください。</div>
