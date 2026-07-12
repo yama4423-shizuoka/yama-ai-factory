@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>夏休み旅費概算ツール | 旅行の総費用をさっと試算 | AIアプリ工房</title>
+  <meta name="description" content="旅行先タイプ(国内近場/国内遠方/海外)・人数・泊数を入力するだけで交通費・宿泊費・食費・現地活動費の目安合計を試算。夏休みの旅行計画に。無料・登録不要。">
+  <meta property="og:title" content="夏休み旅費概算ツール | 旅行の総費用をさっと試算">
+  <meta property="og:description" content="旅行先タイプ・人数・泊数を選ぶだけで交通費・宿泊費・食費・活動費の目安を即計算。夏休みの旅行計画にどうぞ。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/summer-travel/">
+  <meta name="twitter:card" content="summary">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24; --red:#f87171; --orange:#fb923c;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back { display:inline-block; font-size:.82rem; color:var(--tx2); text-decoration:none; margin-bottom:26px; transition:color .15s; }
+    .back:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,4.5vw,2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:8px; }
+    .disclaimer {
+      font-size:.75rem; color:var(--tx2); margin-bottom:28px; padding:8px 12px;
+      background:var(--s2); border-radius:8px; border-left:3px solid var(--bd);
+    }
+
+    .input-card {
+      background:var(--s1); border:1px solid var(--bd); border-radius:16px;
+      padding:22px 20px; margin-bottom:20px;
+    }
+    .field { margin-bottom:20px; }
+    .field:last-child { margin-bottom:0; }
+    .field-label {
+      display:block; font-size:.8rem; font-weight:700; color:var(--tx2);
+      margin-bottom:10px; letter-spacing:.04em;
+    }
+
+    .dest-chips { display:flex; flex-wrap:wrap; gap:8px; }
+    .dest-chip input[type=radio] { display:none; }
+    .dest-chip label {
+      display:block; cursor:pointer; padding:10px 16px; border-radius:10px;
+      border:1px solid var(--bd); background:var(--s2); font-size:.88rem; font-weight:700;
+      color:var(--tx3); transition:all .15s;
+    }
+    .dest-chip input[type=radio]:checked + label {
+      background:rgba(124,111,245,.18); border-color:var(--acc); color:var(--acc2);
+    }
+    .dest-chip label:hover { border-color:var(--acc); }
+    .field-hint { font-size:.75rem; color:var(--tx2); margin-top:8px; line-height:1.6; }
+
+    .input-row { display:flex; align-items:center; gap:10px; }
+    .input-row input[type=number] {
+      flex:1; background:var(--s2); border:1px solid var(--bd);
+      color:var(--tx); border-radius:10px; padding:12px 14px;
+      font-size:1.1rem; font-weight:700; transition:border-color .15s;
+    }
+    .input-row input[type=number]:focus { outline:none; border-color:var(--acc); }
+    .input-unit { font-size:.88rem; color:var(--tx2); white-space:nowrap; }
+
+    .result-card {
+      background:var(--s1); border:1px solid rgba(124,111,245,.35);
+      border-radius:16px; padding:22px 20px; margin-bottom:16px;
+    }
+    .total-box {
+      text-align:center; padding:18px 12px; border-radius:12px; margin-bottom:20px;
+      background:rgba(124,111,245,.08); border:1px solid rgba(124,111,245,.3);
+    }
+    .total-label { font-size:.72rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--acc2); margin-bottom:6px; }
+    .total-value { font-size:2.2rem; font-weight:900; color:var(--acc2); line-height:1; }
+    .total-unit { font-size:.8rem; color:var(--tx3); margin-top:4px; }
+    .total-sub { font-size:.78rem; color:var(--tx2); margin-top:8px; }
+
+    .breakdown-title { font-size:.75rem; font-weight:800; color:var(--tx2); margin-bottom:10px; letter-spacing:.06em; text-transform:uppercase; }
+    .breakdown-row {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:9px 0; border-bottom:1px solid var(--bd);
+    }
+    .breakdown-row:last-child { border-bottom:none; margin-bottom:16px; }
+    .breakdown-name { font-size:.88rem; color:var(--tx); }
+    .breakdown-detail { font-size:.72rem; color:var(--tx2); margin-top:2px; }
+    .breakdown-amt { font-size:.95rem; font-weight:800; color:var(--acc2); white-space:nowrap; margin-left:12px; }
+
+    .bar-item { margin-bottom:10px; }
+    .bar-header { font-size:.75rem; color:var(--tx2); margin-bottom:5px; display:flex; justify-content:space-between; }
+    .bar-track { background:var(--s2); border-radius:999px; height:8px; overflow:hidden; border:1px solid var(--bd); }
+    .bar-fill { height:100%; border-radius:999px; transition:width .5s ease; min-width:2px; }
+    .c-transport { background:var(--blue); }
+    .c-hotel     { background:var(--acc2); }
+    .c-food      { background:var(--green); }
+    .c-activity  { background:var(--yellow); }
+    .c-souvenir  { background:var(--orange); }
+
+    .actions { display:flex; flex-direction:column; gap:10px; }
+    .btn {
+      display:block; width:100%; border-radius:10px; padding:13px 20px;
+      font-size:.95rem; font-weight:700; cursor:pointer; text-align:center;
+      text-decoration:none; border:none; transition:opacity .15s;
+    }
+    .btn:hover { opacity:.85; }
+    .btn-x    { background:#000; color:#fff; border:1px solid #333; }
+    .btn-copy { background:rgba(52,211,153,.12); color:var(--green); border:1px solid rgba(52,211,153,.3); }
+    .copy-msg { text-align:center; font-size:.8rem; color:var(--green); margin-top:6px; min-height:1.2em; }
+
+    @media (max-width:520px) {
+      .wrapper { padding:28px 14px 60px; }
+      .total-value { font-size:1.8rem; }
+      .dest-chip label { padding:8px 12px; font-size:.82rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back" href="/">← AIアプリ工房 トップへ</a>
+  <div class="badge">Travel Cost</div>
+  <h1>夏休み<br><span class="grad">旅費概算ツール</span></h1>
+  <p class="hero-desc">旅行先のタイプ・人数・泊数を選ぶだけで、交通費・宿泊費・食費・現地活動費・おみやげ代の目安合計をさっと試算できます。夏休みの旅行計画にご活用ください。</p>
+  <div class="disclaimer">計算結果はあくまで一般的な相場に基づく目安です。実際の費用はシーズン・宿泊先・交通手段・為替レートによって大きく異なります。予約・購入前に最新情報をご確認ください。</div>
+
+  <div class="input-card">
+    <div class="field">
+      <span class="field-label">旅行先タイプ</span>
+      <div class="dest-chips">
+        <div class="dest-chip">
+          <input type="radio" name="dest" id="dest0" value="0" checked onchange="calculate()">
+          <label for="dest0">国内 近場</label>
+        </div>
+        <div class="dest-chip">
+          <input type="radio" name="dest" id="dest1" value="1" onchange="calculate()">
+          <label for="dest1">国内 遠方</label>
+        </div>
+        <div class="dest-chip">
+          <input type="radio" name="dest" id="dest2" value="2" onchange="calculate()">
+          <label for="dest2">海外(近隣アジア)</label>
+        </div>
+      </div>
+      <p class="field-hint" id="destHint"></p>
+    </div>
+    <div class="field">
+      <label class="field-label" for="people">人数</label>
+      <div class="input-row">
+        <input type="number" id="people" value="2" min="1" max="20" step="1"
+               oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+        <span class="input-unit">人</span>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label" for="nights">泊数</label>
+      <div class="input-row">
+        <input type="number" id="nights" value="2" min="1" max="30" step="1"
+               oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+        <span class="input-unit">泊</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="result-card">
+    <div class="total-box">
+      <div class="total-label">旅費概算 合計</div>
+      <div class="total-value" id="totalValue">—</div>
+      <div class="total-unit">円(税込目安)</div>
+      <div class="total-sub" id="totalSub"></div>
+    </div>
+
+    <div class="breakdown-title">内訳</div>
+    <div class="breakdown-row">
+      <div>
+        <div class="breakdown-name">交通費</div>
+        <div class="breakdown-detail" id="transportDetail"></div>
+      </div>
+      <div class="breakdown-amt" id="transportAmt">—</div>
+    </div>
+    <div class="breakdown-row">
+      <div>
+        <div class="breakdown-name">宿泊費</div>
+        <div class="breakdown-detail" id="hotelDetail"></div>
+      </div>
+      <div class="breakdown-amt" id="hotelAmt">—</div>
+    </div>
+    <div class="breakdown-row">
+      <div>
+        <div class="breakdown-name">食費</div>
+        <div class="breakdown-detail" id="foodDetail"></div>
+      </div>
+      <div class="breakdown-amt" id="foodAmt">—</div>
+    </div>
+    <div class="breakdown-row">
+      <div>
+        <div class="breakdown-name">現地活動費</div>
+        <div class="breakdown-detail" id="activityDetail"></div>
+      </div>
+      <div class="breakdown-amt" id="activityAmt">—</div>
+    </div>
+    <div class="breakdown-row">
+      <div>
+        <div class="breakdown-name">おみやげ代</div>
+        <div class="breakdown-detail" id="souvenirDetail"></div>
+      </div>
+      <div class="breakdown-amt" id="souvenirAmt">—</div>
+    </div>
+
+    <div id="barSection"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-x" onclick="shareX()">X でシェア</button>
+    <button class="btn btn-copy" onclick="doCopy()">結果をコピー</button>
+  </div>
+  <div class="copy-msg" id="copyMsg"></div>
+</div>
+
+<script>
+var DEST_HINTS = [
+  '近場: 日帰り〜数泊の温泉・観光地など。交通費目安: 往復5,000円/人(在来線・高速バス等)',
+  '遠方: 新幹線・飛行機が必要な北海道・沖縄・九州など。交通費目安: 往復35,000円/人',
+  '海外: 韓国・台湾・東南アジアなど近隣アジア。往復航空券目安: 65,000円/人'
+];
+
+var DEST_PARAMS = [
+  { name:'国内近場', transport:5000,  hotel:9000,  food:2500, activity:2000, souvenir:1500 },
+  { name:'国内遠方', transport:35000, hotel:12000, food:3000, activity:3500, souvenir:3000 },
+  { name:'海外(近隣アジア)', transport:65000, hotel:10000, food:4000, activity:5000, souvenir:5000 }
+];
+
+var BAR_KEYS   = ['transport','hotel','food','activity','souvenir'];
+var BAR_LABELS = ['交通費','宿泊費','食費','現地活動費','おみやげ'];
+var BAR_CLASS  = ['c-transport','c-hotel','c-food','c-activity','c-souvenir'];
+
+var lastResult = null;
+
+function getDestIdx() {
+  var radios = document.querySelectorAll('input[name="dest"]');
+  for (var i = 0; i < radios.length; i++) {
+    if (radios[i].checked) return parseInt(radios[i].value);
+  }
+  return 0;
+}
+
+function fmt(n) { return n.toLocaleString() + '円'; }
+
+function calculate() {
+  var idx    = getDestIdx();
+  var people = Math.max(1, Math.min(20, parseInt(document.getElementById('people').value) || 1));
+  var nights = Math.max(1, Math.min(30, parseInt(document.getElementById('nights').value) || 1));
+  var days   = nights + 1;
+  var p      = DEST_PARAMS[idx];
+
+  document.getElementById('destHint').textContent = DEST_HINTS[idx];
+
+  var transport = p.transport * people;
+  var hotel     = p.hotel * nights * people;
+  var food      = p.food * days * people;
+  var activity  = p.activity * days * people;
+  var souvenir  = p.souvenir * people;
+  var total     = transport + hotel + food + activity + souvenir;
+  var perPerson = Math.round(total / people);
+
+  document.getElementById('totalValue').textContent = total.toLocaleString();
+  document.getElementById('totalSub').textContent =
+    p.name + ' / ' + people + '人 / ' + nights + '泊' + days + '日  1人あたり約' + perPerson.toLocaleString() + '円';
+
+  document.getElementById('transportAmt').textContent = fmt(transport);
+  document.getElementById('hotelAmt').textContent     = fmt(hotel);
+  document.getElementById('foodAmt').textContent      = fmt(food);
+  document.getElementById('activityAmt').textContent  = fmt(activity);
+  document.getElementById('souvenirAmt').textContent  = fmt(souvenir);
+
+  document.getElementById('transportDetail').textContent =
+    p.transport.toLocaleString() + '円 x ' + people + '人(往復目安)';
+  document.getElementById('hotelDetail').textContent =
+    p.hotel.toLocaleString() + '円 x ' + nights + '泊 x ' + people + '人';
+  document.getElementById('foodDetail').textContent =
+    p.food.toLocaleString() + '円 x ' + days + '日 x ' + people + '人';
+  document.getElementById('activityDetail').textContent =
+    p.activity.toLocaleString() + '円 x ' + days + '日 x ' + people + '人';
+  document.getElementById('souvenirDetail').textContent =
+    p.souvenir.toLocaleString() + '円 x ' + people + '人';
+
+  var amounts = [transport, hotel, food, activity, souvenir];
+  var barHTML = '';
+  for (var i = 0; i < amounts.length; i++) {
+    var pct = Math.round(amounts[i] / total * 100);
+    barHTML +=
+      '<div class="bar-item">' +
+        '<div class="bar-header"><span>' + BAR_LABELS[i] + '</span><span>' + pct + '%</span></div>' +
+        '<div class="bar-track"><div class="bar-fill ' + BAR_CLASS[i] + '" style="width:' + pct + '%"></div></div>' +
+      '</div>';
+  }
+  document.getElementById('barSection').innerHTML = barHTML;
+
+  lastResult = {
+    destName: p.name, people: people, nights: nights, days: days,
+    transport: transport, hotel: hotel, food: food, activity: activity, souvenir: souvenir,
+    total: total, perPerson: perPerson
+  };
+}
+
+function buildText() {
+  if (!lastResult) return '';
+  var r = lastResult;
+  return '【夏休み旅費概算】\n' +
+    r.destName + ' / ' + r.people + '人 / ' + r.nights + '泊' + r.days + '日\n' +
+    '合計: 約' + r.total.toLocaleString() + '円(1人あたり約' + r.perPerson.toLocaleString() + '円)\n' +
+    '交通費: ' + r.transport.toLocaleString() + '円\n' +
+    '宿泊費: ' + r.hotel.toLocaleString() + '円\n' +
+    '食費: ' + r.food.toLocaleString() + '円\n' +
+    '活動費: ' + r.activity.toLocaleString() + '円\n' +
+    'おみやげ: ' + r.souvenir.toLocaleString() + '円\n' +
+    'https://yama-ai-factory.vercel.app/apps/summer-travel/';
+}
+
+function shareX() {
+  if (!lastResult) return;
+  var r = lastResult;
+  var text = r.destName + ' ' + r.people + '人 ' + r.nights + '泊' + r.days + '日の旅費を概算しました。\n合計: 約' + r.total.toLocaleString() + '円(1人あたり約' + r.perPerson.toLocaleString() + '円)\n\n#夏休み #旅行計画 #AIアプリ工房';
+  var url = 'https://yama-ai-factory.vercel.app/apps/summer-travel/';
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url), '_blank');
+}
+
+function doCopy() {
+  var text = buildText();
+  if (!text) return;
+  var msg = document.getElementById('copyMsg');
+  navigator.clipboard.writeText(text).then(function() {
+    msg.textContent = 'コピーしました';
+    setTimeout(function() { msg.textContent = ''; }, 2500);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.top = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    msg.textContent = 'コピーしました';
+    setTimeout(function() { msg.textContent = ''; }, 2500);
+  });
+}
+
+calculate();
+</script>
+</body>
+</html>
