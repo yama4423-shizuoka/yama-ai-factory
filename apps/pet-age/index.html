@@ -164,6 +164,7 @@
 var petType = 'dog';
 var dogSize = 'small';
 var lastResult = null;
+var LIFESPANS = { small: 15, medium: 13, large: 10, cat: 15 };
 
 function setPetType(type, btn) {
   petType = type;
@@ -238,8 +239,10 @@ function calculate() {
   var sizeLabelMap = { small: '小型犬', medium: '中型犬', large: '大型犬' };
   var petLabel = petType === 'dog' ? sizeLabelMap[dogSize] : '猫';
   var hashTag = petType === 'dog' ? '#犬のいる生活' : '#猫のいる生活';
+  var lifespan = petType === 'dog' ? LIFESPANS[dogSize] : LIFESPANS.cat;
+  var remaining = lifespan - age;
 
-  lastResult = { age: age, humanAge: humanAge, stage: stage.label, stageDesc: stage.desc, petLabel: petLabel, hashTag: hashTag };
+  lastResult = { age: age, humanAge: humanAge, stage: stage.label, stageDesc: stage.desc, petLabel: petLabel, hashTag: hashTag, lifespan: lifespan, remaining: remaining };
 
   var h = '';
   h += '<div class="result-top">';
@@ -249,10 +252,13 @@ function calculate() {
   h += '<div class="stage-chip">' + stage.label + '</div>';
   h += '<div class="result-desc">' + stage.desc + '</div>';
   h += '</div>';
+  var lifeRemStr = remaining > 0 ? '約' + Math.max(1, Math.round(remaining)) + '年' : '長寿です!';
+  var lifeRemAttr = remaining > 0 ? '' : ' style="color:var(--green)"';
   h += '<div class="result-rows">';
   h += '<div class="result-row"><span class="result-name">換算前の年齢</span><span class="result-val">' + petLabel + ' ' + age + '歳</span></div>';
   h += '<div class="result-row"><span class="result-name">人間換算</span><span class="result-val">' + humanAge + '歳相当</span></div>';
   h += '<div class="result-row"><span class="result-name">ライフステージ</span><span class="result-val">' + stage.label + '</span></div>';
+  h += '<div class="result-row"><span class="result-name">平均寿命まであと</span><span class="result-val"' + lifeRemAttr + '>' + lifeRemStr + '</span></div>';
   h += '</div>';
 
   document.getElementById('resultContent').innerHTML = h;
@@ -263,9 +269,13 @@ function calculate() {
 function buildShareText() {
   var r = lastResult;
   if (!r) return '';
+  var lifeStr = r.remaining > 0
+    ? '平均寿命(約' + r.lifespan + '年)まであと約' + Math.max(1, Math.round(r.remaining)) + '年'
+    : '平均寿命を超えた長寿です';
   return [
     '【ペット年齢換算】',
     r.petLabel + ' ' + r.age + '歳 = 人間換算 ' + r.humanAge + '歳(' + r.stage + ')',
+    lifeStr,
     r.stageDesc,
     '',
     '#ペット年齢換算 ' + r.hashTag,
