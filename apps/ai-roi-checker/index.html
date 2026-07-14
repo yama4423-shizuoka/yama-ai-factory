@@ -262,8 +262,9 @@ function calculate() {
 
   var fillPct = Math.max(0, Math.round((1 - ratio) * 100));
   var barPctText = ratio < 1 ? '余裕度 ' + fillPct + '%' : '未達(要見直し)';
+  var dailyCost = Math.round(fee / 30);
   var barNoteText = '月間利用 ' + monthlyHours.toFixed(1) + '時間 に対して損益分岐点は ' +
-    breakevenHours.toFixed(1) + '時間/月 の作業削減(= 1日 ' + breakevenMins.toFixed(0) + '分 の効率化)';
+    breakevenHours.toFixed(1) + '時間/月 の作業削減(= 1日 ' + breakevenMins.toFixed(0) + '分 の効率化)。月額の1日あたりコスト: ' + dailyCost + '円。';
 
   var vb = document.getElementById('verdictBox');
   vb.className = 'verdict-box ' + verdictClass;
@@ -287,6 +288,7 @@ function calculate() {
     costPerHour: costPerHour,
     breakevenHours: breakevenHours,
     breakevenMins: breakevenMins,
+    dailyCost: dailyCost,
     verdictLabel: verdictLabel
   };
 }
@@ -299,7 +301,7 @@ function buildShareText() {
   var r = lastResult;
   return [
     'AI費用対効果チェッカーで計算しました。',
-    'AIサブスク: 月' + r.fee.toLocaleString() + '円 / 月間' + r.monthlyHours.toFixed(1) + '時間利用',
+    'AIサブスク: 月' + r.fee.toLocaleString() + '円(1日あたり' + r.dailyCost + '円) / 月間' + r.monthlyHours.toFixed(1) + '時間利用',
     'AI利用コスト: ' + Math.round(r.costPerHour).toLocaleString() + '円/時間',
     '月' + r.breakevenHours.toFixed(1) + '時間(' + r.breakevenMins.toFixed(0) + '分/日)の作業削減で元が取れます',
     '判定: ' + r.verdictLabel,
