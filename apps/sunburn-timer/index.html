@@ -310,10 +310,11 @@ function calculate() {
 function buildShareText() {
   var r = lastResult;
   if (!r) return '';
+  var riskLbl = r.unprotectedMins < 15 ? '危険' : r.unprotectedMins < 30 ? '要注意' : '安全圏';
   var lines = [
     '【日焼けタイム計算】',
     '肌タイプ: ' + r.skin + ' / UV指数: ' + r.uv + ' (' + r.uvLabel + ') / 日焼け止め: ' + r.spfLabel,
-    '無防備での日焼けまで: ' + r.unprotectedStr
+    '無防備での日焼けまで: ' + r.unprotectedStr + ' [' + riskLbl + ']'
   ];
   if (r.spf > 1) {
     lines.push(r.spfLabel + ' 使用後: ' + r.protectedStr);
