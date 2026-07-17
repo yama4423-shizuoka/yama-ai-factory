@@ -316,7 +316,7 @@ function getShareText() {
     lines.push('  ' + NAMES[i] + ': ' + vals[i] + '% (' + fmtMan(amount * vals[i] / 100) + ')');
   }
   lines.push('  その他・自由費: ' + other + '% (' + fmtMan(amount * other / 100) + ')');
-  lines.push('#ボーナス配分 #夏ボーナス');
+  lines.push('#ボーナス配分 #夏ボーナス #AIアプリ工房');
   lines.push('https://yama-ai-factory.vercel.app/apps/bonus-planner/');
   return lines.join('\n');
 }
