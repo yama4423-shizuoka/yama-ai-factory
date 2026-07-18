@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIプラン乗り換え節約シミュレーター | 年間いくら安くなる? | AIアプリ工房</title>
+  <meta name="description" content="現在のAIサブスクプラン(Gemini/ChatGPT/Claude)を選ぶだけで、他プランに乗り換えた場合の月額差・年間節約額を即計算。2026年7月最新価格対応。無料・登録不要。">
+  <meta property="og:title" content="AIプラン乗り換え節約シミュレーター | 年間いくら安くなる?">
+  <meta property="og:description" content="現在のAIプランを選ぶだけで、乗り換えた場合の月額差・年間節約額を即計算。Gemini値下げ後の2026年7月最新価格対応。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/ai-plan-switch/">
+  <meta name="twitter:card" content="summary">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24; --red:#f87171; --orange:#fb923c;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back { display:inline-block; font-size:.82rem; color:var(--tx2); text-decoration:none; margin-bottom:26px; transition:color .15s; }
+    .back:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,4.5vw,2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:8px; }
+    .disclaimer {
+      font-size:.75rem; color:var(--tx2); margin-bottom:28px; padding:8px 12px;
+      background:var(--s2); border-radius:8px; border-left:3px solid var(--bd);
+    }
+
+    .input-card {
+      background:var(--s1); border:1px solid var(--bd); border-radius:16px;
+      padding:22px 20px; margin-bottom:20px;
+    }
+    .field-label {
+      display:block; font-size:.8rem; font-weight:700; color:var(--tx2);
+      margin-bottom:12px; letter-spacing:.04em;
+    }
+    .chips { display:flex; flex-wrap:wrap; gap:8px; }
+    .chip input[type=radio] { display:none; }
+    .chip label {
+      display:block; cursor:pointer; padding:10px 14px; border-radius:10px;
+      border:1px solid var(--bd); background:var(--s2); font-size:.88rem; font-weight:700;
+      color:var(--tx3); transition:all .15s; line-height:1.3;
+    }
+    .chip label .price-sub { font-size:.7rem; font-weight:500; color:var(--tx2); display:block; margin-top:3px; }
+    .chip input[type=radio]:checked + label {
+      background:rgba(124,111,245,.18); border-color:var(--acc); color:var(--acc2);
+    }
+    .chip input[type=radio]:checked + label .price-sub { color:var(--acc2); opacity:.75; }
+    .chip label:hover { border-color:var(--acc); }
+
+    .summary-box {
+      border-radius:14px; padding:16px 18px; margin-bottom:20px; text-align:center;
+    }
+    .summary-box.has-saving {
+      background:rgba(52,211,153,.07); border:1px solid rgba(52,211,153,.3);
+    }
+    .summary-box.no-saving {
+      background:var(--s1); border:1px solid var(--bd);
+    }
+    .summary-label { font-size:.72rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; margin-bottom:6px; }
+    .summary-label.save { color:var(--green); }
+    .summary-label.neutral { color:var(--tx2); }
+    .summary-annual { font-size:2rem; font-weight:900; line-height:1; }
+    .summary-annual.save { color:var(--green); }
+    .summary-annual.neutral { color:var(--tx3); }
+    .summary-detail { font-size:.8rem; color:var(--tx3); margin-top:6px; line-height:1.6; }
+
+    .section-title {
+      font-size:.75rem; font-weight:800; color:var(--tx2); margin-bottom:12px;
+      letter-spacing:.06em; text-transform:uppercase;
+    }
+
+    .plan-card {
+      background:var(--s1); border:1px solid var(--bd); border-radius:14px;
+      padding:16px 18px; margin-bottom:10px; position:relative;
+    }
+    .plan-card.is-current {
+      border-color:rgba(124,111,245,.45);
+      background:rgba(124,111,245,.05);
+    }
+    .plan-card.is-saving {
+      border-color:rgba(52,211,153,.25);
+    }
+    .plan-card.is-expensive {
+      opacity:.65;
+    }
+    .plan-top { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:10px; }
+    .plan-name-wrap { flex:1; min-width:0; }
+    .plan-provider { font-size:.68rem; font-weight:700; color:var(--tx2); text-transform:uppercase; letter-spacing:.08em; margin-bottom:3px; }
+    .plan-name { font-size:.98rem; font-weight:800; color:var(--tx); }
+    .plan-monthly { font-size:.78rem; color:var(--tx3); margin-top:2px; }
+
+    .plan-diff-wrap { text-align:right; flex-shrink:0; }
+    .plan-diff-monthly { font-size:.75rem; font-weight:700; white-space:nowrap; }
+    .plan-diff-annual { font-size:.92rem; font-weight:900; white-space:nowrap; margin-top:3px; }
+    .diff-save  { color:var(--green); }
+    .diff-more  { color:var(--tx3); }
+    .diff-same  { color:var(--tx2); }
+
+    .plan-features { display:flex; flex-wrap:wrap; gap:5px; }
+    .feat-tag {
+      font-size:.7rem; color:var(--tx2); background:var(--s2); border:1px solid var(--bd);
+      border-radius:6px; padding:3px 8px; white-space:nowrap;
+    }
+
+    .current-badge {
+      position:absolute; top:12px; right:12px;
+      font-size:.65rem; font-weight:800; letter-spacing:.06em;
+      color:var(--acc2); background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.3);
+      padding:2px 8px; border-radius:999px; text-transform:uppercase;
+    }
+
+    .actions { display:flex; flex-direction:column; gap:10px; margin-top:20px; }
+    .btn {
+      display:block; width:100%; border-radius:10px; padding:13px 20px;
+      font-size:.95rem; font-weight:700; cursor:pointer; text-align:center;
+      text-decoration:none; border:none; transition:opacity .15s;
+    }
+    .btn:hover { opacity:.85; }
+    .btn-x    { background:#000; color:#fff; border:1px solid #333; }
+    .btn-copy { background:rgba(52,211,153,.12); color:var(--green); border:1px solid rgba(52,211,153,.3); }
+    .copy-msg { text-align:center; font-size:.8rem; color:var(--green); margin-top:6px; min-height:1.2em; }
+
+    @media (max-width:520px) {
+      .wrapper { padding:28px 14px 60px; }
+      .chip label { padding:8px 12px; font-size:.82rem; }
+      .summary-annual { font-size:1.7rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back" href="/">← AIアプリ工房 トップへ</a>
+  <div class="badge">AI Plan Switch</div>
+  <h1>AIプラン乗り換え<br><span class="grad">節約シミュレーター</span></h1>
+  <p class="hero-desc">現在のAIサブスクプランを選ぶだけで、他プランに乗り換えた場合の月額差と年間節約額を即計算します。2026年7月のGemini値下げ後の最新価格に対応。</p>
+  <div class="disclaimer">料金は2026年7月時点の税込参考価格(円換算)です。為替レートや価格改定により実際の料金は異なる場合があります。各プランの最新情報は各社公式サイトでご確認ください。</div>
+
+  <div class="input-card">
+    <span class="field-label">現在のプランを選んでください</span>
+    <div class="chips" id="planChips"></div>
+  </div>
+
+  <div id="summaryBox"></div>
+
+  <div class="section-title">乗り換えシミュレーション</div>
+  <div id="resultList"></div>
+
+  <div class="actions">
+    <button class="btn btn-x" onclick="shareX()">X でシェア</button>
+    <button class="btn btn-copy" onclick="doCopy()">結果をコピー</button>
+  </div>
+  <div class="copy-msg" id="copyMsg"></div>
+</div>
+
+<script>
+var PLANS = [
+  {
+    id: 'gemini',
+    name: 'Gemini Advanced',
+    provider: 'Google',
+    price: 725,
+    features: ['Gemini 2.0 Flash利用可', 'Google One 2TB付き', 'Workspaceと連携', '7月に大幅値下げ']
+  },
+  {
+    id: 'chatgpt-free',
+    name: 'ChatGPT Free',
+    provider: 'OpenAI',
+    price: 0,
+    features: ['GPT-4o mini無制限', 'GPT-4oを一部利用可', '完全無料プラン']
+  },
+  {
+    id: 'chatgpt-go',
+    name: 'ChatGPT Go',
+    provider: 'OpenAI',
+    price: 1500,
+    features: ['GPT-4o 月40回', 'GPT-4o mini無制限', 'ライトユーザー向け']
+  },
+  {
+    id: 'chatgpt-plus',
+    name: 'ChatGPT Plus',
+    provider: 'OpenAI',
+    price: 3000,
+    features: ['GPT-4o無制限', 'DALL-E 3で画像生成', 'o1/o3モデル利用可']
+  },
+  {
+    id: 'claude-pro',
+    name: 'Claude Pro',
+    provider: 'Anthropic',
+    price: 3000,
+    features: ['Claude 3.7 Sonnet/Opus', '長文・文書解析が得意', 'Artifacts機能付き']
+  }
+];
+
+var currentPlanId = 'chatgpt-plus';
+
+function fmtJPY(n) {
+  if (n === 0) return '無料';
+  return '月額 ' + n.toLocaleString() + '円';
+}
+
+function renderChips() {
+  var html = '';
+  for (var i = 0; i < PLANS.length; i++) {
+    var p = PLANS[i];
+    var checked = p.id === currentPlanId ? 'checked' : '';
+    var priceLabel = p.price === 0 ? '無料' : '月' + p.price.toLocaleString() + '円';
+    html += '<div class="chip">' +
+      '<input type="radio" name="plan" id="plan-' + p.id + '" value="' + p.id + '" ' + checked + ' onchange="onPlanChange(\'' + p.id + '\')">' +
+      '<label for="plan-' + p.id + '">' + p.name +
+        '<span class="price-sub">' + priceLabel + '</span>' +
+      '</label>' +
+      '</div>';
+  }
+  document.getElementById('planChips').innerHTML = html;
+}
+
+function onPlanChange(id) {
+  currentPlanId = id;
+  calculate();
+}
+
+function findPlan(id) {
+  for (var i = 0; i < PLANS.length; i++) {
+    if (PLANS[i].id === id) return PLANS[i];
+  }
+  return null;
+}
+
+function calculate() {
+  var current = findPlan(currentPlanId);
+  if (!current) return;
+
+  // Find best saving (lowest price among cheaper alternatives)
+  var bestSaving = null;
+  for (var i = 0; i < PLANS.length; i++) {
+    var p = PLANS[i];
+    if (p.id === current.id) continue;
+    var diff = current.price - p.price;
+    if (diff > 0) {
+      if (!bestSaving || p.price < bestSaving.price) {
+        bestSaving = p;
+      }
+    }
+  }
+
+  // Summary box
+  var sbHTML = '';
+  if (current.price === 0) {
+    sbHTML = '<div class="summary-box no-saving">' +
+      '<div class="summary-label neutral">現在のプラン</div>' +
+      '<div class="summary-annual neutral">無料プラン使用中</div>' +
+      '<div class="summary-detail">有料プランに切り替えると追加機能が使えます</div>' +
+      '</div>';
+  } else if (bestSaving) {
+    var maxSaving = current.price - bestSaving.price;
+    var maxAnnual = maxSaving * 12;
+    sbHTML = '<div class="summary-box has-saving">' +
+      '<div class="summary-label save">最大節約額</div>' +
+      '<div class="summary-annual save">年間 ' + maxAnnual.toLocaleString() + '円</div>' +
+      '<div class="summary-detail">' + bestSaving.name + '(' + fmtJPY(bestSaving.price) + ')への乗り換えで<br>月' + maxSaving.toLocaleString() + '円 / 年間' + maxAnnual.toLocaleString() + '円の節約</div>' +
+      '</div>';
+  } else {
+    sbHTML = '<div class="summary-box no-saving">' +
+      '<div class="summary-label neutral">現在のプランが最安値</div>' +
+      '<div class="summary-annual neutral">節約余地なし</div>' +
+      '<div class="summary-detail">他のプランはすべて同額か高額です</div>' +
+      '</div>';
+  }
+  document.getElementById('summaryBox').innerHTML = sbHTML;
+
+  // Sort plans by price ascending
+  var sorted = PLANS.slice().sort(function(a, b) { return a.price - b.price; });
+
+  var html = '';
+  for (var j = 0; j < sorted.length; j++) {
+    var plan = sorted[j];
+    var isCurrent = plan.id === current.id;
+    var monthDiff = current.price - plan.price;
+    var annualDiff = monthDiff * 12;
+
+    var diffClass = monthDiff > 0 ? 'diff-save' : (monthDiff < 0 ? 'diff-more' : 'diff-same');
+    var cardClass = isCurrent ? 'is-current' : (monthDiff > 0 ? 'is-saving' : (monthDiff < 0 ? 'is-expensive' : ''));
+
+    var diffMonthlyText, diffAnnualText;
+    if (isCurrent) {
+      diffMonthlyText = '';
+      diffAnnualText = '';
+    } else if (monthDiff === 0) {
+      diffMonthlyText = '月額: 同額';
+      diffAnnualText = '年間差額: ±0円';
+    } else if (monthDiff > 0) {
+      diffMonthlyText = '月' + monthDiff.toLocaleString() + '円 節約';
+      diffAnnualText = '年間 ' + annualDiff.toLocaleString() + '円 節約';
+    } else {
+      diffMonthlyText = '月' + Math.abs(monthDiff).toLocaleString() + '円 増';
+      diffAnnualText = '年間 ' + Math.abs(annualDiff).toLocaleString() + '円 増';
+    }
+
+    var featHTML = '';
+    for (var k = 0; k < plan.features.length; k++) {
+      featHTML += '<span class="feat-tag">' + plan.features[k] + '</span>';
+    }
+
+    var priceDisplay = plan.price === 0 ? '無料' : '月額 ' + plan.price.toLocaleString() + '円';
+
+    html += '<div class="plan-card ' + cardClass + '">';
+    if (isCurrent) {
+      html += '<div class="current-badge">現在のプラン</div>';
+    }
+    html += '<div class="plan-top">';
+    html +=   '<div class="plan-name-wrap">';
+    html +=     '<div class="plan-provider">' + plan.provider + '</div>';
+    html +=     '<div class="plan-name">' + plan.name + '</div>';
+    html +=     '<div class="plan-monthly">' + priceDisplay + '</div>';
+    html +=   '</div>';
+    if (!isCurrent) {
+      html += '<div class="plan-diff-wrap">';
+      html +=   '<div class="plan-diff-monthly ' + diffClass + '">' + diffMonthlyText + '</div>';
+      html +=   '<div class="plan-diff-annual ' + diffClass + '">' + diffAnnualText + '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+    html += '<div class="plan-features">' + featHTML + '</div>';
+    html += '</div>';
+  }
+
+  document.getElementById('resultList').innerHTML = html;
+}
+
+function buildShareText() {
+  var current = findPlan(currentPlanId);
+  if (!current) return '';
+
+  var bestSaving = null;
+  for (var i = 0; i < PLANS.length; i++) {
+    var p = PLANS[i];
+    if (p.id === current.id) continue;
+    var diff = current.price - p.price;
+    if (diff > 0) {
+      if (!bestSaving || p.price < bestSaving.price) bestSaving = p;
+    }
+  }
+
+  var lines = ['【AIプラン乗り換えシミュレーター】'];
+  var currentPrice = current.price === 0 ? '無料' : '月額' + current.price.toLocaleString() + '円';
+  lines.push('現在: ' + current.name + '(' + currentPrice + ')');
+
+  if (bestSaving) {
+    var saving = current.price - bestSaving.price;
+    var annualSaving = saving * 12;
+    var targetPrice = bestSaving.price === 0 ? '無料' : '月額' + bestSaving.price.toLocaleString() + '円';
+    lines.push(bestSaving.name + '(' + targetPrice + ')への乗り換えで');
+    lines.push('月' + saving.toLocaleString() + '円 / 年間' + annualSaving.toLocaleString() + '円の節約');
+  } else {
+    lines.push('現在のプランが最安値または同額です');
+  }
+
+  lines.push('#AIプラン #節約 #AIアプリ工房');
+  lines.push('https://yama-ai-factory.vercel.app/apps/ai-plan-switch/');
+  return lines.join('\n');
+}
+
+function shareX() {
+  var current = findPlan(currentPlanId);
+  if (!current) return;
+
+  var bestSaving = null;
+  for (var i = 0; i < PLANS.length; i++) {
+    var p = PLANS[i];
+    if (p.id === current.id) continue;
+    var diff = current.price - p.price;
+    if (diff > 0) {
+      if (!bestSaving || p.price < bestSaving.price) bestSaving = p;
+    }
+  }
+
+  var currentPrice = current.price === 0 ? '無料' : '月額' + current.price.toLocaleString() + '円';
+  var text;
+  if (bestSaving) {
+    var saving = current.price - bestSaving.price;
+    var annualSaving = saving * 12;
+    var targetPrice = bestSaving.price === 0 ? '無料' : '月額' + bestSaving.price.toLocaleString() + '円';
+    text = current.name + '(' + currentPrice + ')から' + bestSaving.name + '(' + targetPrice + ')に乗り換えると、年間' + annualSaving.toLocaleString() + '円節約できます。\n#AIプラン #節約 #AIアプリ工房';
+  } else {
+    text = current.name + '(' + currentPrice + ')は現在のプランの中で最安値か同額でした。\n#AIプラン #AIアプリ工房';
+  }
+
+  var url = 'https://yama-ai-factory.vercel.app/apps/ai-plan-switch/';
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url), '_blank');
+}
+
+function doCopy() {
+  var text = buildShareText();
+  if (!text) return;
+  var msg = document.getElementById('copyMsg');
+  navigator.clipboard.writeText(text).then(function() {
+    msg.textContent = 'コピーしました';
+    setTimeout(function() { msg.textContent = ''; }, 2500);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.top = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    msg.textContent = 'コピーしました';
+    setTimeout(function() { msg.textContent = ''; }, 2500);
+  });
+}
+
+renderChips();
+calculate();
+</script>
+</body>
+</html>
