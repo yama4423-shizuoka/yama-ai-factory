@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude 5 + 全AI横断 モデル選び診断2026 | あなたに最適なAIプランは? | AIアプリ工房</title>
+  <meta name="description" content="用途・予算・頻度の3問で、Claude Haiku 4.5/Sonnet 5/Opus 4.8/Fable 5とGemini AI Plus/ChatGPT Go・Plusから最適なAIプランを即診断。2026年最新版。無料・登録不要。">
+  <meta property="og:title" content="Claude 5 + 全AI横断 モデル選び診断2026 | あなたに最適なAIプランは?">
+  <meta property="og:description" content="3問で最適AIプランを診断。Claude Haiku 4.5/Sonnet 5/Opus 4.8/Fable 5、Gemini AI Plus、ChatGPT Go/Plusから最適な選択を提案します。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/claude-model-shindan/">
+  <meta name="twitter:card" content="summary">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:680px; margin:0 auto; padding:40px 20px 80px; }
+
+    .back { display:inline-block; font-size:.82rem; color:var(--tx2); text-decoration:none; margin-bottom:26px; transition:color .15s; }
+    .back:hover { color:var(--acc2); }
+
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,4.5vw,2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:32px; }
+
+    .section {
+      background:var(--s1); border:1px solid var(--bd); border-radius:16px;
+      padding:22px 20px; margin-bottom:14px;
+    }
+    .q-label { font-weight:800; font-size:.97rem; margin-bottom:4px; }
+    .q-sub { font-size:.78rem; color:var(--tx2); margin-bottom:14px; }
+
+    .opt-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+    @media(max-width:440px) { .opt-grid { grid-template-columns:1fr; } }
+
+    .opt {
+      position:relative; display:flex; align-items:center; gap:10px;
+      background:var(--s2); border:1.5px solid var(--bd); border-radius:10px;
+      padding:11px 14px; cursor:pointer; font-size:.87rem; line-height:1.4;
+      transition:border-color .12s, background .12s;
+      user-select:none;
+    }
+    .opt:hover { border-color:var(--acc); }
+    .opt input { position:absolute; opacity:0; width:0; height:0; }
+    .opt-mark {
+      width:17px; height:17px; flex-shrink:0;
+      border:2px solid var(--bd); border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      transition:all .12s;
+    }
+    .opt.selected { border-color:var(--acc); background:rgba(124,111,245,.1); }
+    .opt.selected .opt-mark { background:var(--acc); border-color:var(--acc); }
+    .opt.selected .opt-mark::after { content:''; display:block; width:7px; height:7px; background:#fff; border-radius:50%; }
+
+    .diag-btn {
+      display:block; width:100%; padding:15px; border-radius:12px; border:none;
+      background:var(--acc); color:#fff; font-size:1.02rem; font-weight:800;
+      cursor:pointer; margin-top:18px; transition:opacity .15s;
+      letter-spacing:.03em;
+    }
+    .diag-btn:hover { opacity:.85; }
+
+    #result { display:none; margin-top:28px; }
+
+    .result-top {
+      background:var(--s1); border:1px solid rgba(124,111,245,.4); border-radius:16px;
+      padding:28px 24px; margin-bottom:14px;
+    }
+    .result-label { font-size:.7rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--tx2); margin-bottom:10px; }
+    .plan-badge {
+      display:inline-block; font-size:.68rem; font-weight:800; letter-spacing:.12em;
+      padding:3px 12px; border-radius:999px; margin-bottom:12px;
+    }
+    .badge-claude { background:rgba(168,156,247,.2); color:var(--acc2); border:1px solid rgba(168,156,247,.4); }
+    .badge-gemini { background:rgba(96,165,250,.15); color:var(--blue); border:1px solid rgba(96,165,250,.35); }
+    .badge-chatgpt { background:rgba(52,211,153,.12); color:var(--green); border:1px solid rgba(52,211,153,.3); }
+
+    .plan-name { font-size:1.8rem; font-weight:900; line-height:1.2; margin-bottom:4px; }
+    .plan-model { font-size:.85rem; color:var(--acc2); font-weight:700; margin-bottom:8px; }
+    .plan-price { font-size:1.1rem; font-weight:800; color:var(--green); margin-bottom:14px; }
+    .plan-tagline { font-size:.92rem; color:var(--tx3); line-height:1.7; margin-bottom:16px; }
+    .plan-reason {
+      font-size:.87rem; color:var(--tx3); line-height:1.8;
+      padding:14px 16px; background:var(--s2); border-radius:10px;
+      border-left:3px solid var(--acc);
+    }
+
+    .features-card {
+      background:var(--s1); border:1px solid var(--bd); border-radius:12px;
+      padding:18px 20px; margin-bottom:14px;
+    }
+    .features-title { font-size:.72rem; font-weight:800; color:var(--tx2); letter-spacing:.08em; text-transform:uppercase; margin-bottom:12px; }
+    .feature-list { list-style:none; }
+    .feature-list li {
+      font-size:.86rem; color:var(--tx3); padding:7px 0;
+      border-bottom:1px solid var(--bd); display:flex; gap:8px; align-items:flex-start;
+    }
+    .feature-list li:last-child { border-bottom:none; }
+    .feature-list li::before { content:'+'; color:var(--green); font-weight:900; flex-shrink:0; margin-top:1px; }
+
+    .model-note {
+      font-size:.8rem; color:var(--yellow); line-height:1.75;
+      padding:10px 14px; background:rgba(251,191,36,.06);
+      border-radius:8px; border-left:3px solid rgba(251,191,36,.4);
+      margin-bottom:14px;
+    }
+
+    .funnel-card {
+      background:var(--s2); border:1px solid rgba(168,156,247,.3); border-radius:12px;
+      padding:18px 20px; margin-bottom:14px; text-align:center;
+    }
+    .funnel-card p { color:var(--tx3); font-size:.86rem; line-height:1.75; margin-bottom:14px; }
+    .funnel-link {
+      display:inline-block; padding:12px 28px; border-radius:10px;
+      background:linear-gradient(135deg,var(--acc),var(--blue));
+      color:#fff; font-size:.92rem; font-weight:700;
+      text-decoration:none; transition:opacity .15s;
+    }
+    .funnel-link:hover { opacity:.85; }
+
+    .share-row { display:flex; gap:10px; margin-bottom:12px; }
+    .share-btn {
+      flex:1; padding:11px; border-radius:10px; cursor:pointer;
+      font-size:.88rem; font-weight:700; border:none; transition:opacity .15s;
+    }
+    .share-x { background:#000; color:#fff; border:1px solid #2a2a2a; }
+    .share-copy { background:var(--s2); color:var(--tx); border:1px solid var(--bd); }
+    .share-btn:hover { opacity:.8; }
+
+    .retry-btn {
+      display:block; width:100%; padding:12px; border-radius:10px;
+      background:transparent; border:1px solid var(--bd); color:var(--tx3);
+      font-size:.9rem; font-weight:600; cursor:pointer; transition:all .15s;
+    }
+    .retry-btn:hover { border-color:var(--acc2); color:var(--acc2); }
+
+    .disclaimer {
+      font-size:.78rem; color:var(--tx2); line-height:1.75;
+      padding:12px 14px; background:var(--s2); border-radius:8px;
+      border-left:3px solid var(--bd); margin-top:14px;
+    }
+
+    @media(max-width:520px) {
+      .wrapper { padding:24px 14px 60px; }
+      .section { padding:18px 16px; }
+      .result-top { padding:22px 18px; }
+      .plan-name { font-size:1.5rem; }
+      .share-btn { font-size:.82rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back" href="/">&larr; AIアプリ工房に戻る</a>
+
+  <div class="badge">AI Model Selector 2026</div>
+  <h1><span class="grad">Claude 5 + 全AI横断</span><br>モデル選び診断</h1>
+  <p class="hero-desc">Claude Haiku 4.5 / Sonnet 5 / Opus 4.8 / Fable 5 の4階層に加え、<br>Gemini AI Plus・ChatGPT Go/Plusまで。3問で最適なAIプランを即診断します。</p>
+
+  <!-- Q1: 用途 -->
+  <div class="section">
+    <p class="q-label">Q1. 主な使い方は何ですか?</p>
+    <p class="q-sub">最もよく使う用途を1つ選んでください</p>
+    <div class="opt-grid" id="q1">
+      <label class="opt" onclick="selectOpt('q1','writing')">
+        <input type="radio" name="q1" value="writing">
+        <span class="opt-mark"></span>
+        <span>文章・メール・資料作成</span>
+      </label>
+      <label class="opt" onclick="selectOpt('q1','coding')">
+        <input type="radio" name="q1" value="coding">
+        <span class="opt-mark"></span>
+        <span>コーディング・プログラミング</span>
+      </label>
+      <label class="opt" onclick="selectOpt('q1','creative')">
+        <input type="radio" name="q1" value="creative">
+        <span class="opt-mark"></span>
+        <span>創作・アイデア出し・ブレスト</span>
+      </label>
+      <label class="opt" onclick="selectOpt('q1','search')">
+        <input type="radio" name="q1" value="search">
+        <span class="opt-mark"></span>
+        <span>日常調べもの・要約・翻訳</span>
+      </label>
+      <label class="opt" onclick="selectOpt('q1','image')">
+        <input type="radio" name="q1" value="image">
+        <span class="opt-mark"></span>
+        <span>画像生成・ビジュアル制作</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Q2: 予算 -->
+  <div class="section">
+    <p class="q-label">Q2. 月にAIへ使える予算は?</p>
+    <p class="q-sub">現在の課金上限を選んでください</p>
+    <div class="opt-grid" id="q2">
+      <label class="opt" onclick="selectOpt('q2','free')">
+        <input type="radio" name="q2" value="free">
+        <span class="opt-mark"></span>
+        <span>無料のみ(0円)</span>
+      </label>
+      <label class="opt" onclick="selectOpt('q2','budget')">
+        <input type="radio" name="q2" value="budget">
+        <span class="opt-mark"></span>
+        <span>〜1,000円/月</span>
+      </label>
+      <label class="opt" onclick="selectOpt('q2','mid')">
+        <input type="radio" name="q2" value="mid">
+        <span class="opt-mark"></span>
+        <span>〜2,000円/月</span>
+      </label>
+      <label class="opt" onclick="selectOpt('q2','full')">
+        <input type="radio" name="q2" value="full">
+        <span class="opt-mark"></span>
+        <span>3,000円以上でもOK</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Q3: 頻度 -->
+  <div class="section">
+    <p class="q-label">Q3. AIをどのくらいの頻度で使いますか?</p>
+    <p class="q-sub">平均的な使用ペースを選んでください</p>
+    <div class="opt-grid" id="q3">
+      <label class="opt" onclick="selectOpt('q3','rare')">
+        <input type="radio" name="q3" value="rare">
+        <span class="opt-mark"></span>
+        <span>週1〜2回(気が向いた時)</span>
+      </label>
+      <label class="opt" onclick="selectOpt('q3','regular')">
+        <input type="radio" name="q3" value="regular">
+        <span class="opt-mark"></span>
+        <span>週3〜5回(定期的に)</span>
+      </label>
+      <label class="opt" onclick="selectOpt('q3','daily')">
+        <input type="radio" name="q3" value="daily">
+        <span class="opt-mark"></span>
+        <span>ほぼ毎日(習慣的に)</span>
+      </label>
+      <label class="opt" onclick="selectOpt('q3','heavy')">
+        <input type="radio" name="q3" value="heavy">
+        <span class="opt-mark"></span>
+        <span>毎日ガッツリ(業務レベル)</span>
+      </label>
+    </div>
+  </div>
+
+  <button class="diag-btn" onclick="diagnose()">診断する</button>
+
+  <!-- Result -->
+  <div id="result">
+    <div class="result-top">
+      <p class="result-label">あなたに最適なAIプランは</p>
+      <p class="plan-badge" id="planBadge"></p>
+      <p class="plan-name" id="planName"></p>
+      <p class="plan-model" id="planModel"></p>
+      <p class="plan-price" id="planPrice"></p>
+      <p class="plan-tagline" id="planTagline"></p>
+      <p class="plan-reason" id="planReason"></p>
+    </div>
+
+    <div class="features-card">
+      <p class="features-title">このプランの特徴</p>
+      <ul class="feature-list" id="featureList"></ul>
+    </div>
+
+    <p class="model-note" id="modelNote" style="display:none;"></p>
+
+    <div class="funnel-card">
+      <p>複数のAIサービスを契約している方は、課金プランの見直しにも。ChatGPT・Claude・Geminiの最適プランを一括比較できます。</p>
+      <a class="funnel-link" href="https://ai-subs-shindan.vercel.app/" target="_blank" rel="noopener">AIサブスク診断を試してみる</a>
+    </div>
+
+    <div class="share-row">
+      <button class="share-btn share-x" onclick="shareX()">X でシェア</button>
+      <button class="share-btn share-copy" id="copyBtn" onclick="doCopy()">結果をコピー</button>
+    </div>
+
+    <button class="retry-btn" onclick="retryDiag()">もう一度診断する</button>
+
+    <p class="disclaimer">この診断は参考情報です。プラン料金・機能は予告なく変更される場合があります。最新情報は各サービスの公式サイトでご確認ください。</p>
+  </div>
+</div>
+
+<script>
+var PLANS = {
+  haiku: {
+    name: 'Claude Free',
+    model: 'Haiku 4.5',
+    price: '0円/月',
+    priceNum: 0,
+    badgeClass: 'badge-claude',
+    badgeText: 'CLAUDE FREE',
+    tagline: '軽快さと無料を両立するClaude入門プラン',
+    features: [
+      'Claude Haiku 4.5 が無料で利用可能',
+      '文章の要約・翻訳・質疑応答など基本タスクに対応',
+      'クレジットカード不要、登録だけで即開始',
+      '1日の使用量に上限あり(重いタスクや長文対話は制限される場合あり)'
+    ],
+    note: null
+  },
+  sonnet: {
+    name: 'Claude Pro',
+    model: 'Sonnet 5 メイン推奨',
+    price: '約3,000円/月',
+    priceNum: 3000,
+    badgeClass: 'badge-claude',
+    badgeText: 'CLAUDE PRO',
+    tagline: '文章力・推論力・コーディングを高いバランスで両立',
+    features: [
+      'Claude Sonnet 5 を優先的・高頻度で利用可能',
+      '長文の文章作成・編集・構造化が高精度',
+      'コードの生成・レビュー・デバッグに優れる',
+      'Opus 4.8・Fable 5へのアクセス権も付属'
+    ],
+    note: 'Pro内ではモデル切り替えが可能です。重い推論にはOpus 4.8、創作にはFable 5も活用できます。'
+  },
+  opus: {
+    name: 'Claude Pro',
+    model: 'Opus 4.8 メイン推奨',
+    price: '約3,000円/月',
+    priceNum: 3000,
+    badgeClass: 'badge-claude',
+    badgeText: 'CLAUDE PRO',
+    tagline: '最高精度の推論と複雑タスク処理に特化',
+    features: [
+      'Claude Opus 4.8 の最高精度推論を活用',
+      '複雑な分析・業務文書・技術文書の深い読み込みに強い',
+      'マルチステップの複雑な問題を段階的に解決',
+      'Sonnet 5・Fable 5へのアクセス権も付属'
+    ],
+    note: '速度よりも精度を優先する業務・プロフェッショナル向け設定です。素早い作業はSonnet 5と使い分けると効率的です。'
+  },
+  fable: {
+    name: 'Claude Pro',
+    model: 'Fable 5 メイン推奨',
+    price: '約3,000円/月',
+    priceNum: 3000,
+    badgeClass: 'badge-claude',
+    badgeText: 'CLAUDE PRO',
+    tagline: '創作・物語・アイデア発想に圧倒的な強みを発揮',
+    features: [
+      'Claude Fable 5 の創造的文章生成を活用',
+      '小説・脚本・コピーライティング・詩などの創作に最適',
+      'アイデアブレスト・コンセプト開発の壁打ちに優れる',
+      'Sonnet 5・Opus 4.8へのアクセス権も付属'
+    ],
+    note: '2026年より米国輸出規制解除で日本でも利用可能になりました。Claude Pro内のモデル選択から切り替えできます。'
+  },
+  gemini: {
+    name: 'Gemini AI Plus',
+    model: 'Gemini 2.5 Pro',
+    price: '725円/月',
+    priceNum: 725,
+    badgeClass: 'badge-gemini',
+    badgeText: 'GOOGLE GEMINI',
+    tagline: '最高コスパ。Google連携とマルチモーダルが強み',
+    features: [
+      'Gemini 2.5 Proが月725円(2026年7月値下げ後)',
+      'Google Workspace・Gmail・Driveとの深い連携',
+      '画像・音声・動画のマルチモーダル対応',
+      '最大100万トークンの超長文コンテキスト処理'
+    ],
+    note: 'ChatGPT Plus・Claude Proと比べて4分の1以下の価格で高機能を実現。コストを抑えたい方に最有力の選択肢です。'
+  },
+  go: {
+    name: 'ChatGPT Go',
+    model: 'GPT-4o mini / GPT-4o(限定)',
+    price: '約1,500円/月',
+    priceNum: 1500,
+    badgeClass: 'badge-chatgpt',
+    badgeText: 'OPENAI',
+    tagline: 'OpenAIをコスト半分で。バランス重視の中間プラン',
+    features: [
+      'GPT-4o miniを制限なく利用可能',
+      'GPT-4oへの限定的なアクセス(月間上限あり)',
+      '音声会話(Advanced Voice Mode)に対応',
+      'DALL-E画像生成は限定的(Plusより制限あり)'
+    ],
+    note: 'ChatGPT Plusの半額でOpenAIの基本機能をカバー。用途が日常タスク中心なら十分なコスパです。'
+  },
+  plus: {
+    name: 'ChatGPT Plus',
+    model: 'GPT-4o / DALL-E 3',
+    price: '約3,000円/月',
+    priceNum: 3000,
+    badgeClass: 'badge-chatgpt',
+    badgeText: 'OPENAI',
+    tagline: '画像生成・音声・OpenAIエコシステムを全開放',
+    features: [
+      'GPT-4oを優先的・高頻度で利用可能',
+      'DALL-E 3による高品質な画像生成(テキストから画像)',
+      '音声会話(Advanced Voice Mode)のフルアクセス',
+      'GPTs・Canvas・ブラウジングなど全機能対応'
+    ],
+    note: 'DALL-E 3による画像生成が必要な場合はChatGPT Plusが最有力です。OpenAIのサービスを使い慣れている方にも適しています。'
+  }
+};
+
+var Q1_SCORES = {
+  writing:  { haiku:1, sonnet:4, opus:3, fable:2, gemini:3, go:2, plus:2 },
+  coding:   { haiku:1, sonnet:4, opus:4, fable:0, gemini:2, go:2, plus:3 },
+  creative: { haiku:1, sonnet:2, opus:1, fable:5, gemini:2, go:1, plus:2 },
+  search:   { haiku:3, sonnet:1, opus:0, fable:0, gemini:5, go:3, plus:2 },
+  image:    { haiku:0, sonnet:1, opus:0, fable:1, gemini:4, go:2, plus:5 }
+};
+
+var Q3_SCORES = {
+  rare:    { haiku:4, sonnet:0, opus:0, fable:0, gemini:3, go:2, plus:0 },
+  regular: { haiku:2, sonnet:2, opus:1, fable:1, gemini:3, go:3, plus:2 },
+  daily:   { haiku:0, sonnet:4, opus:2, fable:2, gemini:2, go:3, plus:4 },
+  heavy:   { haiku:-2, sonnet:3, opus:5, fable:3, gemini:0, go:1, plus:2 }
+};
+
+var BUDGET_MAX = { free: 0, budget: 725, mid: 1500, full: 99999 };
+
+var USAGE_LABELS = { writing:'文章・資料作成', coding:'コーディング', creative:'創作・アイデア出し', search:'日常調べもの・要約', image:'画像生成' };
+var FREQ_LABELS = { rare:'週1〜2回', regular:'週3〜5回', daily:'ほぼ毎日', heavy:'業務レベルで毎日' };
+var BUDGET_LABELS = { free:'無料', budget:'〜1,000円/月', mid:'〜2,000円/月', full:'3,000円以上OK' };
+
+var answers = { q1: null, q2: null, q3: null };
+var lastResult = null;
+
+function selectOpt(q, val) {
+  answers[q] = val;
+  var opts = document.querySelectorAll('#' + q + ' .opt');
+  for (var i = 0; i < opts.length; i++) {
+    opts[i].classList.remove('selected');
+    if (opts[i].querySelector('input').value === val) {
+      opts[i].classList.add('selected');
+    }
+  }
+}
+
+function diagnose() {
+  if (!answers.q1 || !answers.q2 || !answers.q3) {
+    alert('3つの質問すべてに答えてください。');
+    return;
+  }
+
+  var maxPrice = BUDGET_MAX[answers.q2];
+  var tiebreakOrder = ['sonnet','opus','fable','gemini','go','plus','haiku'];
+  var best = null;
+  var bestScore = -999;
+
+  for (var i = 0; i < tiebreakOrder.length; i++) {
+    var k = tiebreakOrder[i];
+    if (PLANS[k].priceNum <= maxPrice) {
+      var score = Q1_SCORES[answers.q1][k] + Q3_SCORES[answers.q3][k];
+      if (score > bestScore) {
+        bestScore = score;
+        best = k;
+      }
+    }
+  }
+
+  if (!best) { best = 'haiku'; }
+
+  lastResult = best;
+  showResult(best);
+}
+
+function getReason(planKey) {
+  var u = USAGE_LABELS[answers.q1];
+  var f = FREQ_LABELS[answers.q3];
+  var b = BUDGET_LABELS[answers.q2];
+  var reasons = {
+    haiku: '予算「' + b + '」・用途「' + u + '」・頻度「' + f + '」の条件では、まず無料のClaude Haiku 4.5から始めるのが最適です。基本タスクをこなしながら、物足りなければ有料プランへのアップグレードも簡単です。',
+    sonnet: '「' + u + '」を「' + f + '」で使うなら、推論力と文章力を高いレベルで兼ね備えたClaude Sonnet 5が最もバランスのよい選択です。Claude Pro(約3,000円/月)でアクセスできます。',
+    opus: '「' + u + '」を「' + f + '」で本格的にこなすなら、精度最優先のClaude Opus 4.8が最適です。複雑な問題も深く考えて回答する最高性能モデルで、プロフェッショナルな業務レベルの要求に応えます。',
+    fable: '「' + u + '」に特別な強みを発揮するClaude Fable 5は、創造的な文章生成に特化したモデルです。「' + f + '」のペースで創作活動の頼れるパートナーになります。Claude Pro内でモデル選択から利用できます。',
+    gemini: '予算「' + b + '」で「' + u + '」を「' + f + '」でこなすなら、月725円のGemini AI Plusが圧倒的なコスパです。Googleサービスとの連携が強く、マルチモーダル機能も充実しています。',
+    go: '「' + u + '」を「' + f + '」でOpenAI系のAIを使いたいなら、月約1,500円のChatGPT Goがコスト効率のよい選択です。GPT-4o miniを主体に基本的な用途をカバーします。',
+    plus: '「' + u + '」を「' + f + '」で活用するなら、画像生成(DALL-E 3)・音声・全機能を包括するChatGPT Plusが最有力です。OpenAIのエコシステムをフルに使い倒せます。'
+  };
+  return reasons[planKey];
+}
+
+function showResult(planKey) {
+  var p = PLANS[planKey];
+
+  var badgeEl = document.getElementById('planBadge');
+  badgeEl.textContent = p.badgeText;
+  badgeEl.className = 'plan-badge ' + p.badgeClass;
+
+  document.getElementById('planName').textContent = p.name;
+  document.getElementById('planModel').textContent = p.model;
+  document.getElementById('planPrice').textContent = p.price;
+  document.getElementById('planTagline').textContent = p.tagline;
+  document.getElementById('planReason').textContent = getReason(planKey);
+
+  var fl = document.getElementById('featureList');
+  fl.innerHTML = '';
+  for (var i = 0; i < p.features.length; i++) {
+    var li = document.createElement('li');
+    li.textContent = p.features[i];
+    fl.appendChild(li);
+  }
+
+  var noteEl = document.getElementById('modelNote');
+  if (p.note) {
+    noteEl.textContent = p.note;
+    noteEl.style.display = 'block';
+  } else {
+    noteEl.style.display = 'none';
+  }
+
+  var resultEl = document.getElementById('result');
+  resultEl.style.display = 'block';
+  resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function getShareText() {
+  if (!lastResult) { return ''; }
+  var p = PLANS[lastResult];
+  var u = USAGE_LABELS[answers.q1];
+  var f = FREQ_LABELS[answers.q3];
+  return 'AIモデル選び診断の結果: 「' + p.name + '(' + p.model + ')」がおすすめ!\n用途: ' + u + ' / 頻度: ' + f + ' / ' + p.price + '\n' + p.tagline + '\n#AIアプリ工房 #Claude5 #AI活用\nhttps://yama-ai-factory.vercel.app/apps/claude-model-shindan/';
+}
+
+function shareX() {
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(getShareText()), '_blank', 'noopener');
+}
+
+function doCopy() {
+  var text = getShareText();
+  var btn = document.getElementById('copyBtn');
+  var orig = btn.textContent;
+  function done() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = orig; }, 2000);
+  }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    done();
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+function retryDiag() {
+  answers = { q1: null, q2: null, q3: null };
+  lastResult = null;
+  var opts = document.querySelectorAll('.opt');
+  for (var i = 0; i < opts.length; i++) {
+    opts[i].classList.remove('selected');
+  }
+  document.getElementById('result').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
