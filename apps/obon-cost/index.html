@@ -109,6 +109,12 @@
     .btn-x    { background:#000; color:#fff; border:1px solid #333; }
     .btn-copy { background:rgba(52,211,153,.12); color:var(--green); border:1px solid rgba(52,211,153,.3); }
     .copy-msg { text-align:center; font-size:.8rem; color:var(--green); margin-top:6px; min-height:1.2em; }
+    .countdown-tip {
+      font-size:.82rem; font-weight:700; color:var(--orange);
+      margin-bottom:16px; padding:8px 12px;
+      background:rgba(251,146,60,.08); border-radius:8px;
+      border-left:3px solid var(--orange);
+    }
     @media (max-width:520px) {
       .wrapper { padding:28px 14px 60px; }
       .total-value { font-size:1.8rem; }
@@ -123,6 +129,7 @@
   <h1>お盆帰省<br><span class="grad">コスト計算機</span></h1>
   <p class="hero-desc">交通手段・人数・滞在日数・手土産予算を入力するだけで、お盆帰省の概算費用を費目別に計算します。2026年お盆(8/13〜16)の帰省計画にお役立てください。</p>
   <div class="disclaimer">計算結果はあくまで一般的な帰省スタイルに基づく目安です。実際の費用は路線・時期・ホテルグレード・燃費・距離等により大きく異なります。本ツールの計算結果を参考情報としてご利用ください。</div>
+  <div id="obonCountdown"></div>
 
   <div class="input-card">
     <div class="field">
@@ -395,7 +402,23 @@ function showCopyMsg(msg) {
   setTimeout(function() { el.textContent = ''; }, 2000);
 }
 
+function updateCountdown() {
+  var now = new Date();
+  var todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var obonDate = new Date(2026, 7, 13);
+  var diff = Math.round((obonDate - todayDate) / 86400000);
+  var el = document.getElementById('obonCountdown');
+  if (diff > 0 && diff <= 60) {
+    el.className = 'countdown-tip';
+    el.textContent = 'お盆(8/13)まであと ' + diff + ' 日 — 今のうちに帰省費用を試算しておきましょう';
+  } else if (diff <= 0 && diff >= -3) {
+    el.className = 'countdown-tip';
+    el.textContent = 'お盆期間中です — 帰省費用の参考にご活用ください';
+  }
+}
+
 calculate();
+updateCountdown();
 </script>
 </body>
 </html>
