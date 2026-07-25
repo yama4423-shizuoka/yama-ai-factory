@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>積ん読消化シミュレーター | 積ん読が何日で読み終わるか計算</title>
+  <meta name="description" content="積ん読リストにタイトルとページ数を登録して、1日のページ数を入力するだけで全部読み終わる日を計算します。「○冊の積ん読が○日で消化できる」が分かる無料ツール。登録不要。">
+
+  <meta property="og:title" content="積ん読消化シミュレーター | 積ん読が何日で読み終わるか計算">
+  <meta property="og:description" content="積ん読リストとページ数を登録し、1日のページ数を入力すると全部読み終わる日が分かります。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/tsundoku-sim/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:620px; margin:0 auto; padding:40px 20px 80px; }
+
+    .back-link {
+      display:inline-block; font-size:.82rem; color:var(--tx2);
+      text-decoration:none; margin-bottom:28px; transition:color .15s;
+    }
+    .back-link:hover { color:var(--acc2); }
+
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.6rem,5vw,2.2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:32px; }
+
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px; margin-bottom:20px; }
+
+    .field { margin-bottom:22px; }
+    label { display:block; font-size:.84rem; color:var(--tx3); font-weight:600; margin-bottom:8px; }
+
+    .preset-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+    .preset-btn {
+      padding:5px 13px; border-radius:8px; border:1px solid var(--bd);
+      background:var(--s2); color:var(--tx3); font-size:.8rem; font-weight:700;
+      cursor:pointer; transition:all .15s;
+    }
+    .preset-btn:hover { border-color:var(--acc2); color:var(--acc2); }
+
+    .input-row { display:flex; align-items:center; gap:10px; }
+    .num-input {
+      width:110px; padding:11px 14px; font-size:1.1rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:center;
+      flex-shrink:0;
+    }
+    .num-input:focus { border-color:var(--acc); }
+    .input-unit { font-size:.85rem; color:var(--tx3); flex-shrink:0; }
+
+    .add-row { display:flex; gap:8px; align-items:stretch; }
+    .text-input {
+      flex:1; min-width:0; padding:10px 14px; font-size:.93rem;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s;
+    }
+    .text-input:focus { border-color:var(--acc); }
+    .text-input::placeholder { color:var(--tx2); }
+    .pages-input {
+      width:90px; flex-shrink:0; padding:10px 8px; font-size:.93rem; font-weight:700; text-align:center;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s;
+    }
+    .pages-input:focus { border-color:var(--acc); }
+    .add-btn {
+      flex-shrink:0; padding:10px 16px; border-radius:10px; border:none;
+      background:var(--acc); color:#fff; font-size:.9rem; font-weight:700;
+      cursor:pointer; transition:opacity .15s; white-space:nowrap;
+    }
+    .add-btn:hover { opacity:.85; }
+
+    .book-list { display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+    .book-item {
+      display:flex; align-items:center; gap:10px;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      padding:10px 14px;
+    }
+    .book-num {
+      font-size:.7rem; font-weight:800; color:var(--acc2);
+      min-width:18px; text-align:center; flex-shrink:0;
+    }
+    .book-title { flex:1; font-size:.9rem; font-weight:600; color:var(--tx); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .book-pages-label { font-size:.8rem; color:var(--tx3); white-space:nowrap; flex-shrink:0; }
+    .del-btn {
+      flex-shrink:0; padding:4px 10px; border-radius:6px; border:1px solid var(--bd);
+      background:transparent; color:var(--tx2); font-size:.75rem;
+      cursor:pointer; transition:all .15s;
+    }
+    .del-btn:hover { border-color:#f87171; color:#f87171; }
+
+    .empty-hint { text-align:center; padding:20px 0; color:var(--tx2); font-size:.85rem; }
+
+    .error { color:#f87171; font-size:.85rem; margin-top:8px; display:none; }
+
+    .btn {
+      display:block; width:100%; padding:14px; margin-top:4px; border-radius:10px;
+      background:var(--acc); border:none; color:#fff;
+      font-size:1rem; font-weight:700; cursor:pointer; transition:opacity .15s;
+    }
+    .btn:hover { opacity:.85; }
+    .btn-sub {
+      background:transparent; border:1px solid var(--bd); color:var(--tx3);
+      font-size:.9rem; margin-top:10px; padding:11px;
+    }
+    .btn-sub:hover { border-color:var(--acc2); color:var(--acc2); opacity:1; }
+
+    #resultCard { display:none; }
+
+    .result-hero { text-align:center; padding:16px 0 20px; border-bottom:1px solid var(--bd); margin-bottom:20px; }
+    .result-hero .cond { font-size:.78rem; color:var(--tx2); margin-bottom:8px; }
+    .result-hero .big { font-size:clamp(1.9rem,7vw,2.8rem); font-weight:900; color:var(--green); line-height:1.2; }
+    .result-hero .sub { font-size:.84rem; color:var(--tx3); margin-top:6px; }
+
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+    .stat { background:var(--s2); border-radius:12px; padding:14px 8px; text-align:center; }
+    .stat .val { font-size:1.15rem; font-weight:800; color:var(--tx); }
+    .stat .lbl { font-size:.68rem; color:var(--tx2); margin-top:5px; line-height:1.5; }
+
+    .section-label { font-size:.76rem; color:var(--tx2); font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:12px; }
+
+    .book-result-list { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+    .book-result-item {
+      background:var(--s2); border-radius:10px; padding:12px 16px;
+      display:flex; align-items:center; gap:12px;
+    }
+    .br-order { font-size:.7rem; font-weight:800; color:var(--acc2); min-width:18px; text-align:center; flex-shrink:0; }
+    .br-info { flex:1; min-width:0; }
+    .br-title { font-size:.88rem; font-weight:700; color:var(--tx); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .br-pages { font-size:.72rem; color:var(--tx2); margin-top:2px; }
+    .br-date { font-size:.82rem; font-weight:800; color:var(--blue); white-space:nowrap; flex-shrink:0; }
+
+    @media (max-width:520px) {
+      .add-row { flex-wrap:wrap; }
+      .text-input { min-width:100%; }
+      .pages-input { width:auto; flex:1; }
+      .add-btn { width:100%; }
+      .stats { gap:7px; }
+      .stat .val { font-size:1rem; }
+      .num-input { width:90px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back-link" href="/">&larr; AIアプリ工房トップへ</a>
+
+  <div class="badge">読書・ライフスタイル</div>
+  <h1><span class="grad">積ん読消化</span>シミュレーター</h1>
+  <p class="hero-desc">積ん読リストにタイトルとページ数を登録して、1日に読めるページ数を入力するだけで、全部読み終わる日を計算します。「○冊の積ん読が○日後に消化できる」という気づきをシェアしよう。</p>
+
+  <div class="card">
+    <div class="field">
+      <label for="pagesPerDay">1日に読めるページ数</label>
+      <div class="preset-row">
+        <button class="preset-btn" onclick="setPages(10)">10ページ</button>
+        <button class="preset-btn" onclick="setPages(20)">20ページ</button>
+        <button class="preset-btn" onclick="setPages(30)">30ページ</button>
+        <button class="preset-btn" onclick="setPages(50)">50ページ</button>
+        <button class="preset-btn" onclick="setPages(100)">100ページ</button>
+      </div>
+      <div class="input-row">
+        <input type="number" id="pagesPerDay" class="num-input" value="30" min="1" max="9999" step="1"
+          onkeydown="if(event.key==='Enter')calculate();"
+          oninput="calculate()">
+        <span class="input-unit">ページ / 日</span>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:0;">
+      <label>積ん読リスト</label>
+      <div class="add-row">
+        <input type="text" id="bookTitle" class="text-input" placeholder="タイトルを入力" maxlength="60"
+          onkeydown="if(event.key==='Enter')addBook();">
+        <input type="number" id="bookPages" class="pages-input" placeholder="ページ数" min="1" max="99999" step="1"
+          onkeydown="if(event.key==='Enter')addBook();">
+        <button class="add-btn" onclick="addBook()">追加</button>
+      </div>
+      <div class="error" id="addError"></div>
+      <div class="book-list" id="bookList"></div>
+    </div>
+
+    <div class="error" id="calcError" style="margin-top:16px;"></div>
+    <button class="btn" onclick="calculate()" style="margin-top:20px;">消化予定を計算する</button>
+  </div>
+
+  <div class="card" id="resultCard">
+    <div class="result-hero">
+      <div class="cond" id="rCond"></div>
+      <div class="big" id="rFinishDate">—</div>
+      <div class="sub">に全部読み終わる予定</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="val" id="rBooks">—</div>
+        <div class="lbl">冊<br>積ん読合計</div>
+      </div>
+      <div class="stat">
+        <div class="val" id="rPages">—</div>
+        <div class="lbl">ページ<br>合計ページ数</div>
+      </div>
+      <div class="stat">
+        <div class="val" id="rDays">—</div>
+        <div class="lbl">日<br>読了までの日数</div>
+      </div>
+    </div>
+
+    <div class="section-label">各冊の読了予定日(この順に読んだ場合)</div>
+    <div class="book-result-list" id="bookResultList"></div>
+
+    <button class="btn" onclick="share()">Xでシェアする</button>
+    <button class="btn btn-sub" onclick="copyResult(this)">テキストをコピー</button>
+  </div>
+</div>
+
+<script>
+var books = [
+  { title: '夜は短し歩けよ乙女', pages: 253 },
+  { title: 'FACTFULNESS', pages: 400 },
+  { title: '積んだままのビジネス書', pages: 280 }
+];
+var _shareText = '';
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function fmtDate(d) {
+  return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
+}
+
+function fmtShortDate(d) {
+  return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+}
+
+function renderBookList() {
+  var list = document.getElementById('bookList');
+  if (books.length === 0) {
+    list.innerHTML = '<div class="empty-hint">本を追加してください</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < books.length; i++) {
+    html += '<div class="book-item">'
+      + '<span class="book-num">' + (i + 1) + '</span>'
+      + '<span class="book-title">' + esc(books[i].title) + '</span>'
+      + '<span class="book-pages-label">' + books[i].pages.toLocaleString('ja-JP') + 'p</span>'
+      + '<button class="del-btn" onclick="removeBook(' + i + ')">削除</button>'
+      + '</div>';
+  }
+  list.innerHTML = html;
+}
+
+function addBook() {
+  var titleEl = document.getElementById('bookTitle');
+  var pagesEl = document.getElementById('bookPages');
+  var errEl = document.getElementById('addError');
+  var title = titleEl.value.trim();
+  var pages = parseInt(pagesEl.value, 10);
+
+  if (!title) {
+    errEl.style.display = 'block';
+    errEl.textContent = 'タイトルを入力してください。';
+    titleEl.focus();
+    return;
+  }
+  if (!pages || pages < 1) {
+    errEl.style.display = 'block';
+    errEl.textContent = 'ページ数を1以上の数字で入力してください。';
+    pagesEl.focus();
+    return;
+  }
+  errEl.style.display = 'none';
+
+  books.push({ title: title, pages: pages });
+  titleEl.value = '';
+  pagesEl.value = '';
+  renderBookList();
+  calculate();
+  titleEl.focus();
+}
+
+function removeBook(idx) {
+  books.splice(idx, 1);
+  renderBookList();
+  calculate();
+}
+
+function setPages(n) {
+  document.getElementById('pagesPerDay').value = n;
+  calculate();
+}
+
+function calculate() {
+  var ppd = parseInt(document.getElementById('pagesPerDay').value, 10);
+  var errEl = document.getElementById('calcError');
+
+  if (!ppd || ppd < 1) {
+    errEl.style.display = 'block';
+    errEl.textContent = '1日のページ数を1以上入力してください。';
+    document.getElementById('resultCard').style.display = 'none';
+    return;
+  }
+  if (books.length === 0) {
+    errEl.style.display = 'none';
+    document.getElementById('resultCard').style.display = 'none';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  var totalPages = 0;
+  for (var i = 0; i < books.length; i++) {
+    totalPages += books[i].pages;
+  }
+  var totalDays = Math.ceil(totalPages / ppd);
+
+  var finishDate = new Date(today.getTime());
+  finishDate.setDate(finishDate.getDate() + totalDays - 1);
+
+  var cumulativePages = 0;
+  var bookResults = [];
+  for (var j = 0; j < books.length; j++) {
+    cumulativePages += books[j].pages;
+    var daysOffset = Math.ceil(cumulativePages / ppd) - 1;
+    var bd = new Date(today.getTime());
+    bd.setDate(bd.getDate() + daysOffset);
+    bookResults.push({
+      title: books[j].title,
+      pages: books[j].pages,
+      finishDate: bd
+    });
+  }
+
+  document.getElementById('rCond').textContent =
+    books.length + '冊 合計' + totalPages.toLocaleString('ja-JP') + 'ページ、1日' + ppd.toLocaleString('ja-JP') + 'ページで計算';
+  document.getElementById('rFinishDate').textContent = fmtDate(finishDate);
+  document.getElementById('rBooks').textContent = books.length;
+  document.getElementById('rPages').textContent = totalPages.toLocaleString('ja-JP');
+  document.getElementById('rDays').textContent = totalDays.toLocaleString('ja-JP');
+
+  var listHtml = '';
+  for (var k = 0; k < bookResults.length; k++) {
+    listHtml += '<div class="book-result-item">'
+      + '<div class="br-order">' + (k + 1) + '</div>'
+      + '<div class="br-info">'
+      + '<div class="br-title">' + esc(bookResults[k].title) + '</div>'
+      + '<div class="br-pages">' + bookResults[k].pages.toLocaleString('ja-JP') + 'ページ</div>'
+      + '</div>'
+      + '<div class="br-date">' + fmtShortDate(bookResults[k].finishDate) + '読了</div>'
+      + '</div>';
+  }
+  document.getElementById('bookResultList').innerHTML = listHtml;
+
+  _shareText = '【積ん読消化シミュレーター】\n'
+    + '積ん読が' + books.length + '冊(' + totalPages.toLocaleString('ja-JP') + 'ページ)もある!\n'
+    + '1日' + ppd + 'ページ読んで全部読み終わるのは\n'
+    + fmtDate(finishDate) + '(' + totalDays + '日間)の予定\n'
+    + '#積ん読 #読書 #AIアプリ工房\n'
+    + 'https://yama-ai-factory.vercel.app/apps/tsundoku-sim/';
+
+  document.getElementById('resultCard').style.display = 'block';
+}
+
+function share() {
+  if (!_shareText) return;
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(_shareText), '_blank', 'noopener');
+}
+
+function copyResult(btn) {
+  if (!_shareText) return;
+  navigator.clipboard.writeText(_shareText).then(function() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'テキストをコピー'; }, 2000);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = _shareText;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'テキストをコピー'; }, 2000);
+  });
+}
+
+renderBookList();
+calculate();
+</script>
+</body>
+</html>
