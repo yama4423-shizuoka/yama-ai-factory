@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>パート社会保険 加入チェッカー(2026年10月対応) | 加入義務を即判定</title>
+  <meta name="description" content="週労働時間・月収・勤務先の従業員規模を入力するだけで、現在と2026年10月改正後の社会保険加入義務を即判定。月保険料の目安も計算。無料・登録不要。">
+
+  <meta property="og:title" content="パート社会保険 加入チェッカー(2026年10月対応) | 加入義務を即判定">
+  <meta property="og:description" content="週労働時間・月収・従業員規模を入力し、現在と2026年10月改正後の社会保険加入義務を即判定。月保険料の目安も計算できます。無料・登録不要。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/shakai-hoken-check/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24; --red:#f87171;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:560px; margin:0 auto; padding:40px 20px 80px; }
+    .back { font-size:.82rem; color:var(--tx2); text-decoration:none; display:inline-block; margin-bottom:28px; }
+    .back:hover { color:var(--acc2); }
+    h1 { font-size:clamp(1.3rem,4vw,1.8rem); font-weight:900; margin-bottom:8px; }
+    .subtitle { color:var(--tx3); font-size:.9rem; line-height:1.7; margin-bottom:32px; }
+    .card {
+      background:var(--s1); border:1px solid var(--bd); border-radius:16px;
+      padding:24px 22px; margin-bottom:16px;
+    }
+    .card-title {
+      font-size:.82rem; font-weight:700; color:var(--tx3);
+      text-transform:uppercase; letter-spacing:.08em; margin-bottom:18px;
+    }
+    .field { margin-bottom:16px; }
+    .field label { display:block; font-size:.85rem; color:var(--tx3); margin-bottom:6px; }
+    .field .hint { font-size:.75rem; color:var(--tx2); margin-top:4px; }
+    .field input[type=number] {
+      width:100%; background:var(--s2); border:1px solid var(--bd); border-radius:8px;
+      padding:10px 14px; color:var(--tx); font-size:1rem;
+      outline:none; transition:border-color .15s; -moz-appearance:textfield;
+    }
+    .field input[type=number]::-webkit-inner-spin-button,
+    .field input[type=number]::-webkit-outer-spin-button { opacity:.5; }
+    .field input[type=number]:focus { border-color:var(--acc); }
+    .field select {
+      width:100%; background:var(--s2); border:1px solid var(--bd); border-radius:8px;
+      padding:10px 14px; color:var(--tx); font-size:1rem;
+      outline:none; transition:border-color .15s; cursor:pointer;
+      appearance:none; -webkit-appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236868a0' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 14px center;
+      padding-right:36px;
+    }
+    .field select:focus { border-color:var(--acc); }
+    .calc-btn {
+      width:100%; background:var(--acc); color:#fff; border:none; border-radius:10px;
+      padding:13px; font-size:1rem; font-weight:700; cursor:pointer;
+      transition:opacity .15s; margin-top:4px;
+    }
+    .calc-btn:hover { opacity:.85; }
+
+    .result { display:none; }
+    .result.show { display:block; }
+
+    .judge-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+    .judge-box { border-radius:12px; padding:16px 14px; }
+    .judge-box .j-label { font-size:.72rem; font-weight:700; color:var(--tx3); margin-bottom:8px; letter-spacing:.04em; }
+    .judge-box .j-verdict { font-size:1.05rem; font-weight:800; margin-bottom:6px; }
+    .judge-box .j-note { font-size:.75rem; color:var(--tx3); line-height:1.5; }
+    .judge-no   { background:rgba(52,211,153,.08);  border:1px solid rgba(52,211,153,.3); }
+    .judge-no   .j-verdict { color:var(--green); }
+    .judge-yes  { background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.3); }
+    .judge-yes  .j-verdict { color:var(--red); }
+
+    .change-banner { border-radius:12px; padding:14px 18px; margin-bottom:16px; }
+    .change-banner .c-title { font-size:.84rem; font-weight:800; margin-bottom:5px; }
+    .change-banner .c-body  { font-size:.84rem; color:var(--tx3); line-height:1.65; }
+    .change-new  { background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.3); }
+    .change-new  .c-title { color:var(--red); }
+    .change-same { background:rgba(104,104,160,.07); border:1px solid rgba(104,104,160,.3); }
+    .change-same .c-title { color:var(--tx3); }
+    .change-free { background:rgba(52,211,153,.07);  border:1px solid rgba(52,211,153,.3); }
+    .change-free .c-title { color:var(--green); }
+
+    .metrics { display:grid; gap:10px; margin-bottom:16px; }
+    .metric {
+      background:var(--s2); border-radius:10px; padding:14px 18px;
+      display:flex; justify-content:space-between; align-items:baseline;
+    }
+    .metric .m-label { font-size:.85rem; color:var(--tx3); }
+    .metric .m-value { font-size:1.2rem; font-weight:800; color:var(--acc2); }
+    .metric .m-value .unit { font-size:.78rem; font-weight:400; color:var(--tx3); margin-left:3px; }
+
+    .rule-list { list-style:none; }
+    .rule-list li {
+      font-size:.82rem; color:var(--tx3); line-height:1.6; padding:8px 0;
+      border-bottom:1px solid var(--bd);
+    }
+    .rule-list li:last-child { border-bottom:none; padding-bottom:0; }
+    .rule-ok  { color:var(--green); font-weight:700; }
+    .rule-ng  { color:var(--red);   font-weight:700; }
+    .rule-sub { font-size:.74rem; color:var(--tx2); display:block; margin-top:2px; }
+
+    .share-btn {
+      width:100%; background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      padding:12px; font-size:.9rem; font-weight:700; cursor:pointer;
+      color:var(--tx); transition:border-color .15s, color .15s; margin-bottom:16px;
+    }
+    .share-btn:hover { border-color:var(--acc2); color:var(--acc2); }
+
+    .disclaimer {
+      font-size:.75rem; color:var(--tx2); line-height:1.75;
+      padding:12px 16px; background:var(--s2); border-radius:8px;
+    }
+    @media (max-width:520px) {
+      .wrapper { padding:28px 14px 60px; }
+      .judge-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a href="/" class="back">← AIアプリ工房に戻る</a>
+  <h1>パート社会保険 加入チェッカー</h1>
+  <p class="subtitle">2026年10月1日の制度改正に対応。週労働時間・月収・勤務先規模を入力するだけで、現在と改正後の加入義務を即判定します。</p>
+
+  <div class="card">
+    <div class="card-title">勤務条件を入力</div>
+    <div class="field">
+      <label for="hours">1週間の所定労働時間（時間）</label>
+      <input type="number" id="hours" value="25" min="1" max="60" step="1"
+        onkeydown="if(event.key==='Enter')calculate();">
+      <div class="hint">残業を除く契約上の所定労働時間を入力してください</div>
+    </div>
+    <div class="field">
+      <label for="salary">月収（万円）</label>
+      <input type="number" id="salary" value="10" min="1" max="100" step="0.5"
+        onkeydown="if(event.key==='Enter')calculate();">
+      <div class="hint">交通費・賞与を除く月の所定内賃金の目安を入力してください</div>
+    </div>
+    <div class="field">
+      <label for="size">勤務先の従業員規模</label>
+      <select id="size" onchange="calculate()">
+        <option value="50">50人以下</option>
+        <option value="300" selected>51〜500人</option>
+        <option value="501">501人以上</option>
+      </select>
+      <div class="hint">パート・アルバイトを含む全従業員数の目安を選んでください</div>
+    </div>
+    <button class="calc-btn" onclick="calculate()">加入義務を判定する</button>
+  </div>
+
+  <div class="result" id="result">
+
+    <div class="judge-grid">
+      <div class="judge-box" id="nowBox">
+        <div class="j-label">現在（〜2026年9月）</div>
+        <div class="j-verdict" id="nowVerdict"></div>
+        <div class="j-note" id="nowNote"></div>
+      </div>
+      <div class="judge-box" id="futureBox">
+        <div class="j-label">改正後（2026年10月〜）</div>
+        <div class="j-verdict" id="futureVerdict"></div>
+        <div class="j-note" id="futureNote"></div>
+      </div>
+    </div>
+
+    <div class="change-banner" id="changeBanner">
+      <div class="c-title" id="changeTitle"></div>
+      <div class="c-body" id="changeBody"></div>
+    </div>
+
+    <div class="card" id="premiumCard">
+      <div class="card-title">月額保険料の目安（労働者負担分）</div>
+      <div class="metrics">
+        <div class="metric">
+          <span class="m-label">健康保険料（目安）</span>
+          <span class="m-value" id="health">-<span class="unit">円/月</span></span>
+        </div>
+        <div class="metric">
+          <span class="m-label">厚生年金保険料（目安）</span>
+          <span class="m-value" id="pension">-<span class="unit">円/月</span></span>
+        </div>
+        <div class="metric">
+          <span class="m-label">合計（目安）</span>
+          <span class="m-value" id="total">-<span class="unit">円/月</span></span>
+        </div>
+      </div>
+    </div>
+
+    <button class="share-btn" onclick="shareX()">Xでシェアする</button>
+
+    <div class="card">
+      <div class="card-title">2026年10月 改正のポイント</div>
+      <ul class="rule-list">
+        <li>
+          <span class="rule-ng">廃止</span> 月収8.8万円（年収106万円）以上の要件
+          <span class="rule-sub">→ 改正後は月収に関わらず週20時間以上で対象</span>
+        </li>
+        <li>
+          <span class="rule-ng">廃止</span> 従業員規模（51人以上）の要件
+          <span class="rule-sub">→ 改正後は企業規模に関わらず全事業所が対象</span>
+        </li>
+        <li>
+          <span class="rule-ok">維持</span> 週20時間以上の所定労働時間要件
+          <span class="rule-sub">→ 週20時間未満は引き続き対象外</span>
+        </li>
+        <li>
+          <span class="rule-ok">維持</span> 2ヶ月を超える雇用見込みの要件・学生除外
+          <span class="rule-sub">→ 短期アルバイト(2ヶ月以内)・学生は引き続き対象外</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="disclaimer">
+      ※ この判定・計算は目安です。実際の加入義務は労働契約・雇用形態・個別の状況により異なります。詳細は勤務先の担当部署または社会保険労務士にご確認ください。保険料率は協会けんぽ全国平均の目安値（健康保険5.0%・厚生年金9.15%）を使用しており、実際の保険料率は都道府県・標準報酬月額等により異なります。本ツールは医療・法律・金融の専門的助言を提供するものではありません。
+    </div>
+  </div>
+</div>
+
+<script>
+  var lastResult = null;
+
+  function fmt(n) {
+    return Math.round(n).toLocaleString('ja-JP');
+  }
+
+  function calculate() {
+    var hours     = parseFloat(document.getElementById('hours').value)  || 25;
+    var salary    = parseFloat(document.getElementById('salary').value) || 10;
+    var sizeVal   = parseInt(document.getElementById('size').value)     || 300;
+    var salaryYen = salary * 10000;
+
+    // 現在の判定（〜2026年9月）
+    // 週30時間以上: 規模・月収不問で加入義務（正社員の3/4基準）
+    // 週20〜29時間: 月収8.8万以上 かつ 51人以上 で加入義務
+    var nowObligation = false;
+    if (hours >= 30) {
+      nowObligation = true;
+    } else if (hours >= 20 && salaryYen >= 88000 && sizeVal >= 51) {
+      nowObligation = true;
+    }
+
+    // 2026年10月以降の判定
+    // 週30時間以上: 引き続き加入義務
+    // 週20〜29時間: 月収・規模要件撤廃 → 週20時間以上であれば加入義務
+    var futureObligation = (hours >= 20);
+
+    // 月額保険料（労働者負担の目安）
+    var healthPrem  = salaryYen * 0.050;   // 協会けんぽ全国平均目安
+    var pensionPrem = salaryYen * 0.0915;  // 厚生年金労働者負担
+    var totalPrem   = healthPrem + pensionPrem;
+
+    lastResult = {
+      hours: hours, salary: salary, sizeVal: sizeVal,
+      nowObligation: nowObligation, futureObligation: futureObligation,
+      healthPrem: healthPrem, pensionPrem: pensionPrem, totalPrem: totalPrem
+    };
+
+    document.getElementById('result').classList.add('show');
+
+    // 現在の判定ボックス
+    var nowBox = document.getElementById('nowBox');
+    nowBox.className = 'judge-box ' + (nowObligation ? 'judge-yes' : 'judge-no');
+    document.getElementById('nowVerdict').textContent = nowObligation ? '加入義務あり' : '加入義務なし';
+    var nowNote = '';
+    if (hours >= 30) {
+      nowNote = '週30時間以上のため、規模・月収に関わらず対象です。';
+    } else if (hours >= 20 && salaryYen >= 88000 && sizeVal >= 51) {
+      nowNote = '週20時間以上・月収8.8万円以上・51人以上の要件をすべて満たしています。';
+    } else if (hours < 20) {
+      nowNote = '週20時間未満のため対象外です。';
+    } else if (salaryYen < 88000) {
+      nowNote = '月収8.8万円未満のため現在は対象外です。';
+    } else {
+      nowNote = '従業員50人以下のため現在は対象外です。';
+    }
+    document.getElementById('nowNote').textContent = nowNote;
+
+    // 改正後の判定ボックス
+    var futureBox = document.getElementById('futureBox');
+    futureBox.className = 'judge-box ' + (futureObligation ? 'judge-yes' : 'judge-no');
+    document.getElementById('futureVerdict').textContent = futureObligation ? '加入義務あり' : '加入義務なし';
+    var futureNote = '';
+    if (hours >= 30) {
+      futureNote = '週30時間以上のため引き続き対象です。';
+    } else if (hours >= 20) {
+      futureNote = '改正後は週20時間以上であれば月収・企業規模に関わらず対象になります。';
+    } else {
+      futureNote = '週20時間未満のため改正後も対象外です。';
+    }
+    document.getElementById('futureNote').textContent = futureNote;
+
+    // 変化バナー
+    var changeBanner = document.getElementById('changeBanner');
+    var changeTitle  = document.getElementById('changeTitle');
+    var changeBody   = document.getElementById('changeBody');
+    if (!nowObligation && futureObligation) {
+      changeBanner.className = 'change-banner change-new';
+      changeTitle.textContent = '注意: 2026年10月以降に加入義務が新たに発生します';
+      changeBody.textContent  = '月収8.8万円要件・従業員規模要件が廃止されるため、現在の条件では2026年10月以降に社会保険への加入が必要になります。月額保険料の目安は下記をご確認ください。';
+    } else if (nowObligation) {
+      changeBanner.className = 'change-banner change-same';
+      changeTitle.textContent = '変化なし: 現在も改正後も加入義務があります';
+      changeBody.textContent  = '改正の前後で加入義務に変わりはありません。引き続き社会保険の被保険者として保護されます。';
+    } else {
+      changeBanner.className = 'change-banner change-free';
+      changeTitle.textContent = '変化なし: 現在も改正後も加入義務はありません';
+      changeBody.textContent  = '週20時間未満の場合、2026年10月の改正後も加入義務は生じません。';
+    }
+
+    // 保険料カード（加入義務がある場合のみ表示）
+    var premiumCard = document.getElementById('premiumCard');
+    if (nowObligation || futureObligation) {
+      premiumCard.style.display = 'block';
+      document.getElementById('health').innerHTML  = fmt(healthPrem)  + '<span class="unit">円/月</span>';
+      document.getElementById('pension').innerHTML = fmt(pensionPrem) + '<span class="unit">円/月</span>';
+      document.getElementById('total').innerHTML   = fmt(totalPrem)   + '<span class="unit">円/月</span>';
+    } else {
+      premiumCard.style.display = 'none';
+    }
+  }
+
+  function shareX() {
+    if (!lastResult) return;
+    var r = lastResult;
+    var sizeLabel = r.sizeVal <= 50 ? '50人以下' : r.sizeVal <= 500 ? '51〜500人' : '501人以上';
+    var text;
+    if (!r.nowObligation && r.futureObligation) {
+      text = 'パート社会保険チェック結果: 週' + r.hours + '時間・月収' + r.salary + '万円・' + sizeLabel + '。現在は加入義務なしですが、2026年10月以降は加入義務あり。月額保険料の目安は約' + fmt(r.totalPrem) + '円。 #AIアプリ工房';
+    } else if (r.nowObligation) {
+      text = 'パート社会保険チェック結果: 週' + r.hours + '時間・月収' + r.salary + '万円・' + sizeLabel + '。現在も改正後も加入義務あり。月額保険料の目安は約' + fmt(r.totalPrem) + '円。 #AIアプリ工房';
+    } else {
+      text = 'パート社会保険チェック結果: 週' + r.hours + '時間・月収' + r.salary + '万円・' + sizeLabel + '。現在も2026年10月以降も加入義務なし（週20時間未満）。 #AIアプリ工房';
+    }
+    var url = 'https://yama-ai-factory.vercel.app/apps/shakai-hoken-check/';
+    window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url), '_blank', 'noopener');
+  }
+
+  calculate();
+</script>
+</body>
+</html>
