@@ -116,6 +116,13 @@
       color:var(--tx); transition:border-color .15s, color .15s; margin-bottom:16px;
     }
     .share-btn:hover { border-color:var(--acc2); color:var(--acc2); }
+    .copy-btn {
+      width:100%; background:transparent; border:1px solid var(--bd); border-radius:10px;
+      padding:12px; font-size:.9rem; font-weight:700; cursor:pointer;
+      color:var(--tx3); transition:border-color .15s, color .15s; margin-bottom:12px;
+    }
+    .copy-btn:hover { border-color:var(--acc2); color:var(--acc2); }
+    .copy-msg { text-align:center; font-size:.78rem; color:var(--green); min-height:1.2em; margin-bottom:12px; }
 
     .disclaimer {
       font-size:.75rem; color:var(--tx2); line-height:1.75;
@@ -198,6 +205,8 @@
     </div>
 
     <button class="share-btn" onclick="shareX()">Xでシェアする</button>
+    <button class="copy-btn" onclick="doCopy()">テキストをコピー</button>
+    <div class="copy-msg" id="copyMsg"></div>
 
     <div class="card">
       <div class="card-title">2026年10月 改正のポイント</div>
@@ -330,20 +339,45 @@
     }
   }
 
-  function shareX() {
-    if (!lastResult) return;
+  function buildShareText() {
+    if (!lastResult) return '';
     var r = lastResult;
     var sizeLabel = r.sizeVal <= 50 ? '50人以下' : r.sizeVal <= 500 ? '51〜500人' : '501人以上';
-    var text;
     if (!r.nowObligation && r.futureObligation) {
-      text = 'パート社会保険チェック結果: 週' + r.hours + '時間・月収' + r.salary + '万円・' + sizeLabel + '。現在は加入義務なしですが、2026年10月以降は加入義務あり。月額保険料の目安は約' + fmt(r.totalPrem) + '円。 #AIアプリ工房';
+      return 'パート社会保険チェック結果: 週' + r.hours + '時間・月収' + r.salary + '万円・' + sizeLabel + '。現在は加入義務なしですが、2026年10月以降は加入義務あり。月額保険料の目安は約' + fmt(r.totalPrem) + '円。 #AIアプリ工房';
     } else if (r.nowObligation) {
-      text = 'パート社会保険チェック結果: 週' + r.hours + '時間・月収' + r.salary + '万円・' + sizeLabel + '。現在も改正後も加入義務あり。月額保険料の目安は約' + fmt(r.totalPrem) + '円。 #AIアプリ工房';
+      return 'パート社会保険チェック結果: 週' + r.hours + '時間・月収' + r.salary + '万円・' + sizeLabel + '。現在も改正後も加入義務あり。月額保険料の目安は約' + fmt(r.totalPrem) + '円。 #AIアプリ工房';
     } else {
-      text = 'パート社会保険チェック結果: 週' + r.hours + '時間・月収' + r.salary + '万円・' + sizeLabel + '。現在も2026年10月以降も加入義務なし（週20時間未満）。 #AIアプリ工房';
+      return 'パート社会保険チェック結果: 週' + r.hours + '時間・月収' + r.salary + '万円・' + sizeLabel + '。現在も2026年10月以降も加入義務なし（週20時間未満）。 #AIアプリ工房';
     }
+  }
+
+  function shareX() {
+    var text = buildShareText();
+    if (!text) return;
     var url = 'https://yama-ai-factory.vercel.app/apps/shakai-hoken-check/';
     window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url), '_blank', 'noopener');
+  }
+
+  function doCopy() {
+    var text = buildShareText();
+    if (!text) return;
+    var msg = document.getElementById('copyMsg');
+    function done() {
+      msg.textContent = 'コピーしました';
+      setTimeout(function() { msg.textContent = ''; }, 2500);
+    }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      done();
+    }
+    navigator.clipboard.writeText(text).then(done).catch(fallback);
   }
 
   calculate();
