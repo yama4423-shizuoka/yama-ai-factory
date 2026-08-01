@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>年収の壁 手取り変化シミュレーター(2026年版) | 103万・130万・178万円の壁を即計算</title>
+  <meta name="description" content="年収と扶養状況を入力するだけで、103万円・130万円・178万円の各壁での手取り変化を即計算。2026年基礎控除引き上げ(103万→178万円)対応。パート・アルバイトの年収調整の参考に。無料・登録不要。">
+
+  <meta property="og:title" content="年収の壁 手取り変化シミュレーター(2026年版) | 103万・130万・178万円の壁を即計算">
+  <meta property="og:description" content="年収と扶養状況を入力し、103万/130万/178万円の各壁での手取り変化を即計算。2026年改正対応。パート・アルバイトの年収調整の参考に。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/income-wall/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24; --red:#f87171;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back { font-size:.82rem; color:var(--tx2); text-decoration:none; display:inline-block; margin-bottom:28px; }
+    .back:hover { color:var(--acc2); }
+
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,5vw,2.1rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .subtitle { color:var(--tx3); font-size:.88rem; line-height:1.8; margin-bottom:28px; }
+
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px 22px; margin-bottom:16px; }
+    .card-title { font-size:.78rem; font-weight:700; color:var(--tx3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:18px; }
+
+    .field { margin-bottom:20px; }
+    .field:last-child { margin-bottom:0; }
+    .field label { display:block; font-size:.84rem; color:var(--tx3); font-weight:600; margin-bottom:8px; }
+    .input-row { display:flex; align-items:center; gap:12px; }
+    input[type=number] {
+      width:100px; padding:10px 12px; font-size:1rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:center;
+      flex-shrink:0; -moz-appearance:textfield;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { opacity:.5; }
+    input[type=number]:focus { border-color:var(--acc); }
+    input[type=range] { flex:1; accent-color:var(--acc); cursor:pointer; }
+    .input-unit { font-size:.82rem; color:var(--tx2); white-space:nowrap; }
+
+    .radio-row { display:flex; gap:10px; flex-wrap:wrap; }
+    .radio-btn {
+      flex:1; min-width:160px; padding:10px 14px; border-radius:10px;
+      border:1px solid var(--bd); background:var(--s2); color:var(--tx3);
+      font-size:.82rem; font-weight:600; cursor:pointer; transition:all .15s;
+      display:flex; align-items:center; gap:8px; text-align:left;
+    }
+    .radio-btn.active { background:rgba(124,111,245,.15); border-color:var(--acc); color:var(--acc2); }
+    .radio-btn:hover:not(.active) { border-color:var(--tx3); color:var(--tx); }
+    .rd { width:16px; height:16px; border-radius:50%; border:2px solid currentColor; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+    .rd::after { content:''; width:8px; height:8px; border-radius:50%; background:currentColor; display:none; }
+    .radio-btn.active .rd::after { display:block; }
+
+    .calc-btn {
+      width:100%; background:var(--acc); color:#fff; border:none; border-radius:10px;
+      padding:13px; font-size:1rem; font-weight:700; cursor:pointer;
+      transition:opacity .15s; margin-top:4px;
+    }
+    .calc-btn:hover { opacity:.85; }
+
+    /* Wall items */
+    .wall-list { display:flex; flex-direction:column; gap:10px; }
+    .wall-item {
+      display:flex; align-items:flex-start; gap:12px; padding:12px 14px;
+      border-radius:10px; border:1px solid;
+    }
+    .wall-ok   { background:rgba(52,211,153,.07);  border-color:rgba(52,211,153,.25); }
+    .wall-ng   { background:rgba(248,113,113,.07); border-color:rgba(248,113,113,.25); }
+    .wall-na   { background:rgba(34,34,58,.4);     border-color:rgba(104,104,160,.15); }
+    .wall-info { background:rgba(251,191,36,.06);  border-color:rgba(251,191,36,.25); }
+    .wall-badge {
+      width:24px; height:24px; border-radius:50%; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.8rem; font-weight:900; margin-top:1px;
+    }
+    .wall-ok   .wall-badge { background:rgba(52,211,153,.2);  color:var(--green); }
+    .wall-ng   .wall-badge { background:rgba(248,113,113,.2); color:var(--red); }
+    .wall-na   .wall-badge { background:rgba(104,104,160,.1); color:var(--tx2); }
+    .wall-info .wall-badge { background:rgba(251,191,36,.15); color:var(--yellow); }
+    .wall-name { font-size:.84rem; font-weight:700; margin-bottom:3px; }
+    .wall-ok   .wall-name { color:var(--green); }
+    .wall-ng   .wall-name { color:var(--red); }
+    .wall-na   .wall-name { color:var(--tx2); }
+    .wall-info .wall-name { color:var(--yellow); }
+    .wall-desc { font-size:.78rem; color:var(--tx3); line-height:1.5; }
+
+    /* Result hidden */
+    .rh { display:none; }
+
+    /* Big number */
+    .big-num { text-align:center; padding:16px 0 20px; }
+    .big-num .lbl { font-size:.78rem; color:var(--tx2); margin-bottom:6px; }
+    .big-num .val { font-size:clamp(2.4rem,8vw,3.6rem); font-weight:900; color:var(--acc2); line-height:1; }
+    .big-num .unt { font-size:.84rem; color:var(--tx3); margin-top:6px; }
+
+    .divider { border:none; border-top:1px solid var(--bd); margin:16px 0; }
+    .sec-lbl { font-size:.72rem; color:var(--tx2); font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:10px; }
+
+    .bd-table { width:100%; border-collapse:collapse; }
+    .bd-table td { padding:9px 4px; font-size:.84rem; border-bottom:1px solid rgba(34,34,58,.6); }
+    .bd-table tr:last-child td { border-bottom:none; }
+    .bd-lbl { color:var(--tx3); }
+    .bd-val { text-align:right; font-weight:700; white-space:nowrap; }
+    .bd-acc { color:var(--acc2); }
+    .bd-ded { color:var(--red); }
+    .bd-ok  { color:var(--green); }
+    .bd-total td { font-weight:800; border-top:2px solid var(--bd); border-bottom:none; }
+
+    /* Comparison table */
+    .cmp-table { width:100%; border-collapse:collapse; }
+    .cmp-table th {
+      font-size:.72rem; color:var(--tx2); font-weight:700; letter-spacing:.04em;
+      padding:6px 8px 10px; border-bottom:1px solid var(--bd);
+    }
+    .cmp-table th:first-child { text-align:left; }
+    .cmp-table th:not(:first-child) { text-align:right; }
+    .cmp-table td { padding:10px 8px; border-bottom:1px solid rgba(34,34,58,.5); font-size:.84rem; }
+    .cmp-table tr:last-child td { border-bottom:none; }
+    .cmp-inc { color:var(--tx3); font-weight:600; }
+    .cmp-tag { font-size:.7rem; color:var(--tx2); font-style:italic; }
+    .cmp-net { text-align:right; font-weight:700; }
+    .cmp-chg { text-align:right; font-size:.78rem; }
+    .cmp-up   { color:var(--green); }
+    .cmp-dn   { color:var(--red); }
+    .cmp-cur td { background:rgba(124,111,245,.08); }
+    .cmp-cur .cmp-inc { color:var(--acc2); }
+    .cmp-cur .cmp-net { color:var(--acc2); }
+    .cliff-row td { background:rgba(248,113,113,.06); }
+    .cliff-tag { color:var(--red) !important; }
+
+    .share-btn {
+      display:block; width:100%; padding:13px; border-radius:10px;
+      background:var(--acc); border:none; color:#fff;
+      font-size:1rem; font-weight:700; cursor:pointer; transition:opacity .15s; margin-top:10px;
+    }
+    .share-btn:hover { opacity:.85; }
+    .copy-btn {
+      display:block; width:100%; padding:11px; border-radius:10px;
+      background:transparent; border:1px solid var(--bd); color:var(--tx3);
+      font-size:.9rem; font-weight:600; cursor:pointer; transition:all .15s; margin-top:8px;
+    }
+    .copy-btn:hover { border-color:var(--acc2); color:var(--acc2); }
+
+    .note { font-size:.73rem; color:var(--tx2); line-height:1.75; }
+
+    @media (max-width:520px) {
+      .wrapper { padding:28px 14px 60px; }
+      input[type=number] { width:82px; font-size:.92rem; }
+      .radio-btn { font-size:.78rem; padding:9px 10px; min-width:130px; }
+      .cmp-table { font-size:.78rem; }
+      .cmp-table td { padding:8px 6px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back" href="/">&larr; AIアプリ工房トップへ</a>
+
+  <div class="badge">2026年改正対応</div>
+  <h1><span class="grad">年収の壁</span> 手取り変化<br>シミュレーター</h1>
+  <p class="subtitle">103万・130万・178万円の各壁での手取りへの影響を即計算。2026年の基礎控除引き上げ(103万→178万円)対応。パート・アルバイトの年収調整の参考にどうぞ。</p>
+
+  <div class="card">
+    <div class="card-title">入力</div>
+    <div class="field">
+      <label>年収(額面)</label>
+      <div class="input-row">
+        <input type="number" id="income" value="100" min="50" max="250" step="1"
+          onkeydown="if(event.key==='Enter')calculate();"
+          oninput="syncSlider(); calculate();">
+        <input type="range" id="incomeSlider" min="50" max="250" step="1" value="100"
+          oninput="syncNumber(); calculate();">
+        <span class="input-unit">万円</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>扶養の状況</label>
+      <div class="radio-row">
+        <button type="button" class="radio-btn active" id="btn-dep" onclick="setDep(true)">
+          <span class="rd"></span>配偶者の扶養内(被扶養者)
+        </button>
+        <button type="button" class="radio-btn" id="btn-ind" onclick="setDep(false)">
+          <span class="rd"></span>独身・自分で社会保険加入
+        </button>
+      </div>
+    </div>
+    <button type="button" class="calc-btn" onclick="calculate()">手取りを計算する</button>
+  </div>
+
+  <div class="card rh" id="wallCard">
+    <div class="card-title">各壁との関係</div>
+    <div class="wall-list" id="wallList"></div>
+  </div>
+
+  <div class="card rh" id="netCard">
+    <div class="big-num">
+      <div class="lbl" id="netLbl">—</div>
+      <div class="val" id="netVal">—</div>
+      <div class="unt">万円 / 年(概算)</div>
+    </div>
+    <hr class="divider">
+    <div class="sec-lbl">内訳</div>
+    <table class="bd-table">
+      <tr><td class="bd-lbl">額面年収</td><td class="bd-val bd-acc" id="dIncome">—</td></tr>
+      <tr><td class="bd-lbl" id="dSocialLbl">社会保険料</td><td class="bd-val" id="dSocial">—</td></tr>
+      <tr><td class="bd-lbl">所得税(2026年改正)</td><td class="bd-val" id="dIT">—</td></tr>
+      <tr><td class="bd-lbl">住民税(概算)</td><td class="bd-val" id="dRT">—</td></tr>
+      <tr class="bd-total"><td class="bd-lbl">手取り年収(概算)</td><td class="bd-val bd-acc" id="dNet">—</td></tr>
+    </table>
+  </div>
+
+  <div class="card rh" id="cmpCard">
+    <div class="card-title">各壁での手取り比較</div>
+    <table class="cmp-table">
+      <thead>
+        <tr>
+          <th>年収</th>
+          <th>手取り概算</th>
+          <th>増減</th>
+        </tr>
+      </thead>
+      <tbody id="cmpBody"></tbody>
+    </table>
+    <p class="note" style="margin-top:14px;" id="cmpNote"></p>
+  </div>
+
+  <div class="card rh" id="shareCard">
+    <button type="button" class="share-btn" onclick="doShare()">Xでシェアする</button>
+    <button type="button" class="copy-btn" onclick="doCopy(this)">テキストをコピー</button>
+  </div>
+
+  <p class="note" style="margin:0 4px 0;">
+    ※ 本ツールは独身・40歳未満・協会けんぽ(東京都)加入の給与所得者を想定した概算です。2026年の基礎控除引き上げ(所得税:48万→123万円)を反映しています。住民税の基礎控除は従来どおり43万円で計算しています。実際の手取りは雇用形態・居住地・各種控除によって異なります。正確な金額は税務署・年金事務所・税理士にご確認ください。
+  </p>
+</div>
+
+<script>
+var _dep = true;
+var _st = '';
+
+function syncSlider() {
+  document.getElementById('incomeSlider').value = document.getElementById('income').value;
+}
+function syncNumber() {
+  document.getElementById('income').value = document.getElementById('incomeSlider').value;
+}
+function setDep(v) {
+  _dep = v;
+  document.getElementById('btn-dep').classList.toggle('active', v);
+  document.getElementById('btn-ind').classList.toggle('active', !v);
+  calculate();
+}
+
+/* 給与所得控除(万円) */
+function gsd(inc) {
+  if (inc <= 162.5) return 55;
+  if (inc <= 180)   return inc * 0.4 - 10;
+  if (inc <= 360)   return inc * 0.3 + 8;
+  return 131;
+}
+
+/* 社会保険料(被用者保険, 万円) */
+function soc(inc) {
+  var m = inc / 12;
+  var h = Math.min(m, 139) * 0.05 * 12;
+  var p = Math.min(m, 65)  * 0.0915 * 12;
+  var e = inc * 0.006;
+  return h + p + e;
+}
+
+/* 手取り計算 */
+function calc(inc, dep) {
+  var s = (!dep || inc >= 130) ? soc(inc) : 0;
+  var si = Math.max(0, inc - gsd(inc));           /* 給与所得 */
+  var tit = Math.max(0, si - 123 - s);             /* 課税所得(所得税) 基礎控除=123万 */
+  var it = 0;
+  if      (tit <= 195) it = tit * 0.05;
+  else if (tit <= 330) it = tit * 0.10 - 9.75;
+  else                 it = tit * 0.20 - 42.75;
+  it = Math.max(0, it) * 1.021;
+  var trt = Math.max(0, si - 43 - s);              /* 課税所得(住民税) */
+  var rt = trt > 0 ? trt * 0.10 : 0;
+  return { net: Math.max(0, inc - s - it - rt), s: s, it: it, rt: rt };
+}
+
+function fn(v) { return (Math.round(v * 10) / 10).toLocaleString('ja-JP') + '万円'; }
+
+function wallItem(type, name, desc) {
+  var icons = { ok:'✓', ng:'!', na:'-', info:'i' };
+  return '<div class="wall-item wall-' + type + '">'
+    + '<div class="wall-badge">' + icons[type] + '</div>'
+    + '<div><div class="wall-name">' + name + '</div>'
+    + '<div class="wall-desc">' + desc + '</div></div>'
+    + '</div>';
+}
+
+function calculate() {
+  var inc = Math.max(50, Math.min(250, parseFloat(document.getElementById('income').value) || 100));
+
+  var r = calc(inc, _dep);
+
+  /* 各壁との関係 */
+  var wHtml = '';
+
+  /* 103万: 配偶者控除への影響 */
+  if (!_dep) {
+    wHtml += wallItem('na', '103万円の壁(配偶者控除)', '独身・配偶者なしのため非該当です');
+  } else if (inc <= 103) {
+    wHtml += wallItem('ok', '103万円の壁(配偶者控除)', '以下です。配偶者(夫・妻)が満額の配偶者控除(38万円)を受けられます');
+  } else {
+    wHtml += wallItem('info', '103万円の壁(配偶者控除)', '超過しています。配偶者(特別)控除が段階的に減額されます。年収201万円超でゼロになります');
+  }
+
+  /* 130万: 社会保険扶養ライン */
+  if (!_dep) {
+    wHtml += wallItem('na', '130万円の壁(社会保険 扶養ライン)', '独身・自社保のため非該当です');
+  } else if (inc < 130) {
+    wHtml += wallItem('ok', '130万円の壁(社会保険 扶養ライン)', '以下です。配偶者の社会保険の扶養内のため、社会保険料の負担はありません');
+  } else {
+    wHtml += wallItem('ng', '130万円の壁(社会保険 扶養ライン)', '超過しています。配偶者の扶養から外れ、自分で健康保険・厚生年金に加入が必要です。手取りが大きく減るポイントです');
+  }
+
+  /* 178万: 2026年改正後の所得税ゼロライン */
+  if (inc <= 178) {
+    wHtml += wallItem('ok', '178万円の壁(2026年改正 所得税)', '以下です。2026年の基礎控除引き上げにより、年収178万円以下であれば所得税は発生しません');
+  } else {
+    wHtml += wallItem('ng', '178万円の壁(2026年改正 所得税)', '超過しています。所得税が発生します(ただし社会保険料控除後の課税所得に依存します)');
+  }
+
+  document.getElementById('wallList').innerHTML = wHtml;
+
+  /* 手取りカード */
+  document.getElementById('netLbl').textContent = '年収 ' + inc + '万円の手取り(概算)';
+  document.getElementById('netVal').textContent  = Math.round(r.net * 10) / 10;
+  document.getElementById('dIncome').textContent = fn(inc);
+
+  var sEl = document.getElementById('dSocial');
+  var sLbl = document.getElementById('dSocialLbl');
+  if (r.s < 0.01) {
+    sEl.textContent = 'なし(扶養内)';
+    sEl.className = 'bd-val bd-ok';
+    sLbl.textContent = '社会保険料';
+  } else {
+    sEl.textContent = '▲ ' + fn(r.s);
+    sEl.className = 'bd-val bd-ded';
+    sLbl.textContent = '社会保険料(健保+年金+雇用)';
+  }
+
+  var itEl = document.getElementById('dIT');
+  if (r.it < 0.01) {
+    itEl.textContent = 'なし(178万円以下)';
+    itEl.className = 'bd-val bd-ok';
+  } else {
+    itEl.textContent = '▲ ' + fn(r.it);
+    itEl.className = 'bd-val bd-ded';
+  }
+
+  var rtEl = document.getElementById('dRT');
+  if (r.rt < 0.01) {
+    rtEl.textContent = 'なし';
+    rtEl.className = 'bd-val bd-ok';
+  } else {
+    rtEl.textContent = '▲ ' + fn(r.rt);
+    rtEl.className = 'bd-val bd-ded';
+  }
+
+  document.getElementById('dNet').textContent = fn(r.net);
+
+  /* 比較表 */
+  var pts;
+  if (_dep) {
+    pts = [
+      { inc:100, dep:true,  label:'100万円', tag:'103万円の壁 手前' },
+      { inc:129, dep:true,  label:'129万円', tag:'130万円の壁 直前(扶養内)' },
+      { inc:130, dep:false, label:'130万円', tag:'社保扶養 外れた場合', cliff:true },
+      { inc:178, dep:false, label:'178万円', tag:'2026年 所得税ゼロ限度' }
+    ];
+  } else {
+    pts = [
+      { inc: 80, dep:false, label: '80万円', tag:'' },
+      { inc:130, dep:false, label:'130万円', tag:'' },
+      { inc:178, dep:false, label:'178万円', tag:'2026年 所得税ゼロ限度' },
+      { inc:220, dep:false, label:'220万円', tag:'' }
+    ];
+  }
+
+  /* 現在の年収が表にない場合は追加 */
+  var inList = pts.some(function(p) { return p.inc === inc && p.dep === _dep; });
+  if (!inList) {
+    pts.push({ inc:inc, dep:_dep, label:inc + '万円', tag:'← 現在の年収', cur:true });
+    pts.sort(function(a,b) { return a.inc - b.inc; });
+  } else {
+    pts.forEach(function(p) {
+      if (p.inc === inc && p.dep === _dep) { p.cur = true; p.tag = p.tag ? p.tag + ' ← 現在' : '← 現在の年収'; }
+    });
+  }
+
+  var base = calc(pts[0].inc, pts[0].dep).net;
+  var tbHtml = '';
+  pts.forEach(function(p, i) {
+    var rp = calc(p.inc, p.dep);
+    var diff = rp.net - base;
+    var dStr = i === 0 ? '—' : ((diff >= 0 ? '+' : '') + (Math.round(diff * 10) / 10).toLocaleString('ja-JP') + '万');
+    var dCls = i === 0 ? '' : (diff >= 0 ? 'cmp-up' : 'cmp-dn');
+    var rCls = p.cur ? 'cmp-cur' : (p.cliff ? 'cliff-row' : '');
+
+    tbHtml += '<tr' + (rCls ? ' class="' + rCls + '"' : '') + '>'
+      + '<td class="cmp-inc"><span>' + p.label + '</span>'
+      + (p.tag ? '<br><span class="cmp-tag' + (p.cliff ? ' cliff-tag' : '') + '">' + p.tag + '</span>' : '')
+      + '</td>'
+      + '<td class="cmp-net">' + (Math.round(rp.net * 10) / 10).toLocaleString('ja-JP') + '万円</td>'
+      + '<td class="cmp-chg ' + dCls + '">' + dStr + '</td>'
+      + '</tr>';
+  });
+  document.getElementById('cmpBody').innerHTML = tbHtml;
+
+  var note = _dep
+    ? '※ 130万円の壁: 年収が130万円を超えると配偶者の社会保険の扶養から外れます。社会保険料の負担が一気に増えるため、「129万円に抑える」就業調整が起きやすいポイントです。2026年の改正で所得税の非課税ラインは178万円に変わりましたが、社会保険の130万円の壁は据え置きです。'
+    : '※ 2026年の基礎控除引き上げ(48万→123万円)で、所得税の非課税ラインが103万円から178万円に変わりました。社会保険料は年収に応じてかかります。独身で会社の社会保険に加入している場合、社会保険料控除の効果で178万円を超えても所得税がゼロになるケースがあります。';
+  document.getElementById('cmpNote').textContent = note;
+
+  /* シェアテキスト */
+  var status = [];
+  if (_dep && inc < 130) status.push('社保扶養内');
+  else if (_dep) status.push('社保扶養外');
+  if (inc <= 178) status.push('所得税ゼロ(2026年改正)');
+  else status.push('所得税あり');
+
+  _st = '【年収の壁シミュレーター 2026年版】\n'
+    + '年収 ' + inc + '万円 → 手取り約 ' + (Math.round(r.net * 10) / 10) + '万円/年\n'
+    + '社会保険: ' + (r.s < 0.01 ? 'なし(扶養内)' : '約' + (Math.round(r.s * 10) / 10) + '万円') + '\n'
+    + '壁の状況: ' + status.join(' / ') + '\n'
+    + '#年収の壁 #手取り計算 #パート #AIアプリ工房\n'
+    + 'https://yama-ai-factory.vercel.app/apps/income-wall/';
+
+  ['wallCard','netCard','cmpCard','shareCard'].forEach(function(id) {
+    document.getElementById(id).classList.remove('rh');
+  });
+}
+
+function doShare() {
+  if (!_st) return;
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(_st), '_blank', 'noopener');
+}
+
+function doCopy(btn) {
+  if (!_st) return;
+  navigator.clipboard.writeText(_st).then(function() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'テキストをコピー'; }, 2000);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = _st;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'テキストをコピー'; }, 2000);
+  });
+}
+
+calculate();
+</script>
+</body>
+</html>
