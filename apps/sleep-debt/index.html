@@ -106,6 +106,13 @@
       color:var(--tx); transition:border-color .15s, color .15s;
     }
     .share-btn:hover { border-color:var(--acc2); color:var(--acc2); }
+    .copy-btn {
+      width:100%; background:transparent; border:1px solid var(--bd); border-radius:10px;
+      padding:12px; font-size:.9rem; font-weight:700; cursor:pointer;
+      color:var(--tx3); transition:border-color .15s, color .15s; margin-top:8px;
+    }
+    .copy-btn:hover { border-color:var(--acc2); color:var(--acc2); }
+    .copy-msg { text-align:center; font-size:.78rem; color:var(--green); min-height:1.2em; margin-top:6px; }
 
     .disclaimer {
       font-size:.75rem; color:var(--tx2); margin-top:16px; line-height:1.7;
@@ -186,6 +193,8 @@
       </div>
 
       <button class="share-btn" onclick="shareX()">Xでシェアする</button>
+      <button class="copy-btn" onclick="doCopy()">テキストをコピー</button>
+      <div class="copy-msg" id="copyMsg"></div>
     </div>
 
     <div class="disclaimer">
@@ -268,17 +277,41 @@
     }
   }
 
-  function shareX() {
-    if (!lastResult) return;
+  function buildShareText() {
+    if (!lastResult) return '';
     var r = lastResult;
-    var text;
     if (r.weeklyDebt <= 0) {
-      text = '睡眠負債チェック結果: 平日' + r.weekday + 'h・休日' + r.weekend + 'hで睡眠充足。目標' + r.target + '時間をクリアできています。 #AIアプリ工房';
-    } else {
-      text = '私の睡眠負債: 週' + r.weeklyDebt.toFixed(1) + '時間ペースで積み重なり、年間では約' + Math.round(r.annualDebt) + '時間(' + r.annualDays.toFixed(1) + '日分)の睡眠不足。(平日' + r.weekday + 'h・休日' + r.weekend + 'h/目標' + r.target + 'h) #AIアプリ工房';
+      return '睡眠負債チェック結果: 平日' + r.weekday + 'h・休日' + r.weekend + 'hで睡眠充足。目標' + r.target + '時間をクリアできています。 #AIアプリ工房';
     }
+    return '私の睡眠負債: 週' + r.weeklyDebt.toFixed(1) + '時間ペースで積み重なり、年間では約' + Math.round(r.annualDebt) + '時間(' + r.annualDays.toFixed(1) + '日分)の睡眠不足。(平日' + r.weekday + 'h・休日' + r.weekend + 'h/目標' + r.target + 'h) #AIアプリ工房';
+  }
+
+  function shareX() {
+    var text = buildShareText();
+    if (!text) return;
     var url = 'https://yama-ai-factory.vercel.app/apps/sleep-debt/';
     window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url), '_blank', 'noopener');
+  }
+
+  function doCopy() {
+    var text = buildShareText();
+    if (!text) return;
+    var msg = document.getElementById('copyMsg');
+    function done() {
+      msg.textContent = 'コピーしました';
+      setTimeout(function() { msg.textContent = ''; }, 2500);
+    }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      done();
+    }
+    navigator.clipboard.writeText(text).then(done).catch(fallback);
   }
 
   calculate();
