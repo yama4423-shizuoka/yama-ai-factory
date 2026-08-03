@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>シルバーウィーク旅費試算ツール 2026年秋5連休版 | AIアプリ工房</title>
+  <meta name="description" content="2026年シルバーウィーク(9月19〜23日・11年ぶり5連休)の繁忙期料金帯で旅費を試算。交通手段・目的地エリア・人数・泊数を選ぶだけ。通常期との差額も一目でわかる。無料・登録不要。">
+  <meta property="og:title" content="シルバーウィーク旅費試算ツール 2026年秋5連休版">
+  <meta property="og:description" content="2026年9月19〜23日シルバーウィーク(11年ぶり5連休)の繁忙期料金で旅費を一発試算。通常期より何万円高い? 内訳付きで即計算。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/silver-week-travel/">
+  <meta name="twitter:card" content="summary">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24; --orange:#fb923c;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back { display:inline-block; font-size:.82rem; color:var(--tx2); text-decoration:none; margin-bottom:26px; transition:color .15s; }
+    .back:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,4.5vw,2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:8px; }
+    .disclaimer {
+      font-size:.75rem; color:var(--tx2); margin-bottom:28px; padding:8px 12px;
+      background:var(--s2); border-radius:8px; border-left:3px solid var(--bd);
+    }
+    .countdown-tip {
+      font-size:.82rem; font-weight:700; color:var(--yellow);
+      margin-bottom:20px; padding:10px 14px;
+      background:rgba(251,191,36,.08); border-radius:8px;
+      border-left:3px solid var(--yellow);
+    }
+    .input-card {
+      background:var(--s1); border:1px solid var(--bd); border-radius:16px;
+      padding:22px 20px; margin-bottom:20px;
+    }
+    .field { margin-bottom:20px; }
+    .field:last-child { margin-bottom:0; }
+    .field-label {
+      display:block; font-size:.8rem; font-weight:700; color:var(--tx2);
+      margin-bottom:10px; letter-spacing:.04em;
+    }
+    .field-hint { font-size:.75rem; color:var(--tx2); margin-top:8px; line-height:1.6; }
+    .chips { display:flex; flex-wrap:wrap; gap:8px; }
+    .chip input[type=radio] { display:none; }
+    .chip label {
+      display:block; cursor:pointer; padding:10px 16px; border-radius:10px;
+      border:1px solid var(--bd); background:var(--s2); font-size:.88rem; font-weight:700;
+      color:var(--tx3); transition:all .15s;
+    }
+    .chip input[type=radio]:checked + label {
+      background:rgba(124,111,245,.18); border-color:var(--acc); color:var(--acc2);
+    }
+    .chip label:hover { border-color:var(--acc); }
+    .input-row { display:flex; align-items:center; gap:10px; }
+    .input-row input[type=number] {
+      flex:1; background:var(--s2); border:1px solid var(--bd);
+      color:var(--tx); border-radius:10px; padding:12px 14px;
+      font-size:1.1rem; font-weight:700; transition:border-color .15s;
+    }
+    .input-row input[type=number]:focus { outline:none; border-color:var(--acc); }
+    .input-unit { font-size:.88rem; color:var(--tx2); white-space:nowrap; }
+    .result-card {
+      background:var(--s1); border:1px solid rgba(124,111,245,.35);
+      border-radius:16px; padding:22px 20px; margin-bottom:16px;
+    }
+    .total-box {
+      text-align:center; padding:18px 12px; border-radius:12px; margin-bottom:20px;
+      background:rgba(124,111,245,.08); border:1px solid rgba(124,111,245,.3);
+    }
+    .total-label { font-size:.72rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--acc2); margin-bottom:6px; }
+    .total-value { font-size:2.2rem; font-weight:900; color:var(--acc2); line-height:1; }
+    .total-unit { font-size:.8rem; color:var(--tx3); margin-top:4px; }
+    .total-sub { font-size:.78rem; color:var(--tx2); margin-top:8px; }
+    .surplus-box {
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      margin-top:12px; padding:8px 14px; border-radius:8px;
+      background:rgba(251,146,60,.08); border:1px solid rgba(251,146,60,.25);
+    }
+    .surplus-label { font-size:.78rem; color:var(--tx3); }
+    .surplus-value { font-size:1rem; font-weight:800; color:var(--orange); }
+    .breakdown-title { font-size:.75rem; font-weight:800; color:var(--tx2); margin-bottom:10px; letter-spacing:.06em; text-transform:uppercase; }
+    .breakdown-row {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 0; border-bottom:1px solid var(--bd);
+    }
+    .breakdown-row:last-child { border-bottom:none; margin-bottom:8px; }
+    .breakdown-name { font-size:.88rem; color:var(--tx); }
+    .breakdown-detail { font-size:.72rem; color:var(--tx2); margin-top:2px; }
+    .breakdown-amt { font-size:.95rem; font-weight:800; color:var(--acc2); white-space:nowrap; margin-left:12px; text-align:right; }
+    .bar-item { margin-bottom:10px; }
+    .bar-header { font-size:.75rem; color:var(--tx2); margin-bottom:5px; display:flex; justify-content:space-between; }
+    .bar-track { background:var(--s2); border-radius:999px; height:8px; overflow:hidden; border:1px solid var(--bd); }
+    .bar-fill { height:100%; border-radius:999px; transition:width .5s ease; }
+    .c-transport { background:var(--blue); }
+    .c-hotel     { background:var(--acc2); }
+    .c-food      { background:var(--green); }
+    .c-act       { background:var(--orange); }
+    .actions { display:flex; flex-direction:column; gap:10px; }
+    .btn {
+      display:block; width:100%; border-radius:10px; padding:13px 20px;
+      font-size:.95rem; font-weight:700; cursor:pointer; text-align:center;
+      text-decoration:none; border:none; transition:opacity .15s;
+    }
+    .btn:hover { opacity:.85; }
+    .btn-x    { background:#000; color:#fff; border:1px solid #333; }
+    .btn-copy { background:rgba(52,211,153,.12); color:var(--green); border:1px solid rgba(52,211,153,.3); }
+    .copy-msg { text-align:center; font-size:.8rem; color:var(--green); margin-top:6px; min-height:1.2em; }
+    @media (max-width:520px) {
+      .wrapper { padding:28px 14px 60px; }
+      .total-value { font-size:1.8rem; }
+      .chip label { padding:8px 12px; font-size:.82rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back" href="/">← AIアプリ工房 トップへ</a>
+  <div class="badge">Silver Week Travel</div>
+  <h1>シルバーウィーク<br><span class="grad">旅費試算ツール 2026年秋</span></h1>
+  <p class="hero-desc">2026年9月19〜23日は11年ぶりの5連休シルバーウィーク。繁忙期料金帯(宿泊・交通に割増率を加味)での旅費の目安を計算します。通常期との差額もひと目でわかります。</p>
+  <div class="disclaimer">計算結果は一般的な繁忙期相場をもとにした目安です。実際の料金はルート・予約タイミング・ホテルグレード・距離等によって大きく異なります。本ツールの計算結果は参考情報としてご利用ください。</div>
+  <div id="swCountdown"></div>
+
+  <div class="input-card">
+    <div class="field">
+      <span class="field-label">交通手段</span>
+      <div class="chips">
+        <div class="chip">
+          <input type="radio" name="transport" id="tr0" value="0" checked onchange="calculate()">
+          <label for="tr0">新幹線</label>
+        </div>
+        <div class="chip">
+          <input type="radio" name="transport" id="tr1" value="1" onchange="calculate()">
+          <label for="tr1">飛行機</label>
+        </div>
+        <div class="chip">
+          <input type="radio" name="transport" id="tr2" value="2" onchange="calculate()">
+          <label for="tr2">高速バス</label>
+        </div>
+        <div class="chip">
+          <input type="radio" name="transport" id="tr3" value="3" onchange="calculate()">
+          <label for="tr3">マイカー</label>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <span class="field-label">目的地エリア</span>
+      <div class="chips">
+        <div class="chip">
+          <input type="radio" name="area" id="ar0" value="0" checked onchange="calculate()">
+          <label for="ar0">近場(~200km)</label>
+        </div>
+        <div class="chip">
+          <input type="radio" name="area" id="ar1" value="1" onchange="calculate()">
+          <label for="ar1">中距離(~500km)</label>
+        </div>
+        <div class="chip">
+          <input type="radio" name="area" id="ar2" value="2" onchange="calculate()">
+          <label for="ar2">遠方(500km超)</label>
+        </div>
+      </div>
+      <p class="field-hint" id="areaHint"></p>
+    </div>
+    <div class="field">
+      <label class="field-label" for="people">同行人数(自分を含む)</label>
+      <div class="input-row">
+        <input type="number" id="people" value="2" min="1" max="10" step="1"
+               oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+        <span class="input-unit">人</span>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label" for="nights">宿泊数</label>
+      <div class="input-row">
+        <input type="number" id="nights" value="3" min="1" max="5" step="1"
+               oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+        <span class="input-unit">泊(最大5泊・SW全期間)</span>
+      </div>
+    </div>
+    <div class="field">
+      <span class="field-label">宿泊タイプ</span>
+      <div class="chips">
+        <div class="chip">
+          <input type="radio" name="hotel" id="ht0" value="0" checked onchange="calculate()">
+          <label for="ht0">ビジネスホテル</label>
+        </div>
+        <div class="chip">
+          <input type="radio" name="hotel" id="ht1" value="1" onchange="calculate()">
+          <label for="ht1">観光ホテル・旅館</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="result-card">
+    <div class="total-box">
+      <div class="total-label">旅費 合計(繁忙期料金)</div>
+      <div>
+        <span class="total-value" id="totalValue">—</span>
+        <span style="font-size:.9rem;color:var(--acc2);margin-left:4px;">円</span>
+      </div>
+      <div class="total-unit">概算・目安</div>
+      <div class="total-sub" id="totalSub"></div>
+      <div class="surplus-box" id="surplusBox" style="display:none;">
+        <span class="surplus-label">通常期比 繁忙期割増分:</span>
+        <span class="surplus-value" id="surplusValue"></span>
+      </div>
+    </div>
+
+    <div class="breakdown-title">費目別 内訳</div>
+    <div class="breakdown-row">
+      <div>
+        <div class="breakdown-name">交通費</div>
+        <div class="breakdown-detail" id="transportDetail"></div>
+      </div>
+      <div class="breakdown-amt" id="transportAmt">—</div>
+    </div>
+    <div class="breakdown-row">
+      <div>
+        <div class="breakdown-name">宿泊費</div>
+        <div class="breakdown-detail" id="hotelDetail"></div>
+      </div>
+      <div class="breakdown-amt" id="hotelAmt">—</div>
+    </div>
+    <div class="breakdown-row">
+      <div>
+        <div class="breakdown-name">食費</div>
+        <div class="breakdown-detail" id="foodDetail"></div>
+      </div>
+      <div class="breakdown-amt" id="foodAmt">—</div>
+    </div>
+    <div class="breakdown-row">
+      <div>
+        <div class="breakdown-name">現地活動費</div>
+        <div class="breakdown-detail" id="actDetail"></div>
+      </div>
+      <div class="breakdown-amt" id="actAmt">—</div>
+    </div>
+
+    <div id="barSection"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-x" onclick="shareX()">X でシェア</button>
+    <button class="btn btn-copy" onclick="doCopy()">結果をコピー</button>
+  </div>
+  <div class="copy-msg" id="copyMsg"></div>
+</div>
+
+<script>
+// SW繁忙期 往復交通費 [近場(~200km), 中距離(~500km), 遠方(500km超)]
+// 通常期比: 新幹線・飛行機・高速バスは約1.30倍、マイカーは変わらず
+var TRANSPORT_DATA = [
+  {
+    name: '新幹線',
+    sw:     [12000, 29000, 42000],
+    normal: [ 9000, 22000, 32000],
+    isPerCar: false,
+    areaHints: [
+      '東京〜熱海・日光・伊豆など 往復/人の目安',
+      '東京〜名古屋・大阪・広島など 往復/人の目安',
+      '東京〜博多・鹿児島・函館など 往復/人の目安'
+    ]
+  },
+  {
+    name: '飛行機',
+    sw:     [22000, 39000, 60000],
+    normal: [17000, 30000, 46000],
+    isPerCar: false,
+    areaHints: [
+      '国内近距離便(羽田〜伊丹など) 往復/人の目安',
+      '国内中距離便(羽田〜福岡・那覇など) 往復/人の目安',
+      '国内長距離便(羽田〜旭川・石垣など) 往復/人の目安'
+    ]
+  },
+  {
+    name: '高速バス',
+    sw:     [4000,  9000, 14000],
+    normal: [3000,  7000, 11000],
+    isPerCar: false,
+    areaHints: [
+      '近郊高速バス 往復/人の目安',
+      '主要都市間高速バス 往復/人の目安',
+      '長距離夜行バス 往復/人の目安'
+    ]
+  },
+  {
+    name: 'マイカー',
+    sw:     [ 8000, 20000, 34000],
+    normal: [ 8000, 20000, 34000],
+    isPerCar: true,
+    areaHints: [
+      'ガソリン代+高速代 往復/台の目安(~200km)',
+      'ガソリン代+高速代 往復/台の目安(~500km)',
+      'ガソリン代+高速代 往復/台の目安(500km超)'
+    ]
+  }
+];
+
+// SW繁忙期 宿泊費(1泊1人) / 通常期比約1.40倍
+var HOTEL_DATA = [
+  { name: 'ビジネスホテル',   sw: 10000, normal: 7000 },
+  { name: '観光ホテル・旅館', sw: 20000, normal: 14000 }
+];
+
+var FOOD_PER_DAY = 3500;
+var ACT_PER_DAY  = 2500;
+
+var lastResult = null;
+
+function getRadioVal(name) {
+  var radios = document.querySelectorAll('input[name="' + name + '"]');
+  for (var i = 0; i < radios.length; i++) {
+    if (radios[i].checked) return parseInt(radios[i].value);
+  }
+  return 0;
+}
+
+function fmt(n) { return Math.round(n).toLocaleString() + '円'; }
+
+function calculate() {
+  var tIdx   = getRadioVal('transport');
+  var aIdx   = getRadioVal('area');
+  var hIdx   = getRadioVal('hotel');
+  var people = Math.max(1, Math.min(10, parseInt(document.getElementById('people').value) || 2));
+  var nights = Math.max(1, Math.min(5,  parseInt(document.getElementById('nights').value) || 3));
+  var days   = nights + 1;
+
+  var td = TRANSPORT_DATA[tIdx];
+  var hd = HOTEL_DATA[hIdx];
+
+  document.getElementById('areaHint').textContent = td.areaHints[aIdx];
+
+  var transportSW, transportNormal, transportDetail;
+  if (td.isPerCar) {
+    transportSW     = td.sw[aIdx];
+    transportNormal = td.normal[aIdx];
+    transportDetail = td.areaHints[aIdx];
+  } else {
+    transportSW     = td.sw[aIdx] * people;
+    transportNormal = td.normal[aIdx] * people;
+    transportDetail = '往復 ' + people + '人分 / 1人あたり約' + td.sw[aIdx].toLocaleString() + '円(繁忙期)';
+  }
+
+  var hotelSW     = hd.sw * nights * people;
+  var hotelNormal = hd.normal * nights * people;
+  var hotelDetail = nights + '泊 x ' + people + '人 / 1泊1人 約' + hd.sw.toLocaleString() + '円(繁忙期)';
+
+  var foodTotal  = FOOD_PER_DAY * days * people;
+  var foodDetail = days + '日間 x ' + people + '人 / 1日1人 約' + FOOD_PER_DAY.toLocaleString() + '円';
+
+  var actTotal  = ACT_PER_DAY * days * people;
+  var actDetail = days + '日間 x ' + people + '人 / 1日1人 約' + ACT_PER_DAY.toLocaleString() + '円';
+
+  var totalSW     = transportSW + hotelSW + foodTotal + actTotal;
+  var totalNormal = transportNormal + hotelNormal + foodTotal + actTotal;
+  var surplus     = totalSW - totalNormal;
+  var perPerson   = Math.round(totalSW / people);
+
+  document.getElementById('totalValue').textContent = totalSW.toLocaleString();
+
+  var AREA_NAMES = ['近場(~200km)', '中距離(~500km)', '遠方(500km超)'];
+  document.getElementById('totalSub').textContent =
+    td.name + ' / ' + AREA_NAMES[aIdx] + ' / ' + hd.name +
+    ' / ' + people + '人 / ' + nights + '泊' + days + '日  1人あたり約' + perPerson.toLocaleString() + '円';
+
+  var surplusBox = document.getElementById('surplusBox');
+  if (surplus > 0) {
+    surplusBox.style.display = 'flex';
+    document.getElementById('surplusValue').textContent = '+約' + surplus.toLocaleString() + '円';
+  } else {
+    surplusBox.style.display = 'none';
+  }
+
+  document.getElementById('transportAmt').textContent = fmt(transportSW);
+  document.getElementById('hotelAmt').textContent     = fmt(hotelSW);
+  document.getElementById('foodAmt').textContent      = fmt(foodTotal);
+  document.getElementById('actAmt').textContent       = fmt(actTotal);
+
+  document.getElementById('transportDetail').textContent = transportDetail;
+  document.getElementById('hotelDetail').textContent     = hotelDetail;
+  document.getElementById('foodDetail').textContent      = foodDetail;
+  document.getElementById('actDetail').textContent       = actDetail;
+
+  var amounts = [transportSW, hotelSW, foodTotal, actTotal];
+  var labels  = ['交通費', '宿泊費', '食費', '現地活動費'];
+  var classes = ['c-transport', 'c-hotel', 'c-food', 'c-act'];
+  var barHTML = '<div class="breakdown-title" style="margin-top:4px;">費目別の割合</div>';
+  for (var i = 0; i < amounts.length; i++) {
+    var pct = totalSW > 0 ? Math.round(amounts[i] / totalSW * 100) : 0;
+    barHTML += '<div class="bar-item">' +
+      '<div class="bar-header"><span>' + labels[i] + '</span><span>' + pct + '%</span></div>' +
+      '<div class="bar-track"><div class="bar-fill ' + classes[i] + '" style="width:' + pct + '%;"></div></div>' +
+      '</div>';
+  }
+  document.getElementById('barSection').innerHTML = barHTML;
+
+  lastResult = {
+    total: totalSW, surplus: surplus, perPerson: perPerson,
+    transportCost: transportSW, hotelCost: hotelSW, foodCost: foodTotal, actCost: actTotal,
+    transportName: td.name, hotelName: hd.name, areaName: AREA_NAMES[aIdx],
+    people: people, nights: nights, days: days
+  };
+}
+
+function shareX() {
+  if (!lastResult) return;
+  var r = lastResult;
+  var text = '【シルバーウィーク旅費試算】2026年秋5連休(9/19〜23)\n' +
+    r.transportName + ' / ' + r.areaName + ' / ' + r.hotelName + '\n' +
+    r.people + '人 / ' + r.nights + '泊' + r.days + '日\n' +
+    '旅費合計: 約' + r.total.toLocaleString() + '円(繁忙期料金)\n' +
+    '1人あたり: 約' + r.perPerson.toLocaleString() + '円\n';
+  if (r.surplus > 0) {
+    text += '通常期より約' + r.surplus.toLocaleString() + '円高い\n';
+  }
+  text += '#AIアプリ工房\nhttps://yama-ai-factory.vercel.app/apps/silver-week-travel/';
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text), '_blank', 'noopener');
+}
+
+function doCopy() {
+  if (!lastResult) return;
+  var r = lastResult;
+  var text = '【シルバーウィーク旅費試算】2026年秋5連休(9/19〜23)\n' +
+    r.transportName + ' / ' + r.areaName + ' / ' + r.hotelName + '\n' +
+    r.people + '人 / ' + r.nights + '泊' + r.days + '日\n' +
+    '旅費合計: 約' + r.total.toLocaleString() + '円(繁忙期料金)\n' +
+    '内訳: 交通費' + r.transportCost.toLocaleString() + '円 / 宿泊費' + r.hotelCost.toLocaleString() + '円 / 食費' + r.foodCost.toLocaleString() + '円 / 活動費' + r.actCost.toLocaleString() + '円\n' +
+    '1人あたり: 約' + r.perPerson.toLocaleString() + '円\n';
+  if (r.surplus > 0) {
+    text += '通常期より約' + r.surplus.toLocaleString() + '円高い\n';
+  }
+  text += 'https://yama-ai-factory.vercel.app/apps/silver-week-travel/';
+  navigator.clipboard.writeText(text).then(function() {
+    showCopyMsg('コピーしました');
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showCopyMsg('コピーしました');
+  });
+}
+
+function showCopyMsg(msg) {
+  var el = document.getElementById('copyMsg');
+  el.textContent = msg;
+  setTimeout(function() { el.textContent = ''; }, 2000);
+}
+
+function updateCountdown() {
+  var now       = new Date();
+  var today     = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var swStart   = new Date(2026, 8, 19);
+  var swEnd     = new Date(2026, 8, 23);
+  var diff      = Math.round((swStart - today) / 86400000);
+  var el        = document.getElementById('swCountdown');
+  if (diff > 0 && diff <= 60) {
+    el.className = 'countdown-tip';
+    el.textContent = 'シルバーウィーク(9/19)まであと ' + diff + ' 日 — 繁忙期は早めの予約が得策です';
+  } else if (diff <= 0 && today <= swEnd) {
+    el.className = 'countdown-tip';
+    el.textContent = 'シルバーウィーク期間中です。旅費の参考にご活用ください。';
+  }
+}
+
+calculate();
+updateCountdown();
+</script>
+</body>
+</html>
