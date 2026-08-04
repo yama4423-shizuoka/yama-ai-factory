@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>敬老の日プレゼント予算プランナー 2026年9月21日向け | AIアプリ工房</title>
+  <meta name="description" content="敬老の日(2026年9月21日)のプレゼント予算を即計算。総予算と贈り先の人数・関係性を入力するだけで、1人あたりの予算上限と花・食品・カタログギフト・体験・現金のカテゴリ別目安金額がわかります。無料・登録不要。">
+  <meta property="og:title" content="敬老の日プレゼント予算プランナー 2026年9月21日向け">
+  <meta property="og:description" content="総予算と贈り先の人数・関係性を入力するだけで、1人あたりの予算とカテゴリ別の目安金額を即計算。敬老の日(9/21)のプレゼント選びに。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/keiro-planner/">
+  <meta name="twitter:card" content="summary">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24; --orange:#fb923c;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back { display:inline-block; font-size:.82rem; color:var(--tx2); text-decoration:none; margin-bottom:26px; transition:color .15s; }
+    .back:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,4.5vw,2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:24px; }
+    .countdown-tip {
+      font-size:.82rem; font-weight:700; color:var(--yellow);
+      margin-bottom:20px; padding:10px 14px;
+      background:rgba(251,191,36,.08); border-radius:8px;
+      border-left:3px solid var(--yellow);
+    }
+    .input-card {
+      background:var(--s1); border:1px solid var(--bd); border-radius:16px;
+      padding:22px 20px; margin-bottom:16px;
+    }
+    .card-title {
+      font-size:.75rem; font-weight:800; color:var(--tx2);
+      letter-spacing:.08em; text-transform:uppercase; margin-bottom:16px;
+    }
+    .field { margin-bottom:20px; }
+    .field:last-child { margin-bottom:0; }
+    .field-label {
+      display:block; font-size:.8rem; font-weight:700; color:var(--tx2);
+      margin-bottom:10px; letter-spacing:.04em;
+    }
+    .input-row { display:flex; align-items:center; gap:10px; }
+    .budget-input {
+      flex:1; background:var(--s2); border:1px solid var(--bd);
+      color:var(--tx); border-radius:10px; padding:12px 14px;
+      font-size:1.2rem; font-weight:700; transition:border-color .15s;
+    }
+    .budget-input:focus { outline:none; border-color:var(--acc); }
+    .input-unit { font-size:.88rem; color:var(--tx2); white-space:nowrap; }
+    .relation-table { width:100%; border-collapse:collapse; }
+    .relation-table th {
+      font-size:.72rem; color:var(--tx2); font-weight:700;
+      padding:0 0 12px; text-align:left; letter-spacing:.04em;
+    }
+    .relation-table th:last-child { text-align:right; }
+    .relation-table td { padding:10px 0; border-top:1px solid var(--bd); vertical-align:middle; }
+    .relation-table td:last-child { text-align:right; }
+    .relation-table tr:first-child td { border-top:none; }
+    .rel-name { font-size:.9rem; font-weight:800; color:var(--tx); }
+    .rel-hint { font-size:.72rem; color:var(--tx2); margin-top:2px; }
+    .num-input {
+      background:var(--s2); border:1px solid var(--bd); color:var(--tx);
+      border-radius:8px; padding:8px 10px; font-size:1rem; font-weight:700;
+      width:64px; text-align:center; transition:border-color .15s;
+    }
+    .num-input:focus { outline:none; border-color:var(--acc); }
+    .summary-box {
+      display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;
+    }
+    .sum-item {
+      flex:1; min-width:140px; text-align:center; padding:18px 12px;
+      background:var(--s1); border:1px solid rgba(124,111,245,.3);
+      border-radius:14px;
+    }
+    .sum-val { font-size:1.7rem; font-weight:900; color:var(--acc2); line-height:1; }
+    .sum-label { font-size:.72rem; color:var(--tx2); margin-top:6px; }
+    .result-card {
+      background:var(--s1); border:1px solid rgba(124,111,245,.35);
+      border-radius:16px; padding:22px 20px; margin-bottom:16px;
+    }
+    .empty-msg { font-size:.88rem; color:var(--tx2); text-align:center; padding:12px 0; }
+    .cat-row {
+      padding:14px 0; border-bottom:1px solid var(--bd);
+    }
+    .cat-row:last-child { border-bottom:none; }
+    .cat-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+    .cat-name { font-size:.92rem; font-weight:800; color:var(--tx); }
+    .cat-amt { font-size:.95rem; font-weight:900; color:var(--green); }
+    .cat-examples { font-size:.75rem; color:var(--tx2); line-height:1.7; }
+    .cat-note { font-size:.72rem; color:var(--tx3); margin-top:4px; font-style:italic; line-height:1.6; }
+    .actions { display:flex; flex-direction:column; gap:10px; }
+    .btn {
+      display:block; width:100%; border-radius:10px; padding:13px 20px;
+      font-size:.95rem; font-weight:700; cursor:pointer; text-align:center;
+      text-decoration:none; border:none; transition:opacity .15s;
+    }
+    .btn:hover { opacity:.85; }
+    .btn-x    { background:#000; color:#fff; border:1px solid #333; }
+    .btn-copy { background:rgba(52,211,153,.12); color:var(--green); border:1px solid rgba(52,211,153,.3); }
+    .copy-msg { text-align:center; font-size:.8rem; color:var(--green); margin-top:6px; min-height:1.2em; }
+    @media (max-width:520px) {
+      .wrapper { padding:28px 14px 60px; }
+      .sum-val { font-size:1.4rem; }
+      .num-input { width:56px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back" href="/">← AIアプリ工房 トップへ</a>
+  <div class="badge">Keiro no Hi Planner</div>
+  <h1>敬老の日 プレゼント<br><span class="grad">予算プランナー</span></h1>
+  <p class="hero-desc">2026年9月21日(敬老の日)のプレゼントを計画中ですか? 総予算と贈り先の人数・関係性を入力するだけで、1人あたりの予算上限と贈り物カテゴリ別の目安金額を即計算します。</p>
+  <div id="countdown"></div>
+
+  <div class="input-card">
+    <div class="card-title">総予算</div>
+    <div class="field">
+      <label class="field-label" for="totalBudget">プレゼント全体の予算合計</label>
+      <div class="input-row">
+        <input type="number" id="totalBudget" class="budget-input"
+               value="10000" min="1000" max="500000" step="1000"
+               oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+        <span class="input-unit">円</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-card">
+    <div class="card-title">贈り先の設定</div>
+    <table class="relation-table">
+      <thead>
+        <tr>
+          <th>関係性</th>
+          <th>人数</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="rel-name">祖父母</div>
+            <div class="rel-hint">自分の祖父・祖母</div>
+          </td>
+          <td>
+            <input type="number" class="num-input" id="numGP"
+                   value="0" min="0" max="4" step="1"
+                   oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="rel-name">親</div>
+            <div class="rel-hint">自分の父・母</div>
+          </td>
+          <td>
+            <input type="number" class="num-input" id="numParents"
+                   value="2" min="0" max="4" step="1"
+                   oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="rel-name">義親</div>
+            <div class="rel-hint">配偶者の父・母</div>
+          </td>
+          <td>
+            <input type="number" class="num-input" id="numInLaws"
+                   value="0" min="0" max="4" step="1"
+                   oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="summary-box">
+    <div class="sum-item">
+      <div class="sum-val" id="sumPeople">—</div>
+      <div class="sum-label">合計人数</div>
+    </div>
+    <div class="sum-item">
+      <div class="sum-val" id="sumPerPerson">—</div>
+      <div class="sum-label">1人あたりの予算上限</div>
+    </div>
+  </div>
+
+  <div class="result-card">
+    <div class="card-title">カテゴリ別 目安金額</div>
+    <div id="catRows">
+      <p class="empty-msg">贈り先の人数を入力してください</p>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-x"    onclick="shareX()">X でシェア</button>
+    <button class="btn btn-copy" onclick="doCopy()">結果をコピー</button>
+  </div>
+  <div class="copy-msg" id="copyMsg"></div>
+</div>
+
+<script>
+var lastResult = null;
+
+function getCatData(budget) {
+  var flower, food, catalog, exp, cash;
+  if (budget < 3000) {
+    flower  = { amt: budget, ex: 'カーネーション花束・ミニ鉢植え', note: '生花は気持ちが伝わる定番。菊・百合は用途を選ぶので注意。' };
+    food    = { amt: budget, ex: '個包装の銘菓・クッキーセット', note: '日持ちするものを選ぶと喜ばれます。' };
+    catalog = { amt: budget, ex: 'この価格帯は食品・日用品ギフトが中心', note: '専用カタログより食品詰め合わせの方が選択肢が豊富です。' };
+    exp     = { amt: budget, ex: 'コーヒー・紅茶のギフト券など', note: '近くのカフェのギフト券も喜ばれます。' };
+    cash    = { amt: budget, ex: 'QUOカード・図書カード', note: '金額が直接わかるため関係性に応じて判断を。' };
+  } else if (budget < 5000) {
+    flower  = { amt: budget, ex: 'ミニブーケ・プリザーブドフラワー小品・アレンジメント', note: '生花は当日または前日に贈るのがベスト。' };
+    food    = { amt: budget, ex: '銘菓詰め合わせ・産地直送果物・ジャムセット', note: '地元の名産品や和菓子が定番で外れにくい。' };
+    catalog = { amt: budget, ex: '3,000〜4,000円コースのカタログ(日用品・食品が中心)', note: 'この価格帯は選択肢が少なめ。5,000円コースへの上乗せも検討を。' };
+    exp     = { amt: budget, ex: 'カフェやファミレスのギフト券・ランチ補助券', note: '一緒に食事する機会を作るきっかけにも。' };
+    cash    = { amt: budget, ex: '商品券(百貨店・Amazonギフトなど)', note: '好きなものを買える実用的な選択肢。' };
+  } else if (budget < 10000) {
+    flower  = { amt: budget, ex: 'フラワーアレンジメント・胡蝶蘭(1本立て)・長寿の鉢植え', note: '胡蝶蘭は縁起が良く、長く楽しめる贈り物として人気。' };
+    food    = { amt: budget, ex: '高級スイーツセット・産地直送グルメ・海産物詰め合わせ', note: 'お取り寄せグルメや地域ブランド品が喜ばれます。' };
+    catalog = { amt: budget, ex: '5,000〜8,000円コース(グルメ・旅行・日用品から選択)', note: '贈り先が自分で選べるため、好みがわからない場合に便利。' };
+    exp     = { amt: budget, ex: '日帰り温泉ペア券・レストランギフト・マッサージ券', note: '体験型は特別な思い出になります。有効期限の確認を忘れずに。' };
+    cash    = { amt: budget, ex: '百貨店共通商品券・旅行系ギフト券', note: 'JTB旅行券・近鉄ギフトカードなども高齢者に人気。' };
+  } else if (budget < 20000) {
+    flower  = { amt: budget, ex: '高級フラワーアレンジ・胡蝶蘭(3本立て)・スタンド花', note: '10,000円以上の胡蝶蘭は見栄えも良く贈り甲斐があります。' };
+    food    = { amt: budget, ex: '国産和牛・高級海産物(カニ・ウニ)・ブランド果物', note: '産地直送の旬の食材が特別感を演出します。' };
+    catalog = { amt: budget, ex: '10,000〜15,000円コース(宿泊・グルメ・温泉・家電)', note: '宿泊や旅行体験が選べるコースが人気です。' };
+    exp     = { amt: budget, ex: '温泉旅館ペアプラン・高級レストランペアディナー', note: '記念日的な体験として喜ばれます。日程調整が必要な点に注意。' };
+    cash    = { amt: budget, ex: '現金(5,000円×2枚 or 10,000円券)/JTB旅行券', note: '現金書留で丁寧に贈るか、高額商品券で実用性を添えて。' };
+  } else {
+    flower  = { amt: budget, ex: '大型胡蝶蘭(10輪以上)・スタンド花・季節の高級鉢植え', note: '存在感のある大型の花は特別な贈り物として印象に残ります。' };
+    food    = { amt: budget, ex: 'カニ・ウニ・松阪牛・近江牛など最高級グルメセット', note: '贈り先が好む食材を事前にリサーチしておくと更に喜ばれます。' };
+    catalog = { amt: budget, ex: '20,000円以上コース(海外旅行・高級宿泊・高額家電)', note: '最上位コースは選択肢の幅も広く、特別感があります。' };
+    exp     = { amt: budget, ex: '旅行ギフト・料亭特別コース・ペア宿泊プラン・クルーズ', note: '最高の思い出になる体験。旅行系は体力面も考慮して選定を。' };
+    cash    = { amt: budget, ex: '現金書留・高額商品券(JTB旅行券・百貨店商品券)', note: '金額が大きい場合は現金書留が一般的。手書きのメッセージを添えると丁寧。' };
+  }
+  return [
+    { name: '花', data: flower },
+    { name: '食品・スイーツ', data: food },
+    { name: 'カタログギフト', data: catalog },
+    { name: '体験・ギフト券', data: exp },
+    { name: '現金・商品券', data: cash }
+  ];
+}
+
+function fmt(n) { return Math.round(n).toLocaleString() + '円'; }
+
+function calculate() {
+  var budget = Math.max(1000, parseInt(document.getElementById('totalBudget').value) || 10000);
+  var numGP  = Math.max(0, Math.min(4, parseInt(document.getElementById('numGP').value)      || 0));
+  var numP   = Math.max(0, Math.min(4, parseInt(document.getElementById('numParents').value) || 0));
+  var numIL  = Math.max(0, Math.min(4, parseInt(document.getElementById('numInLaws').value)  || 0));
+  var total  = numGP + numP + numIL;
+
+  document.getElementById('sumPeople').textContent = total > 0 ? total + '人' : '—';
+
+  if (total === 0) {
+    document.getElementById('sumPerPerson').textContent = '—';
+    document.getElementById('catRows').innerHTML =
+      '<p class="empty-msg">贈り先の人数を入力してください</p>';
+    lastResult = null;
+    return;
+  }
+
+  var perPerson = Math.round(budget / total);
+  document.getElementById('sumPerPerson').textContent = fmt(perPerson);
+
+  var cats = getCatData(perPerson);
+  var html = '';
+  for (var i = 0; i < cats.length; i++) {
+    var c = cats[i];
+    html += '<div class="cat-row">' +
+      '<div class="cat-header">' +
+        '<div class="cat-name">' + c.name + '</div>' +
+        '<div class="cat-amt">約 ' + fmt(c.data.amt) + '/人</div>' +
+      '</div>' +
+      '<div class="cat-examples">' + c.data.ex + '</div>' +
+      '<div class="cat-note">' + c.data.note + '</div>' +
+    '</div>';
+  }
+  document.getElementById('catRows').innerHTML = html;
+
+  var parts = [];
+  if (numGP > 0) parts.push('祖父母 ' + numGP + '人');
+  if (numP  > 0) parts.push('親 '    + numP  + '人');
+  if (numIL > 0) parts.push('義親 '  + numIL + '人');
+
+  lastResult = {
+    budget: budget,
+    total:  total,
+    perPerson: perPerson,
+    breakdown: parts.join(' / ')
+  };
+}
+
+function shareX() {
+  if (!lastResult) return;
+  var r = lastResult;
+  var text =
+    '【敬老の日 2026年9月21日 プレゼント予算プランナー】\n' +
+    '総予算: ' + r.budget.toLocaleString() + '円\n' +
+    '贈り先: ' + r.breakdown + '  計' + r.total + '人\n' +
+    '1人あたりの予算上限: 約' + r.perPerson.toLocaleString() + '円\n' +
+    '#AIアプリ工房\nhttps://yama-ai-factory.vercel.app/apps/keiro-planner/';
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text), '_blank', 'noopener');
+}
+
+function doCopy() {
+  if (!lastResult) return;
+  var r = lastResult;
+  var cats = getCatData(r.perPerson);
+  var text =
+    '【敬老の日 2026年9月21日 プレゼント予算プランナー】\n' +
+    '総予算: ' + r.budget.toLocaleString() + '円\n' +
+    '贈り先: ' + r.breakdown + '  計' + r.total + '人\n' +
+    '1人あたりの予算上限: 約' + r.perPerson.toLocaleString() + '円\n' +
+    '\n' +
+    'カテゴリ別の目安金額:\n';
+  for (var i = 0; i < cats.length; i++) {
+    text += '・' + cats[i].name + ': 約' + fmt(cats[i].data.amt) + '/人  ' + cats[i].data.ex + '\n';
+  }
+  text += '\nhttps://yama-ai-factory.vercel.app/apps/keiro-planner/';
+
+  navigator.clipboard.writeText(text).then(function() {
+    showMsg('コピーしました');
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showMsg('コピーしました');
+  });
+}
+
+function showMsg(msg) {
+  var el = document.getElementById('copyMsg');
+  el.textContent = msg;
+  setTimeout(function() { el.textContent = ''; }, 2000);
+}
+
+function updateCountdown() {
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+  var keiro = new Date(2026, 8, 21);
+  var diff  = Math.round((keiro - today) / 86400000);
+  var el    = document.getElementById('countdown');
+  if (diff > 0 && diff <= 60) {
+    el.className   = 'countdown-tip';
+    el.textContent = '敬老の日(9/21)まであと ' + diff + ' 日 — 早めのプレゼント選びがおすすめです';
+  } else if (diff === 0) {
+    el.className   = 'countdown-tip';
+    el.textContent = '今日は敬老の日です。';
+  }
+}
+
+calculate();
+updateCountdown();
+</script>
+</body>
+</html>
