@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>貯金目標達成日計算機 | AIアプリ工房</title>
+  <meta name="description" content="目標貯金額・現在の貯金残高・毎月の積立額を入力するだけで、達成予定月と必要な月数を即計算。貯金を頑張っている方の目標管理に。無料・登録不要。">
+
+  <meta property="og:title" content="貯金目標達成日計算機 | AIアプリ工房">
+  <meta property="og:description" content="目標貯金額・現在の貯金残高・毎月の積立額を入力するだけで、達成予定月と必要な月数を即計算。貯金を頑張っている方の目標管理に。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/savings-goal/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24; --red:#f87171;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back { font-size:.82rem; color:var(--tx2); text-decoration:none; display:inline-block; margin-bottom:28px; }
+    .back:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,5vw,2.1rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .subtitle { color:var(--tx3); font-size:.88rem; line-height:1.8; margin-bottom:28px; }
+
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px 22px; margin-bottom:16px; }
+    .card-title { font-size:.78rem; font-weight:700; color:var(--tx3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:18px; }
+
+    .field { margin-bottom:16px; }
+    .field:last-child { margin-bottom:0; }
+    .field label { display:block; font-size:.84rem; color:var(--tx3); font-weight:600; margin-bottom:6px; }
+    .field label small { font-weight:400; font-size:.77rem; color:var(--tx2); margin-left:4px; }
+    .input-row { display:flex; align-items:center; gap:10px; }
+    input[type=number] {
+      width:140px; padding:9px 12px; font-size:1rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:right;
+      flex-shrink:0; -moz-appearance:textfield;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { opacity:.4; }
+    input[type=number]:focus { border-color:var(--acc); }
+    .input-unit { font-size:.82rem; color:var(--tx2); white-space:nowrap; }
+
+    /* progress bar */
+    .progress-wrap { margin-bottom:16px; }
+    .progress-header { display:flex; justify-content:space-between; font-size:.77rem; color:var(--tx3); margin-bottom:8px; }
+    .progress-track { height:14px; background:var(--bd); border-radius:7px; overflow:hidden; }
+    .progress-fill { height:14px; border-radius:7px; transition:width .5s, background .4s; width:0%; background:var(--acc); }
+    .progress-label { font-size:.82rem; font-weight:700; margin-top:8px; }
+
+    /* result grid */
+    .result-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+    .res-card { background:var(--s2); border:1px solid var(--bd); border-radius:12px; padding:14px 16px; }
+    .res-card .lbl { font-size:.73rem; color:var(--tx3); margin-bottom:4px; font-weight:600; }
+    .res-card .val { font-size:1.2rem; font-weight:900; }
+    .res-card .sub { font-size:.72rem; color:var(--tx2); margin-top:3px; }
+    .val-green { color:var(--green); }
+    .val-blue  { color:var(--blue); }
+    .val-acc   { color:var(--acc2); }
+    .val-yellow { color:var(--yellow); }
+
+    /* hero result box */
+    .goal-box {
+      background:rgba(124,111,245,.08); border:1px solid rgba(124,111,245,.3);
+      border-radius:12px; padding:20px 16px; text-align:center; margin-bottom:14px;
+    }
+    .goal-box .main { font-size:1.6rem; font-weight:900; color:var(--acc2); }
+    .goal-box .sub  { font-size:.82rem; color:var(--tx3); margin-top:6px; }
+
+    .goal-done {
+      background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.3);
+      border-radius:12px; padding:20px 16px; text-align:center; margin-bottom:14px;
+    }
+    .goal-done .main { font-size:1.4rem; font-weight:900; color:var(--green); }
+    .goal-done .sub  { font-size:.82rem; color:var(--tx3); margin-top:6px; }
+
+    /* milestones */
+    .milestones { margin-bottom:14px; }
+    .ms-title { font-size:.78rem; font-weight:700; color:var(--tx3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:10px; }
+    .ms-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--bd); }
+    .ms-row:last-child { border-bottom:none; }
+    .ms-pct { font-size:.82rem; font-weight:800; color:var(--acc2); width:36px; flex-shrink:0; }
+    .ms-date { font-size:.88rem; font-weight:700; flex:1; }
+    .ms-amount { font-size:.78rem; color:var(--tx3); }
+    .ms-done { opacity:.45; }
+    .ms-check { color:var(--green); margin-left:4px; font-size:.75rem; font-weight:700; }
+
+    .btn-share {
+      display:block; width:100%; padding:13px; border-radius:10px;
+      background:var(--acc); color:#fff; font-size:1rem; font-weight:800;
+      border:none; cursor:pointer; transition:opacity .15s;
+    }
+    .btn-share:hover { opacity:.85; }
+
+    @media(max-width:520px) {
+      .wrapper { padding:28px 14px 60px; }
+      .result-grid { grid-template-columns:1fr 1fr; gap:10px; }
+      input[type=number] { width:120px; font-size:.95rem; }
+      .res-card .val { font-size:1.05rem; }
+      .goal-box .main { font-size:1.35rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back" href="/">← AIアプリ工房トップ</a>
+  <div class="badge">Savings Goal</div>
+  <h1>貯金目標<br><span class="grad">達成日計算機</span></h1>
+  <p class="subtitle">目標貯金額・現在の残高・毎月の積立額を入力するだけで、達成予定月と必要な月数を即計算します。</p>
+
+  <!-- 入力 -->
+  <div class="card">
+    <div class="card-title">入力</div>
+    <div class="field">
+      <label>目標貯金額<small>達成したい金額</small></label>
+      <div class="input-row">
+        <input type="number" id="target" value="1000000" min="0" step="10000"
+          onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
+        <span class="input-unit">円</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>現在の貯金残高<small>今すでにある金額</small></label>
+      <div class="input-row">
+        <input type="number" id="current" value="200000" min="0" step="10000"
+          onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
+        <span class="input-unit">円</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>毎月の積立額<small>毎月コンスタントに貯める金額</small></label>
+      <div class="input-row">
+        <input type="number" id="monthly" value="50000" min="1" step="1000"
+          onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
+        <span class="input-unit">円/月</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="card" id="resultCard">
+    <div class="card-title">計算結果</div>
+
+    <!-- 達成ボックス -->
+    <div id="goalDisplay"></div>
+
+    <!-- 進捗バー -->
+    <div class="progress-wrap">
+      <div class="progress-header">
+        <span>現在の達成率</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-label" id="progressLabel"></div>
+    </div>
+
+    <!-- 数字カード -->
+    <div class="result-grid">
+      <div class="res-card">
+        <div class="lbl">必要な月数</div>
+        <div class="val val-acc" id="rMonths">-</div>
+        <div class="sub" id="rMonthsSub"></div>
+      </div>
+      <div class="res-card">
+        <div class="lbl">残り積立総額</div>
+        <div class="val val-blue" id="rRemain">-</div>
+        <div class="sub" id="rRemainSub"></div>
+      </div>
+      <div class="res-card">
+        <div class="lbl">達成予定月</div>
+        <div class="val val-green" id="rDate">-</div>
+        <div class="sub" id="rDateSub"></div>
+      </div>
+      <div class="res-card">
+        <div class="lbl">目標貯金額</div>
+        <div class="val" id="rTarget">-</div>
+        <div class="sub">現在の残高 + 積立合計</div>
+      </div>
+    </div>
+
+    <!-- マイルストーン -->
+    <div class="milestones" id="milestones"></div>
+
+    <button class="btn-share" onclick="shareX()">X(Twitter)でシェアする</button>
+  </div>
+</div>
+
+<script>
+var TODAY = new Date();
+TODAY.setDate(1); // 月初に揃えて計算
+
+function v(id) { return Math.max(0, parseFloat(document.getElementById(id).value) || 0); }
+
+function fmtMan(n) {
+  if (n >= 10000) return Math.round(n / 1000) / 10 + '万円';
+  return n.toLocaleString() + '円';
+}
+
+function addMonths(base, m) {
+  var d = new Date(base.getFullYear(), base.getMonth() + m, 1);
+  return d;
+}
+
+function fmtYM(d) {
+  return d.getFullYear() + '年' + (d.getMonth() + 1) + '月';
+}
+
+function calculate() {
+  var target  = v('target');
+  var current = v('current');
+  var monthly = v('monthly');
+
+  var rTarget = document.getElementById('rTarget');
+  rTarget.textContent = fmtMan(target);
+
+  if (target <= 0 || monthly <= 0) {
+    document.getElementById('goalDisplay').innerHTML =
+      '<div class="goal-box"><div class="main">数値を入力してください</div></div>';
+    return;
+  }
+
+  var remaining = target - current;
+  var pct = Math.min(100, current / target * 100);
+
+  document.getElementById('progressFill').style.width = pct.toFixed(1) + '%';
+  document.getElementById('progressPct').textContent = pct.toFixed(1) + '%';
+
+  if (pct >= 70) {
+    document.getElementById('progressFill').style.background = 'var(--green)';
+    document.getElementById('progressLabel').style.color = 'var(--green)';
+    document.getElementById('progressLabel').textContent = '目標まであと少し！';
+  } else if (pct >= 40) {
+    document.getElementById('progressFill').style.background = 'var(--acc)';
+    document.getElementById('progressLabel').style.color = 'var(--acc2)';
+    document.getElementById('progressLabel').textContent = '着実に積み上げています。';
+  } else {
+    document.getElementById('progressFill').style.background = 'var(--blue)';
+    document.getElementById('progressLabel').style.color = 'var(--blue)';
+    document.getElementById('progressLabel').textContent = '計画的に積み立てていきましょう。';
+  }
+
+  if (remaining <= 0) {
+    document.getElementById('goalDisplay').innerHTML =
+      '<div class="goal-done">' +
+        '<div class="main">目標達成済み！</div>' +
+        '<div class="sub">現在の貯金残高が目標額に達しています。</div>' +
+      '</div>';
+    document.getElementById('rMonths').textContent = '0ヶ月';
+    document.getElementById('rMonthsSub').textContent = '達成済み';
+    document.getElementById('rRemain').textContent = '0円';
+    document.getElementById('rRemainSub').textContent = '';
+    document.getElementById('rDate').textContent = '達成済み';
+    document.getElementById('rDateSub').textContent = '';
+    document.getElementById('milestones').innerHTML = '';
+    return;
+  }
+
+  var months = Math.ceil(remaining / monthly);
+  var goalDate = addMonths(TODAY, months);
+  var years = Math.floor(months / 12);
+  var remM = months % 12;
+
+  var durationStr = '';
+  if (years > 0 && remM > 0) durationStr = years + '年' + remM + 'ヶ月';
+  else if (years > 0) durationStr = years + '年';
+  else durationStr = remM + 'ヶ月';
+
+  document.getElementById('goalDisplay').innerHTML =
+    '<div class="goal-box">' +
+      '<div class="main">' + fmtYM(goalDate) + ' 達成見込み</div>' +
+      '<div class="sub">今日から約 ' + durationStr + ' 後（' + months + 'ヶ月後）</div>' +
+    '</div>';
+
+  document.getElementById('rMonths').textContent = months + 'ヶ月';
+  document.getElementById('rMonthsSub').textContent = '(' + durationStr + ')';
+  document.getElementById('rRemain').textContent = fmtMan(remaining);
+  document.getElementById('rRemainSub').textContent = '月' + fmtMan(monthly) + ' x ' + months + 'ヶ月';
+  document.getElementById('rDate').textContent = fmtYM(goalDate);
+  document.getElementById('rDateSub').textContent = '達成予定';
+
+  // マイルストーン (25%/50%/75%/100%)
+  var milestones = [25, 50, 75, 100];
+  var msHtml = '<div class="ms-title">マイルストーン</div>';
+  milestones.forEach(function(msPct) {
+    var msTarget = Math.round(target * msPct / 100);
+    var msRem = Math.max(0, msTarget - current);
+    var msMonths = msRem > 0 ? Math.ceil(msRem / monthly) : 0;
+    var msDate = addMonths(TODAY, msMonths);
+    var done = current >= msTarget;
+    msHtml +=
+      '<div class="ms-row' + (done ? ' ms-done' : '') + '">' +
+        '<div class="ms-pct">' + msPct + '%</div>' +
+        '<div class="ms-date">' + fmtYM(msDate) + (done ? '<span class="ms-check"> 達成</span>' : '') + '</div>' +
+        '<div class="ms-amount">' + fmtMan(msTarget) + '</div>' +
+      '</div>';
+  });
+  document.getElementById('milestones').innerHTML = msHtml;
+}
+
+function shareX() {
+  var target  = v('target');
+  var current = v('current');
+  var monthly = v('monthly');
+  var remaining = target - current;
+  var pct = (Math.min(100, current / target * 100)).toFixed(1);
+
+  var main;
+  if (remaining <= 0) {
+    main = '目標' + fmtMan(target) + 'の貯金を達成済みです！';
+  } else {
+    var months = Math.ceil(remaining / monthly);
+    var goalDate = addMonths(TODAY, months);
+    main =
+      '目標' + fmtMan(target) + 'の貯金を計算しました。\n' +
+      '現在の達成率: ' + pct + '%（残り' + fmtMan(remaining) + '）\n' +
+      '毎月' + fmtMan(monthly) + 'を積み立てると ' + fmtYM(goalDate) + ' に達成見込み！';
+  }
+
+  var text = main + '\n#AIアプリ工房\nhttps://yama-ai-factory.vercel.app/apps/savings-goal/';
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text), '_blank');
+}
+
+calculate();
+</script>
+</body>
+</html>
