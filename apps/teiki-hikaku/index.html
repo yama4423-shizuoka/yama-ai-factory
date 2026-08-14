@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>定期券 期間コスト比較ツール | AIアプリ工房</title>
+  <meta name="description" content="1ヶ月定期代を入力するだけで3ヶ月定期・6ヶ月定期の割引額と月換算コストを即計算。JR標準割引率を使用。通勤・通学定期券の選び方に。無料・登録不要。">
+
+  <meta property="og:title" content="定期券 期間コスト比較ツール | AIアプリ工房">
+  <meta property="og:description" content="1ヶ月定期代を入力するだけで3ヶ月・6ヶ月定期の割引額と月換算コストを即計算。通勤・通学定期券の選び方に。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/teiki-hikaku/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back { font-size:.82rem; color:var(--tx2); text-decoration:none; display:inline-block; margin-bottom:28px; }
+    .back:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,5vw,2.1rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .subtitle { color:var(--tx3); font-size:.88rem; line-height:1.8; margin-bottom:28px; }
+
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px 22px; margin-bottom:16px; }
+    .card-title { font-size:.78rem; font-weight:700; color:var(--tx3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:18px; }
+
+    .field { margin-bottom:0; }
+    .field label { display:block; font-size:.84rem; color:var(--tx3); font-weight:600; margin-bottom:6px; }
+    .input-wrap { display:flex; align-items:center; gap:10px; }
+    input[type=number] {
+      flex:1; background:var(--s2); border:1.5px solid var(--bd); border-radius:10px;
+      color:var(--tx); padding:11px 14px; font-size:1rem;
+      outline:none; transition:border-color .15s;
+      -moz-appearance:textfield;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; }
+    input[type=number]:focus { border-color:var(--acc); }
+    .unit { font-size:.82rem; color:var(--tx2); white-space:nowrap; min-width:24px; }
+
+    .plan-grid { display:grid; grid-template-columns:1fr; gap:12px; }
+    .plan-card {
+      background:var(--s2); border:1px solid var(--bd); border-radius:14px;
+      padding:18px 20px;
+      position:relative;
+    }
+    .plan-card.best { border-color:rgba(52,211,153,.45); }
+    .plan-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .plan-name { font-weight:800; font-size:1rem; }
+    .plan-tag {
+      font-size:.65rem; font-weight:800; letter-spacing:.08em;
+      padding:3px 10px; border-radius:999px;
+    }
+    .plan-tag.best-tag { background:rgba(52,211,153,.15); color:var(--green); border:1px solid rgba(52,211,153,.3); }
+    .plan-tag.std-tag { background:rgba(124,111,245,.1); color:var(--acc2); border:1px solid rgba(124,111,245,.25); }
+
+    .plan-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
+    .plan-row:last-child { margin-bottom:0; }
+    .plan-label { font-size:.78rem; color:var(--tx3); }
+    .plan-value { font-size:.95rem; font-weight:700; }
+    .plan-value.big { font-size:1.3rem; font-weight:900; }
+    .plan-value.saving { color:var(--green); }
+    .plan-value.neutral { color:var(--tx2); }
+
+    .divider { border:none; border-top:1px solid var(--bd); margin:10px 0; }
+
+    .btn {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:12px 22px; border-radius:10px; font-weight:700; font-size:.88rem;
+      cursor:pointer; border:none; transition:all .15s; text-decoration:none;
+    }
+    .btn-primary { background:var(--acc); color:#fff; }
+    .btn-primary:hover { background:#6a5fe0; }
+    .btn-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+
+    .note { font-size:.74rem; color:var(--tx2); line-height:1.7; margin-top:12px; padding-top:12px; border-top:1px solid var(--bd); }
+
+    footer { margin-top:48px; padding-top:20px; border-top:1px solid var(--bd); text-align:center; font-size:.78rem; color:var(--tx2); line-height:2; }
+    footer a { color:var(--acc2); text-decoration:none; }
+
+    @media (max-width:520px) {
+      .wrapper { padding:28px 14px 60px; }
+      .plan-value.big { font-size:1.15rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back" href="/">&larr; AIアプリ工房</a>
+  <div class="badge">Teiki Hikaku</div>
+  <h1><span class="grad">定期券 期間コスト</span><br>比較ツール</h1>
+  <p class="subtitle">1ヶ月定期代を入力するだけで3ヶ月・6ヶ月定期の<br>割引額と月換算コストを即計算します。</p>
+
+  <div class="card">
+    <div class="card-title">1ヶ月定期代を入力</div>
+    <div class="field">
+      <label>1ヶ月定期代</label>
+      <div class="input-wrap">
+        <input type="number" id="monthly" value="10000" min="100" max="999999" step="10"
+          oninput="calculate()" onkeydown="if(event.key==='Enter')calculate();">
+        <span class="unit">円</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">期間別コスト比較</div>
+    <div class="plan-grid">
+
+      <div class="plan-card" id="plan-1m">
+        <div class="plan-header">
+          <div class="plan-name">1ヶ月定期 x 3回</div>
+          <div class="plan-tag std-tag">基準</div>
+        </div>
+        <div class="plan-row">
+          <span class="plan-label">3ヶ月の合計</span>
+          <span class="plan-value big" id="total-1m">--</span>
+        </div>
+        <hr class="divider">
+        <div class="plan-row">
+          <span class="plan-label">月換算コスト</span>
+          <span class="plan-value" id="month-1m">--</span>
+        </div>
+        <div class="plan-row">
+          <span class="plan-label">節約額(3ヶ月)</span>
+          <span class="plan-value neutral">--</span>
+        </div>
+      </div>
+
+      <div class="plan-card" id="plan-3m">
+        <div class="plan-header">
+          <div class="plan-name">3ヶ月定期</div>
+          <div class="plan-tag std-tag">約8.5%割引</div>
+        </div>
+        <div class="plan-row">
+          <span class="plan-label">3ヶ月の合計</span>
+          <span class="plan-value big" id="total-3m">--</span>
+        </div>
+        <hr class="divider">
+        <div class="plan-row">
+          <span class="plan-label">月換算コスト</span>
+          <span class="plan-value" id="month-3m">--</span>
+        </div>
+        <div class="plan-row">
+          <span class="plan-label">節約額(3ヶ月)</span>
+          <span class="plan-value saving" id="save-3m">--</span>
+        </div>
+      </div>
+
+      <div class="plan-card" id="plan-6m">
+        <div class="plan-header">
+          <div class="plan-name">6ヶ月定期</div>
+          <div class="plan-tag best-tag" id="tag-6m">最大割引</div>
+        </div>
+        <div class="plan-row">
+          <span class="plan-label">6ヶ月の合計</span>
+          <span class="plan-value big" id="total-6m">--</span>
+        </div>
+        <hr class="divider">
+        <div class="plan-row">
+          <span class="plan-label">月換算コスト</span>
+          <span class="plan-value" id="month-6m">--</span>
+        </div>
+        <div class="plan-row">
+          <span class="plan-label">節約額(6ヶ月)</span>
+          <span class="plan-value saving" id="save-6m">--</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="note">
+      JR標準割引率(3ヶ月定期: 1ヶ月x3の約91.5%、6ヶ月定期: 1ヶ月x6の約83%)を使用した目安です。
+      実際の定期代は路線・区間・交通事業者により異なります。定期購入前に窓口・アプリでご確認ください。
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="shareBtn" onclick="share()">Xでシェア</button>
+    </div>
+  </div>
+
+  <footer>
+    <a href="/">AIアプリ工房トップへ</a><br>
+    計算結果はあくまで目安です。実際の定期代は交通事業者にご確認ください。
+  </footer>
+</div>
+
+<script>
+  var RATE_3M = 0.915;
+  var RATE_6M = 0.83;
+
+  function fmt(n) {
+    return Math.round(n).toLocaleString('ja-JP') + '円';
+  }
+
+  function calculate() {
+    var raw = document.getElementById('monthly').value;
+    var m = parseFloat(raw);
+    if (!raw || isNaN(m) || m <= 0) {
+      ['total-1m','month-1m','total-3m','month-3m','save-3m','total-6m','month-6m','save-6m']
+        .forEach(function(id) { document.getElementById(id).textContent = '--'; });
+      return;
+    }
+
+    var base3 = m * 3;
+    var cost3m = m * 3 * RATE_3M;
+    var save3m = base3 - cost3m;
+
+    var base6 = m * 6;
+    var cost6m = m * 6 * RATE_6M;
+    var save6m = base6 - cost6m;
+
+    document.getElementById('total-1m').textContent = fmt(base3);
+    document.getElementById('month-1m').textContent = fmt(m) + '/月';
+
+    document.getElementById('total-3m').textContent = fmt(cost3m);
+    document.getElementById('month-3m').textContent = fmt(cost3m / 3) + '/月';
+    document.getElementById('save-3m').textContent = '▼ ' + fmt(save3m) + ' お得';
+
+    document.getElementById('total-6m').textContent = fmt(cost6m);
+    document.getElementById('month-6m').textContent = fmt(cost6m / 6) + '/月';
+    document.getElementById('save-6m').textContent = '▼ ' + fmt(save6m) + ' お得';
+  }
+
+  function share() {
+    var raw = document.getElementById('monthly').value;
+    var m = parseFloat(raw);
+    if (!m || m <= 0) return;
+
+    var save3m = Math.round(m * 3 - m * 3 * RATE_3M);
+    var save6m = Math.round(m * 6 - m * 6 * RATE_6M);
+    var month3 = Math.round(m * 3 * RATE_3M / 3);
+    var month6 = Math.round(m * 6 * RATE_6M / 6);
+
+    var text =
+      '1ヶ月定期 ' + Math.round(m).toLocaleString('ja-JP') + '円の場合\n' +
+      '3ヶ月定期: 月換算 ' + month3.toLocaleString('ja-JP') + '円(' + save3m.toLocaleString('ja-JP') + '円お得)\n' +
+      '6ヶ月定期: 月換算 ' + month6.toLocaleString('ja-JP') + '円(' + save6m.toLocaleString('ja-JP') + '円お得)\n' +
+      '#AIアプリ工房\n' +
+      'https://yama-ai-factory.vercel.app/apps/teiki-hikaku/';
+
+    window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text), '_blank');
+  }
+
+  calculate();
+</script>
+</body>
+</html>
