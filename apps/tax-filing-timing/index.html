@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>副業 確定申告タイミング予測チェッカー | AIアプリ工房</title>
+  <meta name="description" content="副業の月収と月次経費を入力するだけで、今年の雑所得が確定申告ライン(20万円)を超える予測月と概算追加税負担を即計算。会社員の副業月次管理に。無料・登録不要。">
+
+  <meta property="og:title" content="副業 確定申告タイミング予測チェッカー | AIアプリ工房">
+  <meta property="og:description" content="副業の月収と月次経費を入力するだけで、今年の雑所得が確定申告ライン(20万円)を超える予測月と概算追加税負担を即計算。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/tax-filing-timing/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24; --red:#f87171;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back { font-size:.82rem; color:var(--tx2); text-decoration:none; display:inline-block; margin-bottom:28px; }
+    .back:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,5vw,2.1rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .subtitle { color:var(--tx3); font-size:.88rem; line-height:1.8; margin-bottom:28px; }
+
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px 22px; margin-bottom:16px; }
+    .card-title { font-size:.78rem; font-weight:700; color:var(--tx3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:18px; }
+
+    .field { margin-bottom:20px; }
+    .field:last-child { margin-bottom:0; }
+    .field label { display:block; font-size:.84rem; color:var(--tx3); font-weight:600; margin-bottom:8px; }
+    .input-row { display:flex; align-items:center; gap:12px; }
+    input[type=number] {
+      width:110px; padding:10px 12px; font-size:1rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:center;
+      flex-shrink:0; -moz-appearance:textfield;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { opacity:.5; }
+    input[type=number]:focus { border-color:var(--acc); }
+    .input-unit { font-size:.82rem; color:var(--tx2); white-space:nowrap; }
+
+    .radio-row { display:flex; gap:8px; flex-wrap:wrap; }
+    .radio-btn {
+      flex:1; min-width:100px; padding:10px 8px; border-radius:10px;
+      border:1px solid var(--bd); background:var(--s2); color:var(--tx3);
+      font-size:.8rem; font-weight:600; cursor:pointer; transition:all .15s;
+      display:flex; align-items:flex-start; gap:7px; text-align:left;
+    }
+    .radio-btn.active { background:rgba(124,111,245,.15); border-color:var(--acc); color:var(--acc2); }
+    .radio-btn:hover:not(.active) { border-color:var(--tx3); color:var(--tx); }
+    .rd { width:15px; height:15px; border-radius:50%; border:2px solid currentColor; flex-shrink:0; display:flex; align-items:center; justify-content:center; margin-top:2px; }
+    .rd::after { content:''; width:7px; height:7px; border-radius:50%; background:currentColor; display:none; }
+    .radio-btn.active .rd::after { display:block; }
+    .radio-lbl { display:flex; flex-direction:column; gap:2px; }
+    .radio-sub { font-size:.65rem; opacity:.65; font-weight:400; }
+
+    .calc-btn {
+      width:100%; background:var(--acc); color:#fff; border:none; border-radius:10px;
+      padding:13px; font-size:1rem; font-weight:700; cursor:pointer;
+      transition:opacity .15s; margin-top:4px;
+    }
+    .calc-btn:hover { opacity:.85; }
+
+    .rh { display:none; }
+
+    .verdict-box {
+      border-radius:12px; padding:16px 18px; margin-bottom:16px;
+      display:flex; align-items:flex-start; gap:12px;
+    }
+    .verdict-ok   { background:rgba(52,211,153,.07);  border:1px solid rgba(52,211,153,.25); }
+    .verdict-ng   { background:rgba(248,113,113,.07); border:1px solid rgba(248,113,113,.25); }
+    .verdict-warn { background:rgba(251,191,36,.07);  border:1px solid rgba(251,191,36,.25); }
+    .verdict-badge {
+      width:28px; height:28px; border-radius:50%; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.85rem; font-weight:900; margin-top:1px;
+    }
+    .verdict-ok .verdict-badge   { background:rgba(52,211,153,.2);  color:var(--green); }
+    .verdict-ng .verdict-badge   { background:rgba(248,113,113,.2); color:var(--red); }
+    .verdict-warn .verdict-badge { background:rgba(251,191,36,.2);  color:var(--yellow); }
+    .verdict-title { font-weight:800; font-size:.9rem; margin-bottom:4px; }
+    .verdict-ok .verdict-title   { color:var(--green); }
+    .verdict-ng .verdict-title   { color:var(--red); }
+    .verdict-warn .verdict-title { color:var(--yellow); }
+    .verdict-desc { font-size:.8rem; color:var(--tx3); line-height:1.65; }
+
+    .big-num { text-align:center; padding:12px 0 4px; }
+    .big-num .lbl { font-size:.78rem; color:var(--tx2); margin-bottom:6px; }
+    .big-num .val { font-size:clamp(2.4rem,8vw,3.6rem); font-weight:900; color:var(--acc2); line-height:1; }
+    .big-num .unt { font-size:.84rem; color:var(--tx3); margin-top:6px; }
+
+    /* Monthly timeline */
+    .tl-wrap { display:flex; flex-direction:column; gap:5px; }
+    .tl-row { display:flex; align-items:center; gap:8px; }
+    .tl-lbl { font-size:.73rem; color:var(--tx3); width:30px; flex-shrink:0; text-align:right; }
+    .tl-bar-outer { flex:1; background:var(--s2); border-radius:4px; height:11px; overflow:hidden; }
+    .tl-bar-inner { height:100%; border-radius:4px; transition:width .25s; }
+    .tl-right { display:flex; align-items:center; gap:4px; width:100px; flex-shrink:0; justify-content:flex-end; }
+    .tl-amount { font-size:.7rem; font-weight:700; color:var(--tx3); white-space:nowrap; }
+    .tl-tag {
+      font-size:.58rem; font-weight:700; padding:1px 5px; border-radius:3px; white-space:nowrap;
+    }
+    .tl-tag-now  { background:rgba(96,165,250,.2);   color:var(--blue);   border:1px solid rgba(96,165,250,.35); }
+    .tl-tag-hit  { background:rgba(251,191,36,.2);   color:var(--yellow); border:1px solid rgba(251,191,36,.4); }
+    .tl-lbl-hit  { color:var(--yellow); font-weight:700; }
+    .tl-amount-hit { color:var(--yellow); }
+
+    .tl-note { font-size:.7rem; color:var(--tx2); margin-top:10px; line-height:1.6; }
+
+    .threshold-line-label {
+      font-size:.7rem; color:var(--tx2); text-align:right; margin-bottom:4px;
+      padding-right:108px;
+    }
+
+    /* Tax table */
+    .bd-table { width:100%; border-collapse:collapse; }
+    .bd-table td { padding:9px 4px; font-size:.84rem; border-bottom:1px solid rgba(34,34,58,.6); }
+    .bd-table tr:last-child td { border-bottom:none; }
+    .bd-lbl { color:var(--tx3); }
+    .bd-val { text-align:right; font-weight:700; white-space:nowrap; }
+    .bd-acc { color:var(--acc2); }
+    .bd-ded { color:var(--red); }
+    .bd-total td { font-weight:800; border-top:2px solid var(--bd); border-bottom:none; font-size:.92rem; }
+
+    .share-btn {
+      display:block; width:100%; padding:13px; border-radius:10px;
+      background:var(--acc); border:none; color:#fff;
+      font-size:1rem; font-weight:700; cursor:pointer; transition:opacity .15s;
+    }
+    .share-btn:hover { opacity:.85; }
+    .copy-btn {
+      display:block; width:100%; padding:11px; border-radius:10px;
+      background:transparent; border:1px solid var(--bd); color:var(--tx3);
+      font-size:.9rem; font-weight:600; cursor:pointer; transition:all .15s; margin-top:8px;
+    }
+    .copy-btn:hover { border-color:var(--acc2); color:var(--acc2); }
+
+    .note { font-size:.73rem; color:var(--tx2); line-height:1.75; }
+
+    @media (max-width:520px) {
+      .wrapper { padding:28px 14px 60px; }
+      input[type=number] { width:90px; font-size:.92rem; }
+      .radio-btn { min-width:84px; font-size:.76rem; padding:9px 7px; }
+      .tl-right { width:84px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back" href="/">&larr; AIアプリ工房トップへ</a>
+
+  <div class="badge">副業・確定申告</div>
+  <h1><span class="grad">副業 確定申告</span><br>タイミング予測チェッカー</h1>
+  <p class="subtitle">副業の月収と月次経費を入力するだけで、今年の雑所得が確定申告ライン(20万円)を超える予測月と概算追加税負担を即計算します。給与所得者(会社員)向け。</p>
+
+  <div class="card">
+    <div class="card-title">入力</div>
+    <div class="field">
+      <label>副業の月収(税込・平均)</label>
+      <div class="input-row">
+        <input type="number" id="income" value="3" min="0" max="500" step="0.5"
+          onkeydown="if(event.key==='Enter')calculate();"
+          oninput="calculate();">
+        <span class="input-unit">万円 / 月</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>月の経費合計(材料費・通信費・交通費など)</label>
+      <div class="input-row">
+        <input type="number" id="expense" value="0.5" min="0" max="500" step="0.5"
+          onkeydown="if(event.key==='Enter')calculate();"
+          oninput="calculate();">
+        <span class="input-unit">万円 / 月</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>本業の所得税率の目安(追加課税レートに使用)</label>
+      <div class="radio-row">
+        <button type="button" class="radio-btn" id="btn-5" onclick="setRate(5)">
+          <span class="rd"></span>
+          <span class="radio-lbl"><span>5%</span><span class="radio-sub">課税所得195万以下</span></span>
+        </button>
+        <button type="button" class="radio-btn active" id="btn-10" onclick="setRate(10)">
+          <span class="rd"></span>
+          <span class="radio-lbl"><span>10%</span><span class="radio-sub">195〜330万</span></span>
+        </button>
+        <button type="button" class="radio-btn" id="btn-20" onclick="setRate(20)">
+          <span class="rd"></span>
+          <span class="radio-lbl"><span>20%</span><span class="radio-sub">330〜695万</span></span>
+        </button>
+        <button type="button" class="radio-btn" id="btn-23" onclick="setRate(23)">
+          <span class="rd"></span>
+          <span class="radio-lbl"><span>23%</span><span class="radio-sub">695万超</span></span>
+        </button>
+      </div>
+    </div>
+    <button type="button" class="calc-btn" onclick="calculate()">計算する</button>
+  </div>
+
+  <div id="resultSection" class="rh">
+
+    <div class="card">
+      <div class="card-title">判定</div>
+      <div id="verdictBox"></div>
+      <div class="big-num">
+        <div class="lbl">年間雑所得(= 年収入 − 年経費)</div>
+        <div class="val" id="yearEndVal">—</div>
+        <div class="unt">万円</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">月次 累積雑所得タイムライン</div>
+      <div class="threshold-line-label" id="thresholdLabel"></div>
+      <div class="tl-wrap" id="timeline"></div>
+      <p class="tl-note">月収・経費が一定のケースでの試算。<span style="color:var(--blue);font-weight:700;">青</span>=今月(8月)、<span style="color:var(--yellow);font-weight:700;">黄</span>=申告ライン超過月。</p>
+    </div>
+
+    <div id="taxCard" class="card">
+      <div class="card-title">概算追加税負担(申告した場合)</div>
+      <table class="bd-table">
+        <tr><td class="bd-lbl">年間雑所得</td><td class="bd-val bd-acc" id="tdNet">—</td></tr>
+        <tr><td class="bd-lbl" id="tdITlbl">所得税(概算)</td><td class="bd-val bd-ded" id="tdIT">—</td></tr>
+        <tr><td class="bd-lbl">住民税(概算・10%)</td><td class="bd-val bd-ded" id="tdRT">—</td></tr>
+        <tr class="bd-total"><td class="bd-lbl">追加税負担 合計(概算)</td><td class="bd-val bd-ded" id="tdTotal">—</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <button type="button" class="share-btn" onclick="doShare()">Xでシェアする</button>
+      <button type="button" class="copy-btn" onclick="doCopy(this)">テキストをコピー</button>
+    </div>
+
+  </div>
+
+  <p class="note" style="margin:0 4px;">
+    ※ 本ツールは概算です。雑所得が20万円超で確定申告が必要なのは「給与所得者(会社員)」のケースです。フリーランス・個人事業主は金額にかかわらず毎年申告が必要です。所得税率は本業の課税所得に基づく限界税率(選択値)で計算しています。実際の税額は収入の種類・各種控除・居住地によって異なります。確定申告については税務署または税理士にご相談ください。
+  </p>
+</div>
+
+<script>
+var _rate = 10;
+var _shareText = '';
+
+function setRate(r) {
+  _rate = r;
+  document.querySelectorAll('.radio-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('btn-' + r).classList.add('active');
+  calculate();
+}
+
+function f2(v) { return Math.round(v * 100) / 100; }
+function fmtMan(v) {
+  var r = Math.round(v * 100) / 100;
+  return r % 1 === 0 ? r.toFixed(0) : r.toFixed(2).replace(/\.?0+$/, '');
+}
+
+function calculate() {
+  var income  = parseFloat(document.getElementById('income').value)  || 0;
+  var expense = parseFloat(document.getElementById('expense').value) || 0;
+  var net     = income - expense;
+
+  var THRESHOLD    = 20;
+  var CURRENT_MONTH = 7; // August (0-indexed)
+  var MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+  var cumulatives = [];
+  var thresholdMonth = null;
+  for (var i = 0; i < 12; i++) {
+    var cum = net * (i + 1);
+    cumulatives.push(cum);
+    if (thresholdMonth === null && cum >= THRESHOLD) {
+      thresholdMonth = i;
+    }
+  }
+  var yearEnd = cumulatives[11];
+
+  document.getElementById('resultSection').style.display = 'block';
+  document.getElementById('yearEndVal').textContent = fmtMan(yearEnd);
+
+  /* --- Verdict --- */
+  var vBox = document.getElementById('verdictBox');
+  var vHtml = '';
+  if (net <= 0) {
+    vHtml = '<div class="verdict-box verdict-ok"><div class="verdict-badge">OK</div><div>' +
+      '<div class="verdict-title">申告不要の見込み</div>' +
+      '<div class="verdict-desc">経費が収入を上回っているため雑所得はゼロ以下です。なお雑所得の損失は他の所得と通算できません。</div>' +
+      '</div></div>';
+  } else if (yearEnd < THRESHOLD) {
+    vHtml = '<div class="verdict-box verdict-ok"><div class="verdict-badge">OK</div><div>' +
+      '<div class="verdict-title">今年は申告不要の見込み</div>' +
+      '<div class="verdict-desc">年間雑所得(' + fmtMan(yearEnd) + '万円)が20万円未満のため、給与所得者は確定申告不要です。ただし住民税の申告が必要な場合があります。</div>' +
+      '</div></div>';
+  } else if (yearEnd === THRESHOLD) {
+    vHtml = '<div class="verdict-box verdict-ok"><div class="verdict-badge">OK</div><div>' +
+      '<div class="verdict-title">ちょうど20万円 — 申告不要の見込み</div>' +
+      '<div class="verdict-desc">年間雑所得がちょうど20万円です。給与所得者の申告義務は「20万円超」なので申告不要ですが、月収・経費の変動に注意してください。</div>' +
+      '</div></div>';
+  } else if (thresholdMonth !== null && thresholdMonth < CURRENT_MONTH) {
+    vHtml = '<div class="verdict-box verdict-ng"><div class="verdict-badge">!</div><div>' +
+      '<div class="verdict-title">すでに' + MONTHS[thresholdMonth] + 'に申告ラインを超過</div>' +
+      '<div class="verdict-desc">このペースでは' + MONTHS[thresholdMonth] + 'の時点で累積雑所得が20万円を超えています。来年3月の確定申告に向けて今から経費の記録を整理しましょう。</div>' +
+      '</div></div>';
+  } else if (thresholdMonth === CURRENT_MONTH) {
+    vHtml = '<div class="verdict-box verdict-warn"><div class="verdict-badge">!</div><div>' +
+      '<div class="verdict-title">今月(8月)に申告ラインを超える見込み</div>' +
+      '<div class="verdict-desc">今月中に雑所得の累計が20万円を超える見込みです。来年3月の確定申告に向けて領収書・帳簿の整理を始めましょう。</div>' +
+      '</div></div>';
+  } else if (thresholdMonth !== null) {
+    vHtml = '<div class="verdict-box verdict-warn"><div class="verdict-badge">!</div><div>' +
+      '<div class="verdict-title">' + MONTHS[thresholdMonth] + 'に申告ラインを超える見込み</div>' +
+      '<div class="verdict-desc">このペースを続けると' + MONTHS[thresholdMonth] + 'に雑所得累計が20万円を超えます。来年3月の確定申告に向けて準備を進めましょう。</div>' +
+      '</div></div>';
+  }
+  vBox.innerHTML = vHtml;
+
+  /* --- Timeline --- */
+  var maxVal = Math.max(THRESHOLD * 1.1, yearEnd > 0 ? yearEnd * 1.05 : THRESHOLD * 1.1);
+  var thresholdPct = Math.min(99, (THRESHOLD / maxVal) * 100);
+  document.getElementById('thresholdLabel').textContent = '20万円ライン: ' + thresholdPct.toFixed(0) + '%位置';
+
+  var tlHtml = '';
+  for (var i = 0; i < 12; i++) {
+    var cum = cumulatives[i];
+    var isHit = (i === thresholdMonth);
+    var isOver = (thresholdMonth !== null && i > thresholdMonth);
+    var isNow = (i === CURRENT_MONTH);
+    var pct = Math.min(100, Math.max(0, (cum / maxVal) * 100));
+    var barColor = isHit || isOver ? 'var(--red)' : 'var(--acc)';
+    if (isHit) barColor = 'var(--yellow)';
+
+    var lblClass = isHit ? 'tl-lbl tl-lbl-hit' : 'tl-lbl';
+    var amtClass = (isHit || isOver) ? 'tl-amount tl-amount-hit' : 'tl-amount';
+    var tags = '';
+    if (isNow) tags += '<span class="tl-tag tl-tag-now">今月</span>';
+    if (isHit) tags += '<span class="tl-tag tl-tag-hit">超過!</span>';
+
+    tlHtml += '<div class="tl-row">' +
+      '<div class="' + lblClass + '">' + MONTHS[i] + '</div>' +
+      '<div class="tl-bar-outer"><div class="tl-bar-inner" style="width:' + pct.toFixed(1) + '%;background:' + barColor + ';opacity:' + (isHit || isOver ? '.8' : '.55') + '"></div></div>' +
+      '<div class="tl-right"><span class="' + amtClass + '">' + fmtMan(cum) + '万</span>' + tags + '</div>' +
+      '</div>';
+  }
+  document.getElementById('timeline').innerHTML = tlHtml;
+
+  /* --- Tax card --- */
+  var taxCard = document.getElementById('taxCard');
+  if (yearEnd > THRESHOLD) {
+    var it    = yearEnd * _rate / 100;
+    var rt    = yearEnd * 0.10;
+    var total = it + rt;
+    document.getElementById('tdNet').textContent      = fmtMan(yearEnd) + '万円';
+    document.getElementById('tdITlbl').textContent    = '所得税(概算・' + _rate + '%)';
+    document.getElementById('tdIT').textContent       = '-' + fmtMan(it) + '万円';
+    document.getElementById('tdRT').textContent       = '-' + fmtMan(rt) + '万円';
+    document.getElementById('tdTotal').textContent    = '-' + fmtMan(total) + '万円';
+    taxCard.style.display = 'block';
+  } else {
+    taxCard.style.display = 'none';
+  }
+
+  /* --- Share text --- */
+  var lines = ['副業月収' + fmtMan(income) + '万・経費' + fmtMan(expense) + '万円で試算:'];
+  if (net <= 0 || yearEnd <= THRESHOLD) {
+    lines.push('年間雑所得 ' + fmtMan(yearEnd) + '万円 → 今年は確定申告不要の見込み');
+  } else if (thresholdMonth !== null) {
+    lines.push(MONTHS[thresholdMonth] + 'に申告ライン(20万円)を超える見込み');
+    lines.push('年間雑所得: ' + fmtMan(yearEnd) + '万円');
+    var it2    = yearEnd * _rate / 100;
+    var rt2    = yearEnd * 0.10;
+    lines.push('概算追加税負担: 約' + fmtMan(it2 + rt2) + '万円(所得税' + _rate + '%+住民税10%)');
+  }
+  lines.push('#AIアプリ工房');
+  lines.push('https://yama-ai-factory.vercel.app/apps/tax-filing-timing/');
+  _shareText = lines.join('\n');
+}
+
+function doShare() {
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(_shareText), '_blank', 'noopener');
+}
+
+function doCopy(btn) {
+  var orig = btn.textContent;
+  navigator.clipboard.writeText(_shareText).then(function() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = orig; }, 1500);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = _shareText;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = orig; }, 1500);
+  });
+}
+
+calculate();
+</script>
+</body>
+</html>
