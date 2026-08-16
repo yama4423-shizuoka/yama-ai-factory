@@ -165,6 +165,7 @@
     <div id="zeroMsg">ちょうど今日です!</div>
     <div class="share-row">
       <a class="btn-x" id="shareBtn" href="#" target="_blank" rel="noopener">X でシェア</a>
+      <button class="btn-sm" id="cpUrlBtn" onclick="copyCurrentUrl(this)">URLをコピー</button>
     </div>
     <div class="make-own"><a href="/apps/anniversary-countdown/">自分のカウントダウンを作る</a></div>
   </div>
@@ -291,6 +292,25 @@
 
   window.openUrl = function () {
     if (_url) window.open(_url, '_blank');
+  };
+
+  window.copyCurrentUrl = function (btn) {
+    var url = location.href;
+    var label = btn.textContent;
+    var done = function () {
+      btn.textContent = 'コピーしました';
+      setTimeout(function () { btn.textContent = label; }, 2000);
+    };
+    navigator.clipboard.writeText(url).then(done).catch(function () {
+      var ta = document.createElement('textarea');
+      ta.value = url;
+      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      done();
+    });
   };
 }());
 </script>
