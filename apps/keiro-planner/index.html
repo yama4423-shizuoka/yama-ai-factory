@@ -137,7 +137,8 @@
       <div class="input-row">
         <input type="number" id="totalBudget" class="budget-input"
                value="10000" min="1000" max="500000" step="1000"
-               oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+               oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();"
+               onfocus="this.select();">
         <span class="input-unit">円</span>
       </div>
     </div>
@@ -161,7 +162,8 @@
           <td>
             <input type="number" class="num-input" id="numGP"
                    value="0" min="0" max="4" step="1"
-                   oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+                   oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();"
+                   onfocus="this.select();">
           </td>
         </tr>
         <tr>
@@ -172,7 +174,8 @@
           <td>
             <input type="number" class="num-input" id="numParents"
                    value="2" min="0" max="4" step="1"
-                   oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+                   oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();"
+                   onfocus="this.select();">
           </td>
         </tr>
         <tr>
@@ -183,7 +186,8 @@
           <td>
             <input type="number" class="num-input" id="numInLaws"
                    value="0" min="0" max="4" step="1"
-                   oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+                   oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();"
+                   onfocus="this.select();">
           </td>
         </tr>
       </tbody>
