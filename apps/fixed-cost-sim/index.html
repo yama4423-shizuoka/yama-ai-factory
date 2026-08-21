@@ -121,7 +121,7 @@
       <div class="income-label">月の手取り収入</div>
       <div class="input-row">
         <input type="number" id="income" value="250000" min="0" step="10000"
-          onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
+          onfocus="this.select()" onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
         <span class="input-unit">円</span>
       </div>
     </div>
@@ -211,7 +211,7 @@ const ITEMS = [
       '<label>' + item.label + '<small>' + item.hint + '</small></label>' +
       '<div class="input-row">' +
         '<input type="number" id="c_' + item.key + '" value="' + item.def + '" min="0" step="1000"' +
-          ' onkeydown="if(event.key===\'Enter\')calculate();" oninput="calculate()">' +
+          ' onfocus="this.select()" onkeydown="if(event.key===\'Enter\')calculate();" oninput="calculate()">' +
         '<span class="input-unit">円</span>' +
       '</div>' +
       '<div class="field-bar"><div class="field-bar-fill" id="bar_' + item.key + '"></div></div>';
