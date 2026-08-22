@@ -133,7 +133,7 @@
       <label>目標貯金額<small>達成したい金額</small></label>
       <div class="input-row">
         <input type="number" id="target" value="1000000" min="0" step="10000"
-          onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
+          onfocus="this.select();" onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
         <span class="input-unit">円</span>
       </div>
     </div>
@@ -141,7 +141,7 @@
       <label>現在の貯金残高<small>今すでにある金額</small></label>
       <div class="input-row">
         <input type="number" id="current" value="200000" min="0" step="10000"
-          onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
+          onfocus="this.select();" onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
         <span class="input-unit">円</span>
       </div>
     </div>
@@ -149,7 +149,7 @@
       <label>毎月の積立額<small>毎月コンスタントに貯める金額</small></label>
       <div class="input-row">
         <input type="number" id="monthly" value="50000" min="1" step="1000"
-          onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
+          onfocus="this.select();" onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
         <span class="input-unit">円/月</span>
       </div>
     </div>
