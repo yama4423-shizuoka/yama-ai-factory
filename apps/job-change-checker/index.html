@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>転職後 実質手取り変化チェッカー(2026年版) | AIアプリ工房</title>
+  <meta name="description" content="現在の年収・転職後年収・通勤費変化・転職初期費用を入力すると、2026年税率ベースで月手取り増加額と初期費用の回収月数を即計算。転職の損益分岐を可視化。無料・登録不要。">
+
+  <meta property="og:title" content="転職後 実質手取り変化チェッカー(2026年版) | AIアプリ工房">
+  <meta property="og:description" content="現在の年収・転職後年収・通勤費変化・転職初期費用を入力すると、月手取り増加額と初期費用の回収月数を即計算。転職の損益分岐を可視化。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/job-change-checker/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24; --red:#f87171;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:580px; margin:0 auto; padding:40px 20px 80px; }
+    .back { font-size:.82rem; color:var(--tx2); text-decoration:none; display:inline-block; margin-bottom:28px; }
+    .back:hover { color:var(--acc2); }
+
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,5vw,2.1rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .subtitle { color:var(--tx3); font-size:.88rem; line-height:1.8; margin-bottom:28px; }
+
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px 22px; margin-bottom:16px; }
+    .card-title { font-size:.78rem; font-weight:700; color:var(--tx3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:18px; }
+
+    .field { margin-bottom:20px; }
+    .field:last-child { margin-bottom:0; }
+    .field label { display:block; font-size:.84rem; color:var(--tx3); font-weight:600; margin-bottom:8px; }
+    .field-note { font-size:.74rem; color:var(--tx2); margin-top:5px; line-height:1.5; }
+
+    .input-row { display:flex; align-items:center; gap:10px; }
+    input[type=number] {
+      flex:1; padding:11px 14px; font-size:1.05rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:right;
+      -moz-appearance:textfield; min-width:0;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { opacity:.5; }
+    input[type=number]:focus { border-color:var(--acc); }
+    .input-unit { font-size:.84rem; color:var(--tx2); white-space:nowrap; flex-shrink:0; }
+
+    .section-sep {
+      border:none; border-top:1px solid var(--bd); margin:4px 0 20px;
+    }
+    .section-label {
+      font-size:.76rem; color:var(--acc2); font-weight:700; letter-spacing:.06em;
+      text-transform:uppercase; margin-bottom:14px;
+    }
+
+    /* Big result */
+    .result-hero {
+      background:linear-gradient(135deg,rgba(124,111,245,.18),rgba(96,165,250,.08));
+      border:1px solid rgba(124,111,245,.3); border-radius:16px;
+      padding:28px 24px 22px; margin-bottom:16px; text-align:center;
+    }
+    .result-label { font-size:.84rem; color:var(--tx3); margin-bottom:8px; }
+    .result-value { font-size:clamp(2.4rem,8vw,3.6rem); font-weight:900; line-height:1; margin-bottom:8px; }
+    .result-plus  { color:var(--green); }
+    .result-minus { color:var(--red); }
+    .result-zero  { color:var(--tx3); }
+    .result-unit  { font-size:.9rem; font-weight:400; color:var(--tx3); margin-left:4px; }
+    .result-sub   { font-size:.83rem; color:var(--tx3); }
+
+    /* Stats grid */
+    .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+    .stat-box { background:var(--s2); border-radius:12px; padding:14px 16px; }
+    .stat-lbl { font-size:.75rem; color:var(--tx3); margin-bottom:6px; }
+    .stat-val { font-size:1.1rem; font-weight:800; color:var(--tx); }
+    .stat-val .unit { font-size:.75rem; font-weight:400; color:var(--tx3); margin-left:2px; }
+    .stat-sub { font-size:.72rem; color:var(--tx2); margin-top:4px; }
+
+    /* Recovery box */
+    .recovery-box {
+      border-radius:12px; padding:16px 18px; margin-bottom:16px;
+      display:flex; align-items:center; gap:14px;
+    }
+    .recovery-ok  { background:rgba(52,211,153,.08);  border:1px solid rgba(52,211,153,.25); }
+    .recovery-ng  { background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.25); }
+    .recovery-na  { background:rgba(34,34,58,.5);     border:1px solid rgba(34,34,58,.5); }
+    .recovery-icon { font-size:1.4rem; flex-shrink:0; }
+    .recovery-main { font-size:1rem; font-weight:800; }
+    .recovery-ok  .recovery-main { color:var(--green); }
+    .recovery-ng  .recovery-main { color:var(--red); }
+    .recovery-na  .recovery-main { color:var(--tx3); }
+    .recovery-desc { font-size:.78rem; color:var(--tx3); margin-top:3px; line-height:1.5; }
+
+    /* Breakdown comparison table */
+    .cmp-table { width:100%; border-collapse:collapse; }
+    .cmp-table th {
+      font-size:.72rem; color:var(--tx2); font-weight:700; letter-spacing:.04em;
+      padding:6px 8px 10px; border-bottom:1px solid var(--bd);
+      text-align:right;
+    }
+    .cmp-table th:first-child { text-align:left; }
+    .cmp-table td { padding:10px 8px; border-bottom:1px solid rgba(34,34,58,.5); font-size:.83rem; }
+    .cmp-table tr:last-child td { border-bottom:none; }
+    .cmp-lbl { color:var(--tx3); }
+    .cmp-val { text-align:right; font-weight:700; }
+    .cmp-chg { text-align:right; font-size:.78rem; }
+    .cmp-up  { color:var(--green); }
+    .cmp-dn  { color:var(--red); }
+    .cmp-highlight td { background:rgba(168,156,247,.07); }
+
+    .share-btn {
+      width:100%; background:var(--acc); color:#fff; border:none; border-radius:10px;
+      padding:13px; font-size:1rem; font-weight:700; cursor:pointer;
+      transition:opacity .15s; margin-bottom:10px;
+    }
+    .share-btn:hover { opacity:.85; }
+    .copy-btn {
+      width:100%; background:transparent; border:1px solid var(--bd); color:var(--tx3);
+      border-radius:10px; padding:11px; font-size:.9rem; font-weight:600;
+      cursor:pointer; transition:all .15s; margin-bottom:8px;
+    }
+    .copy-btn:hover { border-color:var(--acc2); color:var(--acc2); }
+    .copy-msg { text-align:center; font-size:.78rem; color:var(--green); min-height:1.2em; }
+
+    .disclaimer { font-size:.74rem; color:var(--tx2); line-height:1.75; }
+
+    @media (max-width:520px) {
+      .wrapper { padding:28px 14px 60px; }
+      .stats-grid { grid-template-columns:1fr 1fr; }
+      .cmp-table { font-size:.78rem; }
+      .cmp-table td { padding:8px 5px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a href="/" class="back">&larr; AIアプリ工房に戻る</a>
+
+  <div class="badge">2026年税率対応</div>
+  <h1><span class="grad">転職後 実質手取り</span><br>変化チェッカー</h1>
+  <p class="subtitle">現在年収・転職後年収・通勤費の変化・転職初期費用を入力すると、2026年最新税率ベースで「実質月手取り増加額」と「初期費用の回収月数」を即計算します。</p>
+
+  <div class="card">
+    <div class="card-title">年収を入力</div>
+
+    <div class="section-label">現職</div>
+    <div class="field">
+      <label for="curIncome">現在の年収（額面）</label>
+      <div class="input-row">
+        <input type="number" id="curIncome" value="400" min="100" max="3000" step="10"
+          oninput="calculate();" onfocus="this.select();"
+          onkeydown="if(event.key==='Enter')calculate();">
+        <span class="input-unit">万円</span>
+      </div>
+    </div>
+
+    <hr class="section-sep">
+    <div class="section-label">転職先</div>
+    <div class="field">
+      <label for="newIncome">転職後の年収（額面）</label>
+      <div class="input-row">
+        <input type="number" id="newIncome" value="450" min="100" max="3000" step="10"
+          oninput="calculate();" onfocus="this.select();"
+          onkeydown="if(event.key==='Enter')calculate();">
+        <span class="input-unit">万円</span>
+      </div>
+    </div>
+    <div class="field">
+      <label for="commuteDiff">通勤費の月額変化（増加は正・減少は負）</label>
+      <div class="input-row">
+        <input type="number" id="commuteDiff" value="0" min="-50000" max="50000" step="100"
+          oninput="calculate();" onfocus="this.select();"
+          onkeydown="if(event.key==='Enter')calculate();">
+        <span class="input-unit">円/月</span>
+      </div>
+      <p class="field-note">例: 通勤費が月5,000円増えるなら +5000 / 月2,000円減るなら -2000</p>
+    </div>
+    <div class="field">
+      <label for="initCost">転職の初期費用（引越し・スーツ・資格取得等）</label>
+      <div class="input-row">
+        <input type="number" id="initCost" value="0" min="0" max="300" step="1"
+          oninput="calculate();" onfocus="this.select();"
+          onkeydown="if(event.key==='Enter')calculate();">
+        <span class="input-unit">万円</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main result -->
+  <div class="result-hero">
+    <div class="result-label">実質 月手取り増加額（通勤費込み）</div>
+    <div class="result-value" id="mainValue">0<span class="result-unit">円/月</span></div>
+    <div class="result-sub" id="mainSub">計算中…</div>
+  </div>
+
+  <!-- Stats grid -->
+  <div class="stats-grid">
+    <div class="stat-box">
+      <div class="stat-lbl">現職 月手取り（概算）</div>
+      <div class="stat-val" id="curNet">-<span class="unit">円</span></div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-lbl">転職後 月手取り（概算）</div>
+      <div class="stat-val" id="newNet">-<span class="unit">円</span></div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-lbl">手取り差額（税引後）</div>
+      <div class="stat-val" id="taxDiff">-<span class="unit">円/月</span></div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-lbl">年間での差額</div>
+      <div class="stat-val" id="annualDiff">-<span class="unit">円</span></div>
+    </div>
+  </div>
+
+  <!-- Recovery -->
+  <div class="recovery-box recovery-na" id="recoveryBox">
+    <div class="recovery-icon" id="recoveryIcon">-</div>
+    <div>
+      <div class="recovery-main" id="recoveryMain">初期費用を入力すると回収月数を表示します</div>
+      <div class="recovery-desc" id="recoveryDesc"></div>
+    </div>
+  </div>
+
+  <!-- Breakdown table -->
+  <div class="card">
+    <div class="card-title">手取り内訳の比較</div>
+    <table class="cmp-table">
+      <thead>
+        <tr>
+          <th>項目</th>
+          <th>現職</th>
+          <th>転職後</th>
+          <th>増減</th>
+        </tr>
+      </thead>
+      <tbody id="cmpBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Share -->
+  <div class="card">
+    <button class="share-btn" onclick="shareX()">Xでシェアする</button>
+    <button class="copy-btn" onclick="doCopy()">テキストをコピー</button>
+    <div class="copy-msg" id="copyMsg"></div>
+  </div>
+
+  <div class="disclaimer">
+    ※ 本ツールは独身・40歳未満・協会けんぽ加入の給与所得者を想定した概算です。2026年の基礎控除引き上げ(所得税: 48万→123万円)・住民税基礎控除43万円を使用しています。実際の手取りは居住地・加入保険組合・扶養・各種控除により異なります。本ツールは医療・法律・金融の専門的助言を提供するものではありません。転職の判断は必ずご自身でご確認ください。
+  </div>
+</div>
+
+<script>
+  var _last = null;
+
+  function fmt(n) {
+    return Math.round(n).toLocaleString('ja-JP');
+  }
+  function fmtMan(n) {
+    return (Math.round(n * 10) / 10).toLocaleString('ja-JP');
+  }
+
+  /* 給与所得控除 (万円単位) */
+  function empDeduction(inc) {
+    if (inc <= 162.5) return 55;
+    if (inc <= 180)   return inc * 0.4 - 10;
+    if (inc <= 360)   return inc * 0.3 + 8;
+    if (inc <= 660)   return inc * 0.2 + 44;
+    if (inc <= 850)   return inc * 0.1 + 110;
+    return 195;
+  }
+
+  /* 社会保険料 (万円単位) */
+  function socialIns(inc) {
+    var m = inc / 12;
+    var healthM = Math.min(m, 139) * 0.05 * 12;
+    var pensionM = Math.min(m, 65) * 0.0915 * 12;
+    var empM = inc * 0.006;
+    return healthM + pensionM + empM;
+  }
+
+  /* 手取り計算 (万円単位) — 2026年版 */
+  function calcNet(inc) {
+    var s   = socialIns(inc);
+    var gi  = Math.max(0, inc - empDeduction(inc));   /* 給与所得 */
+    var tit = Math.max(0, gi - 123 - s);              /* 課税所得(所得税): 基礎控除123万 */
+    var it  = 0;
+    if      (tit <= 195) it = tit * 0.05;
+    else if (tit <= 330) it = tit * 0.10 - 9.75;
+    else if (tit <= 695) it = tit * 0.20 - 42.75;
+    else if (tit <= 900) it = tit * 0.23 - 63.60;
+    else if (tit <= 1800) it = tit * 0.33 - 153.60;
+    else if (tit <= 4000) it = tit * 0.40 - 279.60;
+    else                  it = tit * 0.45 - 479.60;
+    it = Math.max(0, it) * 1.021;                      /* 復興特別所得税 */
+    var trt = Math.max(0, gi - 43 - s);               /* 課税所得(住民税): 基礎控除43万 */
+    var rt  = trt > 0 ? trt * 0.10 : 0;
+    var net = Math.max(0, inc - s - it - rt);
+    return { net: net, s: s, it: it, rt: rt, gi: gi };
+  }
+
+  function calculate() {
+    var curInc     = parseFloat(document.getElementById('curIncome').value) || 400;
+    var newInc     = parseFloat(document.getElementById('newIncome').value) || 450;
+    var commuteDiff = parseFloat(document.getElementById('commuteDiff').value) || 0; /* 円/月 */
+    var initCost   = parseFloat(document.getElementById('initCost').value) || 0;     /* 万円 */
+
+    var cur = calcNet(curInc);
+    var nw  = calcNet(newInc);
+
+    /* 月換算 (万円→円) */
+    var curMonthly = Math.round(cur.net / 12 * 10000);
+    var newMonthly = Math.round(nw.net  / 12 * 10000);
+    var taxDiff    = newMonthly - curMonthly;
+    var realDiff   = taxDiff - commuteDiff;  /* 通勤費変化を差し引き (増加なら差し引く) */
+    var annualReal = realDiff * 12;
+
+    _last = {
+      curInc: curInc, newInc: newInc, commuteDiff: commuteDiff, initCost: initCost,
+      cur: cur, nw: nw,
+      curMonthly: curMonthly, newMonthly: newMonthly, taxDiff: taxDiff,
+      realDiff: realDiff, annualReal: annualReal
+    };
+
+    /* Main value */
+    var mainEl = document.getElementById('mainValue');
+    var cls = realDiff > 0 ? 'result-plus' : realDiff < 0 ? 'result-minus' : 'result-zero';
+    mainEl.className = 'result-value ' + cls;
+    var sign = realDiff > 0 ? '+' : '';
+    mainEl.innerHTML = sign + fmt(realDiff) + '<span class="result-unit">円/月</span>';
+
+    /* Sub text */
+    var sub = '年額換算で ' + (annualReal >= 0 ? '+' : '') + fmt(annualReal) + ' 円の変化';
+    if (commuteDiff !== 0) {
+      sub += '（通勤費 ' + (commuteDiff >= 0 ? '+' : '') + fmt(commuteDiff) + ' 円/月 を加味）';
+    }
+    document.getElementById('mainSub').textContent = sub;
+
+    /* Stats */
+    document.getElementById('curNet').innerHTML  = fmt(curMonthly) + '<span class="unit">円</span>';
+    document.getElementById('newNet').innerHTML  = fmt(newMonthly) + '<span class="unit">円</span>';
+    var diffSign = taxDiff >= 0 ? '+' : '';
+    document.getElementById('taxDiff').innerHTML   = diffSign + fmt(taxDiff) + '<span class="unit">円/月</span>';
+    var annSign = annualReal >= 0 ? '+' : '';
+    document.getElementById('annualDiff').innerHTML = annSign + fmt(annualReal) + '<span class="unit">円</span>';
+
+    /* Recovery */
+    updateRecovery(initCost, realDiff);
+
+    /* Breakdown table */
+    updateTable(cur, nw, curInc, newInc);
+  }
+
+  function updateRecovery(initCost, realDiff) {
+    var box  = document.getElementById('recoveryBox');
+    var icon = document.getElementById('recoveryIcon');
+    var main = document.getElementById('recoveryMain');
+    var desc = document.getElementById('recoveryDesc');
+
+    box.className = 'recovery-box';
+    if (initCost <= 0) {
+      box.classList.add('recovery-na');
+      icon.textContent = '-';
+      main.textContent = '初期費用を入力すると回収月数を表示します';
+      desc.textContent = '';
+      return;
+    }
+    if (realDiff <= 0) {
+      box.classList.add('recovery-ng');
+      icon.textContent = '!';
+      main.textContent = '手取りが減少するため初期費用は回収できません';
+      desc.textContent = '転職後の月手取りが現職を下回っています。年収だけでなく手取りの実額でご確認ください。';
+      return;
+    }
+    var months = Math.ceil((initCost * 10000) / realDiff);
+    box.classList.add('recovery-ok');
+    icon.textContent = '+';
+    main.textContent = '初期費用 ' + fmtMan(initCost) + ' 万円 → ' + months + ' ヶ月で回収';
+    var yr  = Math.floor(months / 12);
+    var mo  = months % 12;
+    var yrStr = yr > 0 ? yr + ' 年 ' : '';
+    desc.textContent = '月 ' + fmt(realDiff) + ' 円の増加ペースで、約 ' + yrStr + mo + ' ヶ月後に元が取れる計算です。';
+  }
+
+  function fmtDiff(val) {
+    var sign = val >= 0 ? '+' : '';
+    var cls  = val > 0 ? 'cmp-up' : val < 0 ? 'cmp-dn' : '';
+    return '<td class="cmp-chg ' + cls + '">' + sign + fmtMan(Math.round(val * 10) / 10) + ' 万</td>';
+  }
+
+  function updateTable(cur, nw, curInc, newInc) {
+    var rows = [
+      { label: '額面年収',    cur: curInc,            nw: newInc },
+      { label: '社会保険料',  cur: -cur.s,            nw: -nw.s  },
+      { label: '所得税',      cur: -cur.it,           nw: -nw.it },
+      { label: '住民税',      cur: -cur.rt,           nw: -nw.rt },
+      { label: '年間手取り',  cur: cur.net,           nw: nw.net, highlight: true },
+    ];
+    var html = '';
+    rows.forEach(function(r) {
+      var diff = r.nw - r.cur;
+      html += '<tr' + (r.highlight ? ' class="cmp-highlight"' : '') + '>';
+      html += '<td class="cmp-lbl">' + r.label + '</td>';
+      html += '<td class="cmp-val">' + fmtMan(Math.abs(r.cur)) + ' 万</td>';
+      html += '<td class="cmp-val">' + fmtMan(Math.abs(r.nw))  + ' 万</td>';
+      html += fmtDiff(diff);
+      html += '</tr>';
+    });
+    document.getElementById('cmpBody').innerHTML = html;
+  }
+
+  function buildShareText() {
+    if (!_last) return '';
+    var r = _last;
+    var sign = r.realDiff >= 0 ? '+' : '';
+    var text = '転職後 実質手取り変化チェック: 年収' + r.curInc + '万→' + r.newInc + '万円で月手取りは' +
+      sign + fmt(r.realDiff) + '円の変化';
+    if (r.commuteDiff !== 0) {
+      text += '(通勤費' + (r.commuteDiff >= 0 ? '+' : '') + fmt(r.commuteDiff) + '円/月含む)';
+    }
+    if (r.initCost > 0 && r.realDiff > 0) {
+      var months = Math.ceil((r.initCost * 10000) / r.realDiff);
+      text += '。転職初期費用' + r.initCost + '万円は' + months + 'ヶ月で回収できる計算。';
+    }
+    text += ' #AIアプリ工房';
+    return text;
+  }
+
+  function shareX() {
+    var text = buildShareText();
+    if (!text) return;
+    var url = 'https://yama-ai-factory.vercel.app/apps/job-change-checker/';
+    window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url), '_blank', 'noopener');
+  }
+
+  function doCopy() {
+    var text = buildShareText();
+    if (!text) return;
+    var msg = document.getElementById('copyMsg');
+    function done() {
+      msg.textContent = 'コピーしました';
+      setTimeout(function(){ msg.textContent = ''; }, 2500);
+    }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      done();
+    }
+    navigator.clipboard.writeText(text).then(done).catch(fallback);
+  }
+
+  calculate();
+</script>
+</body>
+</html>
