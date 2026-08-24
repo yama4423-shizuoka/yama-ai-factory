@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>9月食品値上がり 家計インパクト試算ツール | AIアプリ工房</title>
+  <meta name="description" content="2026年9月に4,531品目が値上がり。月の食費と家族人数を入力するだけで、加工食品・調味料・飲料などカテゴリ別の値上がり影響額を即計算。月・年間でいくら増えるか確認できます。無料・登録不要。">
+
+  <meta property="og:title" content="9月食品値上がり 家計インパクト試算ツール | AIアプリ工房">
+  <meta property="og:description" content="2026年9月に4,531品目が値上がり。月の食費と家族人数を入力するだけで、加工食品・調味料・飲料などカテゴリ別の値上がり影響額を即計算。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/sept-food-hike/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24; --red:#f87171; --orange:#fb923c;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back { font-size:.82rem; color:var(--tx2); text-decoration:none; display:inline-block; margin-bottom:28px; }
+    .back:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.45rem,5vw,2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .subtitle { color:var(--tx3); font-size:.88rem; line-height:1.8; margin-bottom:8px; }
+    .alert-banner {
+      background:rgba(251,146,60,.08); border:1px solid rgba(251,146,60,.35);
+      border-radius:12px; padding:12px 16px; margin-bottom:24px;
+      font-size:.84rem; color:var(--orange); line-height:1.7; font-weight:600;
+    }
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px 22px; margin-bottom:16px; }
+    .card-title { font-size:.78rem; font-weight:700; color:var(--tx3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:20px; }
+    .field { margin-bottom:18px; }
+    .field:last-child { margin-bottom:0; }
+    .field label { display:block; font-size:.84rem; color:var(--tx3); font-weight:600; margin-bottom:8px; }
+    .input-row { display:flex; align-items:center; gap:10px; }
+    input[type=number] {
+      width:110px; padding:10px 12px; font-size:1rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:center;
+      flex-shrink:0; -moz-appearance:textfield;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { opacity:.5; }
+    input[type=number]:focus { border-color:var(--acc); }
+    select {
+      padding:10px 14px; font-size:.95rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; cursor:pointer; transition:border-color .15s;
+    }
+    select:focus { border-color:var(--acc); }
+    .input-unit { font-size:.84rem; color:var(--tx2); white-space:nowrap; }
+    .divider { border:none; border-top:1px solid var(--bd); margin:18px 0; }
+
+    .hero-result {
+      background:linear-gradient(135deg,rgba(124,111,245,.12),rgba(96,165,250,.08));
+      border:1px solid rgba(124,111,245,.3); border-radius:14px;
+      padding:22px 20px; margin-bottom:16px; text-align:center;
+    }
+    .hero-lbl { font-size:.8rem; color:var(--tx3); font-weight:600; margin-bottom:6px; }
+    .hero-val { font-size:clamp(2.2rem,8vw,3rem); font-weight:900; color:var(--orange); line-height:1; }
+    .hero-unit { font-size:.85rem; color:var(--tx3); margin-top:6px; }
+    .hero-sub { font-size:.82rem; color:var(--tx2); margin-top:10px; }
+
+    .totals-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+    .tot-box {
+      background:var(--s2); border:1px solid var(--bd); border-radius:12px;
+      padding:16px 14px; text-align:center;
+    }
+    .tot-lbl { font-size:.72rem; color:var(--tx2); margin-bottom:8px; font-weight:600; letter-spacing:.05em; }
+    .tot-val { font-size:clamp(1.5rem,5vw,2rem); font-weight:900; color:var(--acc2); line-height:1.1; }
+    .tot-unit { font-size:.73rem; color:var(--tx3); margin-top:5px; }
+
+    .cat-list { list-style:none; }
+    .cat-item {
+      display:flex; align-items:center; gap:10px; padding:9px 0;
+      border-bottom:1px solid rgba(34,34,58,.6);
+    }
+    .cat-item:last-child { border-bottom:none; }
+    .cat-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+    .cat-name { flex:1; font-size:.84rem; color:var(--tx3); line-height:1.4; }
+    .cat-rise { font-size:.72rem; color:var(--tx2); }
+    .cat-impact { font-size:.88rem; font-weight:700; white-space:nowrap; text-align:right; min-width:80px; }
+
+    .bar-list { list-style:none; }
+    .bar-item { margin-bottom:12px; }
+    .bar-header { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px; }
+    .bar-name { font-size:.8rem; color:var(--tx3); }
+    .bar-val { font-size:.82rem; font-weight:700; }
+    .bar-bg { height:8px; background:var(--s2); border-radius:999px; overflow:hidden; }
+    .bar-fg { height:100%; border-radius:999px; transition:width .4s ease; min-width:3px; }
+
+    .note { font-size:.76rem; color:var(--tx2); line-height:1.75; margin-top:12px; padding-top:12px; border-top:1px solid var(--bd); }
+
+    .share-btn {
+      display:block; width:100%; padding:13px; border-radius:10px;
+      background:var(--acc); border:none; color:#fff;
+      font-size:1rem; font-weight:700; cursor:pointer; transition:opacity .15s;
+    }
+    .share-btn:hover { opacity:.85; }
+    .copy-btn {
+      display:block; width:100%; padding:11px; border-radius:10px;
+      background:transparent; border:1px solid var(--bd); color:var(--tx3);
+      font-size:.9rem; font-weight:600; cursor:pointer; transition:all .15s; margin-top:8px;
+    }
+    .copy-btn:hover { border-color:var(--acc2); color:var(--acc2); }
+
+    @media (max-width:520px) {
+      .wrapper { padding:28px 14px 60px; }
+      input[type=number] { width:95px; font-size:.92rem; }
+      .totals-grid { gap:8px; }
+      .hero-val { font-size:2.2rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back" href="/">&larr; AIアプリ工房トップへ</a>
+
+  <div class="badge">2026年9月 食品値上がり</div>
+  <h1><span class="grad">9月食品値上がり</span><br>家計インパクト試算ツール</h1>
+  <p class="subtitle">月の食費と家族人数を入力するだけで、2026年9月の食品値上がりで家計がいくら増えるかをカテゴリ別に試算します。</p>
+
+  <div class="alert-banner">
+    2026年9月に4,531品目が値上がり予定(帝国データバンク調査)。加工食品・調味料・飲料を中心に年内最多の値上げラッシュです。
+  </div>
+
+  <div class="card">
+    <div class="card-title">食費の情報を入力</div>
+
+    <div class="field">
+      <label>月の食費合計(外食含む)</label>
+      <div class="input-row">
+        <input type="number" id="monthly-food" value="70000" min="5000" max="500000" step="1000"
+          onkeydown="if(event.key==='Enter')calculate();" oninput="calculate();"
+          onfocus="this.select();">
+        <span class="input-unit">円 / 月</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>家族人数</label>
+      <div class="input-row">
+        <select id="family-size" onchange="calculate();">
+          <option value="1">1人(単身)</option>
+          <option value="2" selected>2人</option>
+          <option value="3">3人</option>
+          <option value="4">4人</option>
+          <option value="5">5人</option>
+          <option value="6">6人以上</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultSection">
+
+    <div class="hero-result">
+      <div class="hero-lbl">月の食費 増加見込み額</div>
+      <div class="hero-val" id="disp-monthly-inc">+0</div>
+      <div class="hero-unit">円 / 月</div>
+      <div class="hero-sub" id="disp-hero-sub">月70,000円の食費 &rarr; 約70,000円に増加見込み</div>
+    </div>
+
+    <div class="totals-grid">
+      <div class="tot-box">
+        <div class="tot-lbl">月間増加額</div>
+        <div class="tot-val" id="disp-monthly-val">0</div>
+        <div class="tot-unit">円 / 月</div>
+      </div>
+      <div class="tot-box">
+        <div class="tot-lbl">年間増加額(概算)</div>
+        <div class="tot-val" id="disp-annual-val">0</div>
+        <div class="tot-unit">万円 / 年</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">カテゴリ別 値上がり影響額(月あたり)</div>
+      <ul class="bar-list" id="cat-bars"></ul>
+      <div class="note" style="margin-top:14px;">
+        ※ カテゴリ別の食費配分は家族人数を踏まえた平均的な推定値です。実際の配分と異なる場合があります。
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">カテゴリ別 詳細</div>
+      <ul class="cat-list" id="cat-detail"></ul>
+      <div class="note">
+        ※ 増加率は帝国データバンクの2026年9月値上げデータをもとにカテゴリ平均を固定値で推定したものです。実際の値上げ率は商品・メーカーによって異なります。生鮮食品(野菜・肉・魚など)は含まれていません。免責: 本ツールは参考試算のみを目的としており、実際の家計負担を保証するものではありません。
+      </div>
+    </div>
+
+    <div class="card">
+      <button type="button" class="share-btn" onclick="doShare()">Xでシェアする</button>
+      <button type="button" class="copy-btn" onclick="doCopy(this)">テキストをコピー</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var _st = '';
+
+var CATEGORIES = [
+  { name: '加工食品(ハム・缶詰・レトルト等)', ratio: 0.25, rise: 0.12, color: '#a89cf7' },
+  { name: '菓子・スナック類', ratio: 0.08, rise: 0.11, color: '#fb923c' },
+  { name: '調味料・ソース類', ratio: 0.09, rise: 0.10, color: '#60a5fa' },
+  { name: '飲料(コーヒー・ジュース等)', ratio: 0.12, rise: 0.08, color: '#34d399' },
+  { name: '冷凍食品・惣菜', ratio: 0.10, rise: 0.10, color: '#fbbf24' },
+  { name: '乳製品(チーズ・バター等)', ratio: 0.04, rise: 0.07, color: '#f87171' }
+];
+
+var FAMILY_ADJUST = { '1': -0.05, '2': 0, '3': 0.03, '4': 0.05, '5': 0.06, '6': 0.07 };
+
+function fmt(v) {
+  return v.toLocaleString('ja-JP');
+}
+function fmtMan(v) {
+  if (v < 10000) return fmt(v) + '円';
+  return (Math.round(v / 1000) / 10).toLocaleString('ja-JP') + '万円';
+}
+
+function calculate() {
+  var food = Math.max(0, parseInt(document.getElementById('monthly-food').value) || 0);
+  var family = document.getElementById('family-size').value;
+  var adjust = FAMILY_ADJUST[family] || 0;
+
+  var cats = CATEGORIES.map(function(c) {
+    var adjRatio = Math.min(1, c.ratio * (1 + adjust));
+    var base = food * adjRatio;
+    var impact = Math.round(base * c.rise);
+    return { name: c.name, rise: c.rise, base: Math.round(base), impact: impact, color: c.color };
+  });
+
+  var totalImpact = cats.reduce(function(s, c) { return s + c.impact; }, 0);
+  var annualImpact = totalImpact * 12;
+  var annualMan = annualImpact >= 10000
+    ? (Math.round(annualImpact / 1000) / 10).toLocaleString('ja-JP')
+    : (annualImpact / 10000).toFixed(1);
+  var newMonthly = food + totalImpact;
+
+  document.getElementById('disp-monthly-inc').textContent = '+' + fmt(totalImpact);
+  document.getElementById('disp-monthly-val').textContent = fmt(totalImpact);
+  document.getElementById('disp-annual-val').textContent = annualMan;
+  document.getElementById('disp-hero-sub').textContent =
+    '月' + fmt(food) + '円の食費 → 約' + fmt(newMonthly) + '円に増加見込み';
+
+  var maxImpact = Math.max.apply(null, cats.map(function(c) { return c.impact; })) || 1;
+
+  var barsHtml = '';
+  cats.forEach(function(c) {
+    var pct = totalImpact > 0 ? Math.round(c.impact / maxImpact * 100) : 0;
+    barsHtml += '<li class="bar-item">'
+      + '<div class="bar-header">'
+      + '<span class="bar-name">' + c.name + '</span>'
+      + '<span class="bar-val" style="color:' + c.color + '">+' + fmt(c.impact) + '円</span>'
+      + '</div>'
+      + '<div class="bar-bg"><div class="bar-fg" style="width:' + pct + '%;background:' + c.color + '"></div></div>'
+      + '</li>';
+  });
+  document.getElementById('cat-bars').innerHTML = barsHtml;
+
+  var detailHtml = '';
+  cats.forEach(function(c) {
+    detailHtml += '<li class="cat-item">'
+      + '<span class="cat-dot" style="background:' + c.color + '"></span>'
+      + '<span class="cat-name">' + c.name + '<br><span class="cat-rise">平均値上げ率 +' + Math.round(c.rise * 100) + '% / 月' + fmt(c.base) + '円相当分が対象</span></span>'
+      + '<span class="cat-impact" style="color:' + c.color + '">+' + fmt(c.impact) + '円</span>'
+      + '</li>';
+  });
+  document.getElementById('cat-detail').innerHTML = detailHtml;
+
+  var familyLabel = { '1':'単身', '2':'2人', '3':'3人', '4':'4人', '5':'5人', '6':'6人以上' }[family] || family + '人';
+  _st = '【9月食品値上がり 家計インパクト試算】\n'
+    + '家族' + familyLabel + ' / 月食費' + fmt(food) + '円\n'
+    + '→ 月約+' + fmt(totalImpact) + '円 / 年間約+' + fmtMan(annualImpact) + '増える見込み\n'
+    + '2026年9月に4,531品目値上がり(加工食品+12%/調味料+10%など)\n'
+    + '#食費値上がり #家計 #AIアプリ工房\n'
+    + 'https://yama-ai-factory.vercel.app/apps/sept-food-hike/';
+}
+
+function doShare() {
+  if (!_st) return;
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(_st), '_blank', 'noopener');
+}
+
+function doCopy(btn) {
+  if (!_st) return;
+  navigator.clipboard.writeText(_st).then(function() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'テキストをコピー'; }, 2000);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = _st;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'テキストをコピー'; }, 2000);
+  });
+}
+
+calculate();
+</script>
+</body>
+</html>
