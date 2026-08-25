@@ -139,7 +139,7 @@
     <div class="age-row">
       <button class="age-adj" onclick="adjustAge(-1)">-</button>
       <input type="number" id="petAge" class="field-input" min="0" max="30" value="3"
-        onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
+        onfocus="this.select();" onkeydown="if(event.key==='Enter')calculate();" oninput="calculate()">
       <span class="field-unit">歳</span>
       <button class="age-adj" onclick="adjustAge(1)">+</button>
     </div>
