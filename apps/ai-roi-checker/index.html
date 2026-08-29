@@ -141,7 +141,7 @@
       <label class="field-label" for="monthlyFee">AIサブスク月額合計</label>
       <div class="input-row">
         <input type="number" id="monthlyFee" value="3000" min="0" max="9999999" step="100"
-               oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+               onfocus="this.select();" oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
         <span class="input-unit">円/月</span>
       </div>
       <p class="field-hint">複数サービスを合算した月額。合計が分からない方は<a href="/apps/ai-sub-cost/">AIサブスク集計ツール</a>をご利用ください。</p>
@@ -150,7 +150,7 @@
       <label class="field-label" for="dailyMinutes">1日の平均AI利用時間</label>
       <div class="input-row">
         <input type="number" id="dailyMinutes" value="30" min="1" max="720" step="5"
-               oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+               onfocus="this.select();" oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
         <span class="input-unit">分/日</span>
       </div>
       <p class="field-hint">チャット・コード生成・画像生成・翻訳など、AIに触れている1日の総時間の目安</p>
@@ -159,7 +159,7 @@
       <label class="field-label" for="hourlyRate">あなたの時給目安</label>
       <div class="input-row">
         <input type="number" id="hourlyRate" value="1500" min="1" max="99999" step="100"
-               oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+               onfocus="this.select();" oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
         <span class="input-unit">円/時間</span>
       </div>
       <p class="field-hint">会社員なら年収÷2080が目安。フリーランスなら実質時給。損益分岐点の算出に使います。</p>
