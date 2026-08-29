@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>動画生成AI プラン診断 | 用途・本数・予算から最適サービスを推薦 | AIアプリ工房</title>
+  <meta name="description" content="SNS動画・広告・本格動画など用途と月の生成本数・予算を入力するだけで、Sora 2/Veo 3.1/Runway Gen-4.5/Kling/Seedanceから最適プランを診断。無料・登録不要。">
+  <meta property="og:title" content="動画生成AI プラン診断 | 用途・本数・予算から最適サービスを推薦">
+  <meta property="og:description" content="Sora 2・Veo 3.1・Runway Gen-4.5・Kling・Seedanceの主要5サービスから、あなたの用途・生成本数・予算に合ったプランを即診断。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/video-ai-plan/">
+  <meta name="twitter:card" content="summary">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24; --red:#f87171;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back { display:inline-block; font-size:.82rem; color:var(--tx2); text-decoration:none; margin-bottom:26px; transition:color .15s; }
+    .back:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,4.5vw,2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:8px; }
+    .disclaimer {
+      font-size:.75rem; color:var(--tx2); margin-bottom:28px; padding:8px 12px;
+      background:var(--s2); border-radius:8px; border-left:3px solid var(--bd);
+    }
+    .input-card {
+      background:var(--s1); border:1px solid var(--bd); border-radius:16px;
+      padding:22px 20px; margin-bottom:20px;
+    }
+    .field { margin-bottom:18px; }
+    .field:last-child { margin-bottom:0; }
+    label { display:block; font-size:.85rem; font-weight:700; color:var(--tx3); margin-bottom:8px; }
+    select, input[type=number] {
+      width:100%; padding:11px 14px; border-radius:10px;
+      background:var(--s2); border:1px solid var(--bd);
+      color:var(--tx); font-size:.95rem; outline:none; transition:border-color .15s;
+      appearance:none; -webkit-appearance:none;
+    }
+    select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236868a0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; }
+    select:focus, input[type=number]:focus { border-color:var(--acc); }
+    .hint { font-size:.75rem; color:var(--tx2); margin-top:6px; }
+    .calc-btn {
+      display:block; width:100%; padding:14px; border-radius:12px;
+      background:var(--acc); border:none; color:#fff;
+      font-size:1.05rem; font-weight:700; cursor:pointer; transition:opacity .15s;
+      margin-bottom:24px;
+    }
+    .calc-btn:hover { opacity:.85; }
+
+    .result-section { display:none; }
+    .result-section.show { display:block; }
+    .result-label {
+      font-size:.75rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--acc2); margin-bottom:12px;
+    }
+    .no-match {
+      background:var(--s1); border:1px solid var(--bd); border-radius:16px;
+      padding:20px; color:var(--tx3); font-size:.88rem; line-height:1.8; margin-bottom:12px;
+    }
+    .plan-card {
+      background:var(--s1); border:1px solid var(--bd); border-radius:16px;
+      padding:20px 18px; margin-bottom:12px;
+    }
+    .plan-card.top { border-color:rgba(124,111,245,.5); background:rgba(124,111,245,.05); }
+    .plan-rank { font-size:.7rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; margin-bottom:8px; }
+    .rank-1 { color:var(--yellow); }
+    .rank-2 { color:var(--tx3); }
+    .rank-3 { color:var(--tx2); }
+    .plan-header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:6px; }
+    .plan-name { font-size:1.02rem; font-weight:800; }
+    .plan-price { font-size:.95rem; color:var(--green); font-weight:700; white-space:nowrap; }
+    .plan-provider { font-size:.73rem; color:var(--tx2); margin-bottom:8px; }
+    .plan-reason { font-size:.84rem; color:var(--tx3); line-height:1.65; }
+    .plan-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+    .tag {
+      font-size:.7rem; padding:3px 10px; border-radius:999px;
+      border:1px solid rgba(52,211,153,.35); color:var(--green); background:rgba(52,211,153,.06);
+    }
+    .share-row { display:flex; gap:10px; margin-top:20px; }
+    .share-btn {
+      flex:1; padding:11px; border-radius:10px; border:none;
+      font-size:.9rem; font-weight:700; cursor:pointer; transition:opacity .15s;
+    }
+    .share-x { background:#000; color:#fff; border:1px solid #333; }
+    .share-x:hover { opacity:.8; }
+    .copy-btn { background:var(--s2); color:var(--tx); border:1px solid var(--bd); }
+    .copy-btn:hover { border-color:var(--acc); color:var(--acc2); }
+    footer { margin-top:48px; padding-top:20px; border-top:1px solid var(--bd); text-align:center; font-size:.78rem; color:var(--tx2); line-height:1.9; }
+    footer a { color:var(--acc2); text-decoration:none; }
+    @media (max-width:520px) {
+      .wrapper { padding:28px 14px 60px; }
+      .share-row { flex-direction:column; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back" href="/">&#8592; AIアプリ工房 トップへ</a>
+
+  <div class="badge">AI Tool</div>
+  <h1>動画生成AI<br><span class="grad">用途別プラン診断</span></h1>
+  <p class="hero-desc">用途・月の生成本数・予算を入力するだけで、Sora 2 / Veo 3.1 / Runway Gen-4.5 / Kling / Seedance の中から最適プランを推薦します。</p>
+  <div class="disclaimer">【免責事項】料金は2026年8月時点の目安(固定値・円換算)です。為替変動やプラン改定により実際とは異なる場合があります。投資・契約の意思決定は必ず各サービスの公式サイトでご確認ください。</div>
+
+  <div class="input-card">
+    <div class="field">
+      <label for="usage">用途</label>
+      <select id="usage" onchange="diagnose()">
+        <option value="sns">SNS短尺動画(15〜60秒 / TikTok・Reels・Shorts向け)</option>
+        <option value="ad">広告クリエイティブ(商品紹介・プロモーション動画)</option>
+        <option value="pro">音声付き本格動画(ナレーション・BGM込みの長尺)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="volume">月の生成本数の目安</label>
+      <input type="number" id="volume" value="20" min="1" max="9999"
+        onchange="diagnose()" onkeydown="if(event.key==='Enter')diagnose();">
+      <div class="hint">1本 = 約5〜15秒クリップを想定。長尺は少なめに設定してください。</div>
+    </div>
+    <div class="field">
+      <label for="budget">月の予算(円)</label>
+      <input type="number" id="budget" value="5000" min="0" max="9999999" step="100"
+        onchange="diagnose()" onkeydown="if(event.key==='Enter')diagnose();">
+    </div>
+  </div>
+  <button class="calc-btn" onclick="diagnose()">診断する</button>
+
+  <div class="result-section" id="result">
+    <div class="result-label">診断結果</div>
+    <div id="planCards"></div>
+    <div class="share-row">
+      <button class="share-btn share-x" onclick="shareX()">X でシェア</button>
+      <button class="share-btn copy-btn" id="copyBtn" onclick="copyResult()">結果をコピー</button>
+    </div>
+  </div>
+
+  <footer>
+    <a href="/">AIアプリ工房トップ</a><br>
+    料金は2026年8月時点の目安。最新情報は各サービス公式サイトをご確認ください。
+  </footer>
+</div>
+<script>
+const PLANS = [
+  {
+    id:'kling-free', service:'Kling', provider:'Kuaishou(中国)',
+    plan:'Free', price:0, maxVideos:10,
+    score:{ sns:8, ad:5, pro:2 },
+    tags:['無料で試せる','SNS短尺向き','月10本まで'],
+    desc:'無料プランで月約10本まで生成可能。まずは試したい方に最適。量産には上位プランが必要。'
+  },
+  {
+    id:'kling-std', service:'Kling', provider:'Kuaishou(中国)',
+    plan:'Standard', price:1600, maxVideos:60,
+    score:{ sns:9, ad:7, pro:3 },
+    tags:['コスパ最高','SNS量産向き','月60本可能'],
+    desc:'月1,600円で約60本生成できるコスパ最強プラン。SNS短尺動画の量産に最適。'
+  },
+  {
+    id:'kling-pro', service:'Kling', provider:'Kuaishou(中国)',
+    plan:'Pro', price:4800, maxVideos:300,
+    score:{ sns:9, ad:8, pro:4 },
+    tags:['大量生成向き','月300本可能','SNS・広告OK'],
+    desc:'月4,800円で約300本生成。SNS・広告動画を大量制作するワークフローに対応。'
+  },
+  {
+    id:'veo-plus', service:'Veo 3.1', provider:'Google',
+    plan:'Gemini AI Plus', price:725, maxVideos:20,
+    score:{ sns:8, ad:5, pro:4 },
+    tags:['格安725円','Google品質','SNS向き'],
+    desc:'月725円でGoogleの最新Veo 3.1が使える最安選択肢。SNS向け少量生成に。'
+  },
+  {
+    id:'veo-ai-pro', service:'Veo 3.1', provider:'Google',
+    plan:'Google AI Pro', price:2900, maxVideos:60,
+    score:{ sns:8, ad:7, pro:5 },
+    tags:['Google品質','月60本可能','コスパ良好'],
+    desc:'月2,900円でVeo 3.1の上位枠。Google品質の動画を中量生成したい方向け。'
+  },
+  {
+    id:'sora-plus', service:'Sora 2', provider:'OpenAI',
+    plan:'ChatGPT Plus', price:3200, maxVideos:50,
+    score:{ sns:8, ad:9, pro:7 },
+    tags:['品質重視','広告向き','OpenAI'],
+    desc:'月3,200円でSora 2が利用可能。映像品質の高さから広告クリエイティブ制作に強みを発揮。'
+  },
+  {
+    id:'sora-pro', service:'Sora 2', provider:'OpenAI',
+    plan:'ChatGPT Pro', price:32000, maxVideos:999,
+    score:{ sns:8, ad:10, pro:9 },
+    tags:['無制限生成','最高品質','プロ向け'],
+    desc:'月32,000円で生成無制限。最高品質の動画を大量制作したいプロフェッショナル向け。'
+  },
+  {
+    id:'runway-basic', service:'Runway Gen-4.5', provider:'Runway',
+    plan:'Basic', price:2400, maxVideos:30,
+    score:{ sns:7, ad:9, pro:8 },
+    tags:['広告品質','625クレジット/月','クリエイティブ向き'],
+    desc:'月2,400円・625クレジット。クリエイティブ品質に定評があり広告・本格動画制作の入門に最適。'
+  },
+  {
+    id:'runway-std', service:'Runway Gen-4.5', provider:'Runway',
+    plan:'Standard', price:5600, maxVideos:120,
+    score:{ sns:7, ad:10, pro:9 },
+    tags:['広告・本格動画向き','2,250クレジット/月','バランス型'],
+    desc:'月5,600円・2,250クレジット。広告から本格動画まで幅広く対応できるバランス型プラン。'
+  },
+  {
+    id:'runway-pro', service:'Runway Gen-4.5', provider:'Runway',
+    plan:'Pro', price:15200, maxVideos:500,
+    score:{ sns:7, ad:10, pro:10 },
+    tags:['最上位クオリティ','8,500クレジット/月','大量制作可能'],
+    desc:'月15,200円・8,500クレジット。高品質な広告・本格動画を大量制作するプロ向けの最上位プラン。'
+  },
+  {
+    id:'seedance-std', service:'Seedance', provider:'ByteDance(中国)',
+    plan:'Standard', price:3200, maxVideos:50,
+    score:{ sns:7, ad:8, pro:10 },
+    tags:['音声生成対応','ナレーション・BGM込み','本格動画向き'],
+    desc:'月3,200円。音声・BGM・ナレーション込みの本格動画生成が得意なByteDanceの注目サービス。'
+  },
+];
+
+let lastResult = [];
+let lastUsageLabel = '';
+let lastVolume = 0;
+let lastBudget = 0;
+
+function diagnose() {
+  const usage = document.getElementById('usage').value;
+  const volume = Math.max(1, parseInt(document.getElementById('volume').value) || 1);
+  const budget = Math.max(0, parseInt(document.getElementById('budget').value) || 0);
+
+  lastUsageLabel = { sns:'SNS短尺動画', ad:'広告クリエイティブ', pro:'音声付き本格動画' }[usage];
+  lastVolume = volume;
+  lastBudget = budget;
+
+  const candidates = PLANS.filter(p => p.price <= budget && p.maxVideos >= volume);
+  candidates.sort((a, b) => {
+    const diff = b.score[usage] - a.score[usage];
+    return diff !== 0 ? diff : a.price - b.price;
+  });
+
+  const seen = new Set();
+  const top = [];
+  for (const c of candidates) {
+    if (!seen.has(c.service)) { seen.add(c.service); top.push(c); }
+    if (top.length >= 3) break;
+  }
+
+  let fallback = false;
+  let display = top;
+  if (top.length === 0) {
+    fallback = true;
+    const all = PLANS.filter(p => p.maxVideos >= volume);
+    all.sort((a, b) => {
+      const diff = b.score[usage] - a.score[usage];
+      return diff !== 0 ? diff : a.price - b.price;
+    });
+    const seen2 = new Set();
+    for (const c of all) {
+      if (!seen2.has(c.service)) { seen2.add(c.service); display.push(c); }
+      if (display.length >= 3) break;
+    }
+  }
+
+  lastResult = display;
+
+  const rankLabels = ['1位 おすすめ', '2位', '3位'];
+  const rankClasses = ['rank-1', 'rank-2', 'rank-3'];
+  const cardTop = ['top', '', ''];
+
+  let html = '';
+  if (fallback) {
+    html += '<div class="no-match">予算内・本数内のプランが見つかりませんでした。予算または本数を見直してください。参考として、スコア上位のプランを表示しています。</div>';
+  }
+  display.forEach((p, i) => {
+    const priceStr = p.price === 0 ? '無料' : `月額 ${p.price.toLocaleString()}円`;
+    html += `<div class="plan-card ${cardTop[i]}">
+  <div class="plan-rank ${rankClasses[i]}">${rankLabels[i]}</div>
+  <div class="plan-header">
+    <div>
+      <div class="plan-name">${p.service} &#8211; ${p.plan}</div>
+      <div class="plan-provider">${p.provider}</div>
+    </div>
+    <div class="plan-price">${priceStr}</div>
+  </div>
+  <div class="plan-reason">${p.desc}</div>
+  <div class="plan-tags">${p.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+</div>`;
+  });
+
+  document.getElementById('planCards').innerHTML = html;
+  document.getElementById('result').classList.add('show');
+}
+
+function shareX() {
+  if (lastResult.length === 0) return;
+  const top = lastResult[0];
+  const priceStr = top.price === 0 ? '無料' : `月${top.price.toLocaleString()}円`;
+  const text = `【動画生成AI プラン診断】\n用途: ${lastUsageLabel} / 月${lastVolume}本 / 予算${lastBudget.toLocaleString()}円\n\n1位: ${top.service}(${top.plan}) ${priceStr}\n${top.desc.slice(0, 45)}…\n\nhttps://yama-ai-factory.vercel.app/apps/video-ai-plan/\n#AIアプリ工房 #動画生成AI`;
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text), '_blank');
+}
+
+function copyResult() {
+  if (lastResult.length === 0) return;
+  const lines = lastResult.map((p, i) => {
+    const priceStr = p.price === 0 ? '無料' : `月${p.price.toLocaleString()}円`;
+    return `${i + 1}位: ${p.service}(${p.plan}) ${priceStr}`;
+  });
+  const text = `【動画生成AI プラン診断】\n用途: ${lastUsageLabel} / 月${lastVolume}本 / 予算${lastBudget.toLocaleString()}円\n\n${lines.join('\n')}\n\nhttps://yama-ai-factory.vercel.app/apps/video-ai-plan/\n#AIアプリ工房 #動画生成AI`;
+  const btn = document.getElementById('copyBtn');
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'コピー完了!';
+    setTimeout(() => { btn.textContent = '結果をコピー'; }, 2000);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'コピー完了!';
+    setTimeout(() => { btn.textContent = '結果をコピー'; }, 2000);
+  });
+}
+
+diagnose();
+</script>
+</body>
+</html>
