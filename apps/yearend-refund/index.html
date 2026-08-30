@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>年末調整 還付金速攻チェッカー(2026年版) | AIアプリ工房</title>
+  <meta name="description" content="月収・扶養人数・生命保険料・住宅ローン控除を入力するだけで2026年12月の年末調整 還付金/追加徴収金の概算と前年比を即計算。2026年基礎控除引き上げ(48万→123万円)初年度対応。無料・登録不要。">
+
+  <meta property="og:title" content="年末調整 還付金速攻チェッカー(2026年版) | AIアプリ工房">
+  <meta property="og:description" content="月収・扶養・生命保険・住宅ローン控除を入力で2026年末調整の還付見込みと前年比を即計算。基礎控除引き上げ初年度の節税効果も表示。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/yearend-refund/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24; --red:#f87171;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back { font-size:.82rem; color:var(--tx2); text-decoration:none; display:inline-block; margin-bottom:28px; }
+    .back:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,5vw,2.1rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .subtitle { color:var(--tx3); font-size:.88rem; line-height:1.8; margin-bottom:28px; }
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px 22px; margin-bottom:16px; }
+    .card-title { font-size:.78rem; font-weight:700; color:var(--tx3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:20px; }
+    .field { margin-bottom:16px; }
+    .field label { display:block; font-size:.82rem; color:var(--tx3); font-weight:600; margin-bottom:6px; }
+    .input-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    input[type=number] {
+      width:96px; padding:9px 10px; font-size:.95rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:center;
+      flex-shrink:0; -moz-appearance:textfield;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { opacity:.5; }
+    input[type=number]:focus { border-color:var(--acc); }
+    select {
+      padding:9px 10px; font-size:.88rem; font-weight:600;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; cursor:pointer; min-width:160px;
+    }
+    select:focus { border-color:var(--acc); }
+    .input-unit { font-size:.82rem; color:var(--tx2); white-space:nowrap; }
+    .check-row { display:flex; align-items:flex-start; gap:10px; margin-bottom:12px; }
+    .check-row input[type=checkbox] { width:18px; height:18px; margin-top:1px; accent-color:var(--acc); cursor:pointer; flex-shrink:0; }
+    .check-row label { font-size:.85rem; color:var(--tx3); cursor:pointer; line-height:1.5; }
+    .housing-sub { padding-left:28px; margin-bottom:4px; }
+    .divider { border:none; border-top:1px solid var(--bd); margin:16px 0; }
+    .result-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+    .res-box {
+      background:var(--s2); border:1px solid var(--bd); border-radius:12px;
+      padding:16px 14px; text-align:center;
+    }
+    .res-lbl { font-size:.72rem; color:var(--tx2); margin-bottom:8px; font-weight:600; letter-spacing:.05em; }
+    .res-val { font-size:clamp(1.4rem,5vw,2rem); font-weight:900; line-height:1.1; }
+    .res-unit { font-size:.75rem; color:var(--tx3); margin-top:4px; }
+    .c-green { color:var(--green); }
+    .c-red { color:var(--red); }
+    .c-acc { color:var(--acc2); }
+    .c-blue { color:var(--blue); }
+    .bd-table { width:100%; border-collapse:collapse; margin-bottom:16px; }
+    .bd-table td { padding:9px 4px; font-size:.84rem; border-bottom:1px solid var(--bd); }
+    .bd-table tr:last-child td { border-bottom:none; }
+    .bd-table .bd-lbl { color:var(--tx3); }
+    .bd-table .bd-val { text-align:right; font-weight:700; color:var(--tx); }
+    .reform-box {
+      background:rgba(52,211,153,.07); border:1px solid rgba(52,211,153,.25);
+      border-radius:12px; padding:16px 18px; margin-bottom:16px;
+    }
+    .reform-title { font-size:.75rem; font-weight:800; color:var(--green); letter-spacing:.06em; margin-bottom:8px; }
+    .reform-main { font-size:1.3rem; font-weight:900; color:var(--green); margin-bottom:6px; }
+    .reform-sub { font-size:.8rem; color:var(--tx3); line-height:1.75; }
+    .share-btn {
+      width:100%; padding:13px; font-size:.92rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:12px;
+      color:var(--tx); cursor:pointer; transition:border-color .15s;
+    }
+    .share-btn:hover { border-color:var(--acc); color:var(--acc2); }
+    .note { font-size:.74rem; color:var(--tx2); line-height:1.85; margin-top:16px; }
+
+    @media (max-width:520px) {
+      .wrapper { padding:24px 16px 60px; }
+      .result-grid { grid-template-columns:1fr; }
+      select { min-width:100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <a class="back" href="/">← AIアプリ工房 トップ</a>
+    <div class="badge">TAX TOOL 2026</div>
+    <h1><span class="grad">年末調整</span><br>還付金速攻チェッカー</h1>
+    <p class="subtitle">月収・扶養・生命保険・住宅ローン控除を入力するだけで、2026年12月の年末調整 還付金/追加徴収金の概算と2025年比較を即計算します。2026年基礎控除引き上げ(48万→123万円)初年度対応。</p>
+
+    <div class="card">
+      <div class="card-title">基本情報を入力</div>
+
+      <div class="field">
+        <label for="monthly">月収(額面・税引前)</label>
+        <div class="input-row">
+          <input type="number" id="monthly" value="30" min="5" max="300" step="1"
+            onkeydown="if(event.key==='Enter')calculate();"
+            oninput="calculate()"
+            onfocus="this.select()">
+          <span class="input-unit">万円 / 月</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="deps">扶養親族の人数(16歳以上)</label>
+        <div class="input-row">
+          <select id="deps" onchange="calculate()">
+            <option value="0">0人(独身・扶養なし)</option>
+            <option value="1">1人</option>
+            <option value="2">2人</option>
+            <option value="3">3人</option>
+            <option value="4">4人</option>
+            <option value="5">5人以上</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="check-row">
+        <input type="checkbox" id="lifeIns" onchange="calculate()">
+        <label for="lifeIns">生命保険料・医療保険料を支払っている<br><span style="font-size:.76rem;color:var(--tx2)">控除証明書を年末調整で提出予定</span></label>
+      </div>
+
+      <div class="check-row">
+        <input type="checkbox" id="hasHousing" onchange="toggleHousing()">
+        <label for="hasHousing">住宅ローン控除(住宅借入金等特別控除)がある</label>
+      </div>
+      <div class="housing-sub" id="housingField" style="display:none;">
+        <div class="field" style="margin-bottom:0;">
+          <label for="housing" style="font-size:.78rem;">住宅ローン控除額(年間・通知書に記載の額)</label>
+          <div class="input-row" style="margin-top:6px;">
+            <input type="number" id="housing" value="20" min="0" max="60" step="1"
+              onkeydown="if(event.key==='Enter')calculate();"
+              oninput="calculate()"
+              onfocus="this.select()">
+            <span class="input-unit">万円</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2026年 年末調整 結果</div>
+
+      <div class="result-grid">
+        <div class="res-box">
+          <div class="res-lbl">12月 還付見込み</div>
+          <div class="res-val" id="refundMain">0</div>
+          <div class="res-unit" id="refundUnit">円</div>
+        </div>
+        <div class="res-box">
+          <div class="res-lbl">前年(2025年)比</div>
+          <div class="res-val" id="refundDiff">—</div>
+          <div class="res-unit" id="refundDiffUnit"></div>
+        </div>
+      </div>
+
+      <table class="bd-table">
+        <tr>
+          <td class="bd-lbl">生命保険料控除の効果</td>
+          <td class="bd-val" id="lifeEffect">なし</td>
+        </tr>
+        <tr>
+          <td class="bd-lbl">住宅ローン控除(税額直接控除)</td>
+          <td class="bd-val" id="housingEffect">なし</td>
+        </tr>
+        <tr>
+          <td class="bd-lbl">2026年 年間所得税(概算)</td>
+          <td class="bd-val" id="annualTax">—</td>
+        </tr>
+        <tr>
+          <td class="bd-lbl">適用される限界税率</td>
+          <td class="bd-val" id="marginalRate">—</td>
+        </tr>
+      </table>
+
+      <div class="reform-box">
+        <div class="reform-title">2026年 税制改正(基礎控除 48万→123万円)の効果</div>
+        <div class="reform-main" id="taxSavingsMain">計算中...</div>
+        <div class="reform-sub" id="taxSavingsSub"></div>
+      </div>
+
+      <button class="share-btn" onclick="shareX()">X(Twitter)でシェアする</button>
+    </div>
+
+    <p class="note">
+      ※ 独身・40歳未満・協会けんぽ(東京都)加入の給与所得者を想定した概算です。社会保険料は年収の約14.7%で概算。生命保険料控除は新契約・全種類合計の上限12万円で計算。扶養控除は一般扶養(38万円/人、16歳以上)を適用。住宅ローン控除は年末調整通知書に記載の額を入力してください。<br>
+      ※ 年末調整還付見込みは「生命保険料控除・住宅ローン控除による税額軽減分」を試算したものです。2026年基礎控除引き上げの効果は月次給与に既に反映されている場合があります。実際の還付/追加徴収額は源泉徴収の状況・各種控除の詳細によって異なります。正確な金額は年末調整の源泉徴収票または税理士にご確認ください。
+    </p>
+  </div>
+
+  <script>
+    /* 給与所得控除 (万円) */
+    function empDeduct(a) {
+      if (a <= 162.5) return 55;
+      if (a <= 180)   return a * 0.4 - 10;
+      if (a <= 360)   return a * 0.3 + 8;
+      if (a <= 660)   return a * 0.2 + 44;
+      if (a <= 850)   return a * 0.1 + 110;
+      return 195;
+    }
+
+    /* 所得税 超過累進 (万円) */
+    function calcIT(t) {
+      if (t <= 0) return 0;
+      const b = [[195,.05,0],[330,.10,9.75],[695,.20,42.75],[900,.23,63.6],
+                 [1800,.33,153.6],[4000,.40,279.6],[Infinity,.45,479.6]];
+      for (const [lim,r,d] of b) if (t <= lim) return Math.max(0, t * r - d);
+    }
+
+    /* 限界税率 % */
+    function mRate(t) {
+      if (t <= 0)    return 0;
+      if (t <= 195)  return 5;
+      if (t <= 330)  return 10;
+      if (t <= 695)  return 20;
+      if (t <= 900)  return 23;
+      if (t <= 1800) return 33;
+      if (t <= 4000) return 40;
+      return 45;
+    }
+
+    /* 年間所得税 (万円) を返す。taxable も返す */
+    function calcTaxFull(monthly, basicD, deps, lifeIns, housingWan) {
+      const annual  = monthly * 12;
+      const empInc  = annual - empDeduct(annual);          /* 給与所得 */
+      const social  = annual * 0.1474;                     /* 社会保険料 概算 */
+      const depD    = deps * 38;                           /* 扶養控除 */
+      const lifeD   = lifeIns ? 12 : 0;                   /* 生命保険料控除 上限12万 */
+      const taxable = Math.max(0, empInc - social - basicD - depD - lifeD);
+      const tax     = Math.max(0, calcIT(taxable) * 1.021 - housingWan); /* 復興特別所得税・住宅控除 */
+      return { tax, taxable };
+    }
+
+    function toggleHousing() {
+      const on = document.getElementById('hasHousing').checked;
+      document.getElementById('housingField').style.display = on ? '' : 'none';
+      calculate();
+    }
+
+    function fmt(n) { return Math.round(Math.abs(n)).toLocaleString('ja-JP'); }
+    function sign(n) { return n >= 0 ? '+' : '-'; }
+
+    var _share = {};
+
+    function calculate() {
+      const monthly  = parseFloat(document.getElementById('monthly').value) || 0;
+      const deps     = parseInt(document.getElementById('deps').value) || 0;
+      const lifeIns  = document.getElementById('lifeIns').checked;
+      const hasH     = document.getElementById('hasHousing').checked;
+      const housingW = hasH ? (parseFloat(document.getElementById('housing').value) || 0) : 0;
+
+      if (monthly <= 0) return;
+
+      const B26 = 123, B25 = 48; /* 基礎控除 万円 */
+
+      /* 2026年 月次源泉徴収相当(生保・住宅除く) */
+      const w26 = calcTaxFull(monthly, B26, deps, false, 0);
+      /* 2026年 確定年税額(全控除込み) */
+      const f26 = calcTaxFull(monthly, B26, deps, lifeIns, housingW);
+      /* 2026年 年末調整還付(万円) */
+      const refund26W = w26.tax - f26.tax;
+
+      /* 2025年 同計算 */
+      const w25 = calcTaxFull(monthly, B25, deps, false, 0);
+      const f25 = calcTaxFull(monthly, B25, deps, lifeIns, housingW);
+      const refund25W = w25.tax - f25.tax;
+
+      /* 前年比差額 (万円) */
+      const diffW = refund26W - refund25W;
+
+      /* 税制改正による年間節税(万円、控除なしベースの比較) */
+      const savingsW = Math.max(0, w25.tax - w26.tax);
+
+      /* 限界税率 (生保・住宅除くベース) */
+      const mr = mRate(w26.taxable);
+
+      /* 円換算 */
+      const refund26Y = Math.round(refund26W * 10000);
+      const diffY     = Math.round(diffW * 10000);
+      const savingsY  = Math.round(savingsW * 10000);
+
+      /* --- 表示 --- */
+      const rMain = document.getElementById('refundMain');
+      const rUnit = document.getElementById('refundUnit');
+      rMain.textContent = fmt(refund26Y);
+      rUnit.textContent = refund26Y >= 0 ? '円 還付' : '円 追加徴収';
+      rMain.className = 'res-val ' + (refund26Y >= 0 ? 'c-green' : 'c-red');
+
+      const dEl   = document.getElementById('refundDiff');
+      const dUnit = document.getElementById('refundDiffUnit');
+      if (Math.abs(diffY) < 200) {
+        dEl.textContent   = '前年と同水準';
+        dEl.className     = 'res-val c-acc';
+        dUnit.textContent = '';
+      } else {
+        dEl.textContent   = fmt(diffY);
+        dEl.className     = 'res-val ' + (diffY >= 0 ? 'c-green' : 'c-red');
+        dUnit.textContent = '円 ' + (diffY >= 0 ? '増' : '減');
+      }
+
+      document.getElementById('lifeEffect').textContent =
+        lifeIns ? '+' + fmt(Math.round((w26.tax - calcTaxFull(monthly, B26, deps, true, 0).tax) * 10000)) + '円' : 'なし';
+      document.getElementById('housingEffect').textContent =
+        housingW > 0 ? '+' + fmt(housingW * 10000) + '円' : 'なし';
+      document.getElementById('annualTax').textContent =
+        fmt(Math.round(f26.tax * 10000)) + '円';
+      document.getElementById('marginalRate').textContent = mr + '%';
+
+      const smEl  = document.getElementById('taxSavingsMain');
+      const subEl = document.getElementById('taxSavingsSub');
+      if (savingsY > 0) {
+        smEl.textContent  = '年間 -' + fmt(savingsY) + '円の節税';
+        smEl.className    = 'reform-main c-green';
+        subEl.textContent = '同じ収入・扶養で2025年と比べると、基礎控除の引き上げ(48万→123万円)により年間所得税が約' + fmt(savingsY) + '円少なくなります。この節税効果は月次給与の手取り増(月+' + fmt(Math.round(savingsY / 12)) + '円相当)として既に反映されている場合があります。';
+      } else {
+        smEl.textContent  = '節税効果なし(2026年は所得税ゼロ)';
+        smEl.className    = 'reform-main c-acc';
+        subEl.textContent = '基礎控除引き上げにより課税所得がゼロ以下となり、所得税はかかりません。';
+      }
+
+      _share = { monthly, deps, lifeIns, housingW, refund26Y, savingsY, diffY };
+    }
+
+    function shareX() {
+      const { monthly, deps, refund26Y, savingsY, diffY } = _share;
+      if (!monthly) return;
+      const refundStr = refund26Y >= 0
+        ? fmt(refund26Y) + '円還付'
+        : fmt(-refund26Y) + '円追加徴収';
+      const diffStr = Math.abs(diffY) >= 200
+        ? (diffY >= 0 ? '(前年比+' : '(前年比-') + fmt(diffY) + '円)'
+        : '';
+      const savStr = savingsY > 0 ? '\n2026年改正による年間節税: 約-' + fmt(savingsY) + '円' : '';
+      const text = '【年末調整 還付金チェッカー(2026年版)】\n'
+        + '月収' + monthly + '万円・扶養' + deps + '人 -> 還付見込み ' + refundStr + diffStr + savStr + '\n'
+        + '自分の還付金をチェック\nhttps://yama-ai-factory.vercel.app/apps/yearend-refund/\n'
+        + '#年末調整 #還付金 #AIアプリ工房';
+      window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text), '_blank');
+    }
+
+    calculate();
+  </script>
+</body>
+</html>
