@@ -110,7 +110,7 @@
         <label>1日の労働時間</label>
         <div class="input-wrap">
           <input type="number" id="hoursPerDay" value="8" min="1" max="24" step="0.5"
-            oninput="recalcFromSource()" onkeydown="if(event.key==='Enter')recalcFromSource();">
+            oninput="recalcFromSource()" onkeydown="if(event.key==='Enter')recalcFromSource();" onfocus="this.select()">
           <span class="unit">時間/日</span>
         </div>
       </div>
@@ -118,7 +118,7 @@
         <label>月間労働日数</label>
         <div class="input-wrap">
           <input type="number" id="daysPerMonth" value="20" min="1" max="31" step="1"
-            oninput="recalcFromSource()" onkeydown="if(event.key==='Enter')recalcFromSource();">
+            oninput="recalcFromSource()" onkeydown="if(event.key==='Enter')recalcFromSource();" onfocus="this.select()">
           <span class="unit">日/月</span>
         </div>
       </div>
@@ -131,7 +131,7 @@
       <label>時給</label>
       <div class="input-wrap">
         <input type="number" id="inp-hourly" placeholder="例: 1500" min="0"
-          oninput="convertFrom('hourly')" onkeydown="if(event.key==='Enter')convertFrom('hourly');">
+          oninput="convertFrom('hourly')" onkeydown="if(event.key==='Enter')convertFrom('hourly');" onfocus="this.select()">
         <span class="unit">円/時間</span>
       </div>
     </div>
@@ -139,7 +139,7 @@
       <label>日給</label>
       <div class="input-wrap">
         <input type="number" id="inp-daily" placeholder="例: 12000" min="0"
-          oninput="convertFrom('daily')" onkeydown="if(event.key==='Enter')convertFrom('daily');">
+          oninput="convertFrom('daily')" onkeydown="if(event.key==='Enter')convertFrom('daily');" onfocus="this.select()">
         <span class="unit">円/日</span>
       </div>
     </div>
@@ -147,7 +147,7 @@
       <label>月給</label>
       <div class="input-wrap">
         <input type="number" id="inp-monthly" placeholder="例: 240000" min="0"
-          oninput="convertFrom('monthly')" onkeydown="if(event.key==='Enter')convertFrom('monthly');">
+          oninput="convertFrom('monthly')" onkeydown="if(event.key==='Enter')convertFrom('monthly');" onfocus="this.select()">
         <span class="unit">円/月</span>
       </div>
     </div>
@@ -155,7 +155,7 @@
       <label>年収</label>
       <div class="input-wrap">
         <input type="number" id="inp-annual" placeholder="例: 2880000" min="0"
-          oninput="convertFrom('annual')" onkeydown="if(event.key==='Enter')convertFrom('annual');">
+          oninput="convertFrom('annual')" onkeydown="if(event.key==='Enter')convertFrom('annual');" onfocus="this.select()">
         <span class="unit">円/年</span>
       </div>
     </div>
