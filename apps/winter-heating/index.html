@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>冬の暖房費予測チェッカー | 今冬の電気代をkWhで試算 | AIアプリ工房</title>
+  <meta name="description" content="昨冬の電気使用量(kWh)・電気単価・目標削減率を入力し、今冬の想定暖房費と3ヶ月節約額を即計算。電気代高騰・補助金終了後の冬シーズン家計対策に。無料・登録不要。">
+
+  <meta property="og:title" content="冬の暖房費予測チェッカー | 今冬の電気代をkWhで試算 | AIアプリ工房">
+  <meta property="og:description" content="昨冬の月平均電気使用量(kWh)と電気単価を入力するだけで今冬の想定暖房費と節約額を即計算。補助金終了後の冬対策に。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/winter-heating/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+
+    .back-link {
+      display:inline-block; font-size:.82rem; color:var(--tx2);
+      text-decoration:none; margin-bottom:28px; transition:color .15s;
+    }
+    .back-link:hover { color:var(--acc2); }
+
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.6rem,5vw,2.2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:32px; }
+
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px; margin-bottom:20px; }
+
+    .field { margin-bottom:22px; }
+    .field:last-of-type { margin-bottom:0; }
+    label { display:block; font-size:.84rem; color:var(--tx3); font-weight:600; margin-bottom:8px; }
+    .label-note { font-size:.74rem; color:var(--tx2); font-weight:400; }
+
+    .input-row { display:flex; align-items:center; gap:10px; }
+    .input-row input[type="number"] {
+      width:110px; padding:11px 14px; font-size:1.2rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:center;
+      flex-shrink:0;
+    }
+    .input-row input[type="number"]:focus { border-color:var(--acc); }
+    .input-unit { font-size:.85rem; color:var(--tx3); flex-shrink:0; }
+    input[type="range"] { flex:1; accent-color:var(--acc); cursor:pointer; height:4px; }
+
+    .rate-display {
+      display:inline-block; font-size:1.4rem; font-weight:900; color:var(--green);
+      margin-right:4px; min-width:3ch; text-align:right;
+    }
+
+    .preset-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+    .preset-btn {
+      padding:6px 12px; border-radius:8px; border:1px solid var(--bd);
+      background:var(--s2); color:var(--tx3); font-size:.8rem; font-weight:700;
+      cursor:pointer; transition:all .15s;
+    }
+    .preset-btn:hover { border-color:var(--acc2); color:var(--acc2); }
+
+    .btn {
+      display:block; width:100%; padding:14px; margin-top:4px; border-radius:10px;
+      background:var(--acc); border:none; color:#fff;
+      font-size:1rem; font-weight:700; cursor:pointer; transition:opacity .15s;
+    }
+    .btn:hover { opacity:.85; }
+    .btn-sub {
+      background:transparent; border:1px solid var(--bd); color:var(--tx3);
+      font-size:.9rem; margin-top:10px; padding:11px;
+    }
+    .btn-sub:hover { border-color:var(--acc2); color:var(--acc2); opacity:1; }
+
+    .error { color:#f87171; font-size:.87rem; margin-top:10px; display:none; }
+
+    #resultCard { display:none; }
+
+    .result-hero { text-align:center; padding:16px 0 20px; border-bottom:1px solid var(--bd); margin-bottom:20px; }
+    .result-hero .cond { font-size:.78rem; color:var(--tx2); margin-bottom:8px; }
+    .result-hero .big { font-size:clamp(2.5rem,9vw,3.6rem); font-weight:900; color:var(--green); line-height:1; }
+    .result-hero .big-unit { font-size:1rem; }
+    .result-hero .sub { font-size:.84rem; color:var(--tx3); margin-top:8px; }
+
+    .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+    .compare-box { background:var(--s2); border:1px solid var(--bd); border-radius:12px; padding:16px; text-align:center; }
+    .compare-box.highlight { border-color:rgba(52,211,153,.35); background:rgba(52,211,153,.05); }
+    .compare-box .c-label { font-size:.72rem; color:var(--tx2); margin-bottom:8px; font-weight:700; }
+    .compare-box .c-val { font-size:1.3rem; font-weight:900; color:var(--tx); }
+    .compare-box.highlight .c-val { color:var(--green); }
+    .compare-box .c-sub { font-size:.72rem; color:var(--tx2); margin-top:4px; }
+
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+    .stat { background:var(--s2); border-radius:12px; padding:14px 8px; text-align:center; }
+    .stat .val { font-size:1.1rem; font-weight:800; color:var(--tx); }
+    .stat .lbl { font-size:.68rem; color:var(--tx2); margin-top:5px; line-height:1.5; }
+
+    .tips-title { font-size:.76rem; color:var(--tx2); font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:12px; }
+    .tips-list { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+    .tip-row {
+      display:flex; align-items:flex-start; gap:10px;
+      background:var(--s2); border-radius:10px; padding:12px 14px;
+    }
+    .tip-mark { font-size:.8rem; color:var(--acc2); font-weight:900; flex-shrink:0; margin-top:1px; }
+    .tip-text { font-size:.83rem; color:var(--tx3); line-height:1.6; }
+
+    .disclaimer { font-size:.74rem; color:var(--tx2); line-height:1.7; margin-bottom:16px; }
+
+    @media (max-width:520px) {
+      .compare-grid { gap:8px; }
+      .stats { gap:7px; }
+      .stat .val { font-size:1rem; }
+      .input-row input[type="number"] { width:90px; font-size:1.05rem; }
+      .compare-box .c-val { font-size:1.1rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back-link" href="/">&larr; AIアプリ工房トップへ</a>
+
+  <div class="badge">家計・節約ツール</div>
+  <h1><span class="grad">冬の暖房費</span>予測チェッカー</h1>
+  <p class="hero-desc">昨冬の月平均電気使用量(kWh)と電気単価を入力するだけで、今冬の想定暖房費と冬3ヶ月の節約額を即計算。電気代補助金終了後の冬シーズンに備える家計対策の参考に。</p>
+
+  <div class="card">
+    <div class="field">
+      <label for="lastKwh">昨冬の月平均電気使用量 <span class="label-note">(1〜2月の検針票を参考に)</span></label>
+      <div class="preset-row">
+        <button class="preset-btn" onclick="setKwh(200)">200 kWh</button>
+        <button class="preset-btn" onclick="setKwh(350)">350 kWh</button>
+        <button class="preset-btn" onclick="setKwh(500)">500 kWh</button>
+        <button class="preset-btn" onclick="setKwh(700)">700 kWh</button>
+      </div>
+      <div class="input-row">
+        <input type="number" id="lastKwh" value="350" min="50" max="2000" step="10"
+          onkeydown="if(event.key==='Enter')calculate();"
+          onfocus="this.select();"
+          oninput="calculate()">
+        <span class="input-unit">kWh / 月</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="unitPrice">電気単価 <span class="label-note">(全国平均は約30〜34円/kWh。検針票の「1kWhあたり単価」を参照)</span></label>
+      <div class="preset-row">
+        <button class="preset-btn" onclick="setPrice(28)">28円</button>
+        <button class="preset-btn" onclick="setPrice(30)">30円</button>
+        <button class="preset-btn" onclick="setPrice(32)">32円</button>
+        <button class="preset-btn" onclick="setPrice(36)">36円</button>
+      </div>
+      <div class="input-row">
+        <input type="number" id="unitPrice" value="30" min="10" max="80" step="1"
+          onkeydown="if(event.key==='Enter')calculate();"
+          onfocus="this.select();"
+          oninput="calculate()">
+        <span class="input-unit">円 / kWh</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="savingRate">今冬の目標削減率
+        <span class="rate-display" id="rateDisplay">15</span>%
+      </label>
+      <div class="input-row">
+        <input type="range" id="savingSlider" min="0" max="50" step="1" value="15"
+          oninput="syncRate(this.value)">
+        <input type="number" id="savingRate" value="15" min="0" max="50" step="1"
+          style="width:72px;"
+          onkeydown="if(event.key==='Enter')calculate();"
+          onfocus="this.select();"
+          oninput="syncSlider2(this.value)">
+        <span class="input-unit">%</span>
+      </div>
+    </div>
+
+    <div class="error" id="errorMsg"></div>
+    <button class="btn" onclick="calculate()" style="margin-top:8px;">今冬の暖房費を予測する</button>
+  </div>
+
+  <div class="card" id="resultCard">
+    <div class="result-hero">
+      <div class="cond" id="rCond"></div>
+      <div class="big" id="rSaving">—<span class="big-unit">円</span></div>
+      <div class="sub">冬3ヶ月(12〜2月)の節約見込み額</div>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-box">
+        <div class="c-label">昨冬の月電気代</div>
+        <div class="c-val" id="rLastMonth">—</div>
+        <div class="c-sub">円 / 月</div>
+      </div>
+      <div class="compare-box highlight">
+        <div class="c-label">今冬の想定月電気代</div>
+        <div class="c-val" id="rThisMonth">—</div>
+        <div class="c-sub">円 / 月(目標削減後)</div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="val" id="rLastSeason">—</div>
+        <div class="lbl">円<br>昨冬3ヶ月合計</div>
+      </div>
+      <div class="stat">
+        <div class="val" id="rThisSeason">—</div>
+        <div class="lbl">円<br>今冬3ヶ月予測</div>
+      </div>
+      <div class="stat">
+        <div class="val" id="rPerMonth">—</div>
+        <div class="lbl">円<br>月の節約額</div>
+      </div>
+    </div>
+
+    <div class="tips-title">節電対策のヒント</div>
+    <div class="tips-list">
+      <div class="tip-row">
+        <span class="tip-mark">+</span>
+        <span class="tip-text">エアコンの暖房設定温度を1度下げると約10%の節電効果。経済産業省の推奨は20度。</span>
+      </div>
+      <div class="tip-row">
+        <span class="tip-mark">+</span>
+        <span class="tip-text">フィルターを月1回清掃するだけで消費電力を約5〜15%削減できる。汚れたフィルターは効率を大幅に低下させる。</span>
+      </div>
+      <div class="tip-row">
+        <span class="tip-mark">+</span>
+        <span class="tip-text">厚手カーテンや窓の隙間テープで冷気の侵入を防ぐと、暖房の効きが向上し使用時間を短縮できる。</span>
+      </div>
+    </div>
+
+    <p class="disclaimer">※ 電気代は電力プラン・地域・家電の使用状況・気温により大きく異なります。本ツールは「昨冬の月平均使用量 × 電気単価 × 削減率」で計算した目安であり、実際の費用を保証するものではありません。医療・診断目的には使用できません。</p>
+
+    <button class="btn" onclick="share()">Xでシェアする</button>
+    <button class="btn btn-sub" onclick="copyText(this)">テキストをコピー</button>
+  </div>
+</div>
+
+<script>
+var _shareText = '';
+
+function setKwh(val) {
+  document.getElementById('lastKwh').value = val;
+  calculate();
+}
+
+function setPrice(val) {
+  document.getElementById('unitPrice').value = val;
+  calculate();
+}
+
+function syncRate(val) {
+  document.getElementById('savingRate').value = val;
+  document.getElementById('rateDisplay').textContent = val;
+  calculate();
+}
+
+function syncSlider2(val) {
+  var v = Math.min(Math.max(parseInt(val, 10) || 0, 0), 50);
+  document.getElementById('savingSlider').value = v;
+  document.getElementById('rateDisplay').textContent = v;
+  calculate();
+}
+
+function fmtNum(n) {
+  return Math.round(n).toLocaleString('ja-JP');
+}
+
+function calculate() {
+  var kwh = parseFloat(document.getElementById('lastKwh').value);
+  var price = parseFloat(document.getElementById('unitPrice').value);
+  var rate = parseFloat(document.getElementById('savingRate').value);
+  var errEl = document.getElementById('errorMsg');
+
+  if (!kwh || kwh < 50) {
+    errEl.style.display = 'block';
+    errEl.textContent = '月平均電気使用量を50kWh以上入力してください。';
+    document.getElementById('resultCard').style.display = 'none';
+    return;
+  }
+  if (!price || price < 10) {
+    errEl.style.display = 'block';
+    errEl.textContent = '電気単価を10円以上入力してください。';
+    document.getElementById('resultCard').style.display = 'none';
+    return;
+  }
+  if (isNaN(rate) || rate < 0 || rate > 50) {
+    errEl.style.display = 'block';
+    errEl.textContent = '削減率は0〜50%の範囲で入力してください。';
+    document.getElementById('resultCard').style.display = 'none';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  var lastMonthCost = Math.round(kwh * price);
+  var thisMonthKwh = kwh * (1 - rate / 100);
+  var thisMonthCost = Math.round(thisMonthKwh * price);
+  var monthlySaving = lastMonthCost - thisMonthCost;
+
+  var lastSeasonCost = lastMonthCost * 3;
+  var thisSeasonCost = thisMonthCost * 3;
+  var totalSaving = monthlySaving * 3;
+
+  document.getElementById('rCond').textContent =
+    '月' + fmtNum(kwh) + 'kWh・' + fmtNum(price) + '円/kWh・削減率' + rate + '%で計算';
+
+  document.getElementById('rSaving').innerHTML =
+    fmtNum(totalSaving) + '<span class="big-unit">円</span>';
+  document.getElementById('rLastMonth').textContent = fmtNum(lastMonthCost);
+  document.getElementById('rThisMonth').textContent = fmtNum(thisMonthCost);
+  document.getElementById('rLastSeason').textContent = fmtNum(lastSeasonCost);
+  document.getElementById('rThisSeason').textContent = fmtNum(thisSeasonCost);
+  document.getElementById('rPerMonth').textContent = fmtNum(monthlySaving);
+
+  _shareText = '【冬の暖房費予測チェッカー】\n'
+    + '昨冬 月平均' + fmtNum(kwh) + 'kWh (' + fmtNum(price) + '円/kWh)\n'
+    + '今冬' + rate + '%削減を目指すと...\n'
+    + '昨冬3ヶ月: 約' + fmtNum(lastSeasonCost) + '円\n'
+    + '今冬3ヶ月(予測): 約' + fmtNum(thisSeasonCost) + '円\n'
+    + '=> 冬3ヶ月で約' + fmtNum(totalSaving) + '円の節約!\n'
+    + '#暖房費節約 #電気代 #AIアプリ工房\n'
+    + 'https://yama-ai-factory.vercel.app/apps/winter-heating/';
+
+  document.getElementById('resultCard').style.display = 'block';
+}
+
+function share() {
+  if (!_shareText) return;
+  window.open(
+    'https://x.com/intent/tweet?text=' + encodeURIComponent(_shareText),
+    '_blank', 'noopener'
+  );
+}
+
+function copyText(btn) {
+  if (!_shareText) return;
+  navigator.clipboard.writeText(_shareText).then(function() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'テキストをコピー'; }, 2000);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = _shareText;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'テキストをコピー'; }, 2000);
+  });
+}
+
+calculate();
+</script>
+</body>
+</html>
