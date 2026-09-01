@@ -153,6 +153,7 @@
       </div>
       <div class="input-row">
         <input type="number" id="income" value="400" min="100" max="3000" step="10"
+          onfocus="this.select();"
           onkeydown="if(event.key==='Enter')calculate();"
           oninput="syncSlider('income','incomeSlider'); calculate();">
         <input type="range" id="incomeSlider" min="100" max="3000" step="10" value="400"
