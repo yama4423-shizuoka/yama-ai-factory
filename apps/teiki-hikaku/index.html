@@ -142,7 +142,7 @@
         </div>
         <div class="plan-row">
           <span class="plan-label">節約額(3ヶ月)</span>
-          <span class="plan-value neutral">--</span>
+          <span class="plan-value neutral" id="save-1m">--</span>
         </div>
       </div>
 
@@ -214,7 +214,7 @@
     var raw = document.getElementById('monthly').value;
     var m = parseFloat(raw);
     if (!raw || isNaN(m) || m <= 0) {
-      ['total-1m','month-1m','total-3m','month-3m','save-3m','total-6m','month-6m','save-6m']
+      ['total-1m','month-1m','save-1m','total-3m','month-3m','save-3m','total-6m','month-6m','save-6m']
         .forEach(function(id) { document.getElementById(id).textContent = '--'; });
       return;
     }
@@ -229,6 +229,7 @@
 
     document.getElementById('total-1m').textContent = fmt(base3);
     document.getElementById('month-1m').textContent = fmt(m) + '/月';
+    document.getElementById('save-1m').textContent = '0円(基準)';
 
     document.getElementById('total-3m').textContent = fmt(cost3m);
     document.getElementById('month-3m').textContent = fmt(cost3m / 3) + '/月';
