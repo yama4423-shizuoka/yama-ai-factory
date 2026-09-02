@@ -201,7 +201,7 @@
   <div class="card" id="inputCard">
     <div class="form-group">
       <label for="totalAmount">合計金額（円）</label>
-      <input type="number" class="total-input" id="totalAmount" placeholder="例: 12500" min="1" step="1">
+      <input type="number" class="total-input" id="totalAmount" placeholder="例: 12500" min="1" step="1" onfocus="this.select()">
     </div>
 
     <div class="form-group">
@@ -281,7 +281,7 @@ function addMember(name, weight) {
     '<input type="text" class="member-name" placeholder="名前（任意）" value="' + escHtml(n) + '" maxlength="20">' +
     '<div class="weight-control">' +
       '<span class="weight-label">倍率</span>' +
-      '<input type="number" class="weight-input" value="' + w.toFixed(1) + '" min="0.1" max="99" step="0.1" onkeydown="if(event.key===\'Enter\')calculate();">' +
+      '<input type="number" class="weight-input" value="' + w.toFixed(1) + '" min="0.1" max="99" step="0.1" onfocus="this.select()" onkeydown="if(event.key===\'Enter\')calculate();">' +
       '<span class="weight-unit">倍</span>' +
     '</div>' +
     '<button class="del-btn" onclick="removeMember(this)" title="削除">&#x2715;</button>';
