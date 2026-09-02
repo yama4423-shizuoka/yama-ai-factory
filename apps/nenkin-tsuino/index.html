@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>国民年金 追納効果シミュレーター | 損益分岐点を即計算 | AIアプリ工房</title>
+  <meta name="description" content="学生納付特例・猶予期間の追納月数・現在年齢・受給開始年齢を入力するだけで、追納総額・月額年金増加分・損益分岐点(何歳で元が取れるか)を即計算。無料・登録不要。">
+
+  <meta property="og:title" content="国民年金 追納効果シミュレーター | 損益分岐点を即計算 | AIアプリ工房">
+  <meta property="og:description" content="学生時代の猶予期間を追納すると年金がいくら増える? 何歳で元が取れる? 追納月数を入力するだけで損益分岐点を即計算。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/nenkin-tsuino/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --orange:#fb923c;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:620px; margin:0 auto; padding:40px 20px 80px; }
+
+    .back-link {
+      display:inline-block; font-size:.82rem; color:var(--tx2);
+      text-decoration:none; margin-bottom:28px; transition:color .15s;
+    }
+    .back-link:hover { color:var(--acc2); }
+
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,5vw,2.1rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:32px; }
+
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px; margin-bottom:20px; }
+
+    .section-title {
+      font-size:.72rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--tx2); margin-bottom:18px;
+    }
+
+    .field { margin-bottom:22px; }
+    .field:last-of-type { margin-bottom:0; }
+    label { display:block; font-size:.84rem; color:var(--tx3); font-weight:600; margin-bottom:8px; }
+    .label-note { font-size:.74rem; color:var(--tx2); font-weight:400; }
+
+    .input-row { display:flex; align-items:center; gap:10px; }
+    .input-row input[type="number"] {
+      width:110px; padding:11px 14px; font-size:1.2rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:center;
+      flex-shrink:0;
+    }
+    .input-row input[type="number"]:focus { border-color:var(--acc); }
+    .input-unit { font-size:.85rem; color:var(--tx3); flex-shrink:0; }
+
+    .preset-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+    .preset-btn {
+      padding:6px 12px; border-radius:8px; border:1px solid var(--bd);
+      background:var(--s2); color:var(--tx3); font-size:.8rem; font-weight:700;
+      cursor:pointer; transition:all .15s;
+    }
+    .preset-btn:hover { border-color:var(--acc2); color:var(--acc2); }
+    .preset-btn.active { border-color:var(--acc); color:var(--acc2); background:rgba(124,111,245,.12); }
+
+    select {
+      padding:11px 14px; font-size:1rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; cursor:pointer; transition:border-color .15s;
+    }
+    select:focus { border-color:var(--acc); }
+
+    .detail-toggle {
+      font-size:.8rem; color:var(--acc2); background:none; border:none;
+      cursor:pointer; padding:0; margin-top:10px; text-decoration:underline;
+      text-underline-offset:3px;
+    }
+    .detail-section { display:none; margin-top:14px; border-top:1px solid var(--bd); padding-top:14px; }
+    .detail-section.open { display:block; }
+
+    .btn {
+      display:block; width:100%; padding:14px; margin-top:4px; border-radius:10px;
+      background:var(--acc); border:none; color:#fff;
+      font-size:1rem; font-weight:700; cursor:pointer; transition:opacity .15s;
+    }
+    .btn:hover { opacity:.85; }
+    .btn-sub {
+      background:transparent; border:1px solid var(--bd); color:var(--tx3);
+      font-size:.9rem; margin-top:10px; padding:11px;
+    }
+    .btn-sub:hover { border-color:var(--acc2); color:var(--acc2); opacity:1; }
+
+    .error { color:#f87171; font-size:.87rem; margin-top:10px; display:none; }
+
+    #resultCard { display:none; }
+
+    .result-hero { text-align:center; padding:16px 0 20px; border-bottom:1px solid var(--bd); margin-bottom:20px; }
+    .result-hero .cond { font-size:.78rem; color:var(--tx2); margin-bottom:8px; }
+    .result-hero .big { font-size:clamp(2.2rem,8vw,3.2rem); font-weight:900; color:var(--green); line-height:1; }
+    .result-hero .big-unit { font-size:.95rem; }
+    .result-hero .sub { font-size:.84rem; color:var(--tx3); margin-top:8px; }
+
+    .kpi-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+    .kpi { background:var(--s2); border:1px solid var(--bd); border-radius:12px; padding:16px; text-align:center; }
+    .kpi.highlight { border-color:rgba(52,211,153,.35); background:rgba(52,211,153,.05); }
+    .kpi.warn { border-color:rgba(251,146,60,.3); background:rgba(251,146,60,.04); }
+    .kpi .k-label { font-size:.72rem; color:var(--tx2); margin-bottom:8px; font-weight:700; line-height:1.5; }
+    .kpi .k-val { font-size:1.25rem; font-weight:900; color:var(--tx); }
+    .kpi.highlight .k-val { color:var(--green); }
+    .kpi.warn .k-val { color:var(--orange); }
+    .kpi .k-sub { font-size:.7rem; color:var(--tx2); margin-top:4px; }
+
+    .breakeven-bar-wrap { margin-bottom:20px; }
+    .breakeven-bar-label {
+      display:flex; justify-content:space-between; font-size:.74rem; color:var(--tx2);
+      margin-bottom:8px;
+    }
+    .bar-bg {
+      height:12px; background:var(--s2); border-radius:999px; overflow:hidden;
+      border:1px solid var(--bd);
+    }
+    .bar-fill {
+      height:100%; border-radius:999px;
+      background:linear-gradient(90deg,var(--acc),var(--green));
+      transition:width .4s ease;
+    }
+    .breakeven-note { font-size:.8rem; color:var(--tx3); margin-top:8px; line-height:1.7; }
+
+    .cumulative-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+    .cum-box { background:var(--s2); border-radius:12px; padding:14px 8px; text-align:center; border:1px solid var(--bd); }
+    .cum-box .c-age { font-size:.7rem; color:var(--tx2); margin-bottom:6px; font-weight:700; }
+    .cum-box .c-val { font-size:1rem; font-weight:800; color:var(--tx); }
+    .cum-box .c-sub { font-size:.65rem; color:var(--tx2); margin-top:4px; }
+    .cum-box.profit { border-color:rgba(52,211,153,.3); }
+    .cum-box.profit .c-val { color:var(--green); }
+
+    .info-list { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+    .info-row {
+      display:flex; gap:10px; align-items:flex-start;
+      background:var(--s2); border-radius:10px; padding:12px 14px;
+    }
+    .info-mark { font-size:.8rem; color:var(--acc2); font-weight:900; flex-shrink:0; margin-top:1px; }
+    .info-text { font-size:.82rem; color:var(--tx3); line-height:1.6; }
+
+    .disclaimer { font-size:.74rem; color:var(--tx2); line-height:1.7; margin-bottom:16px; }
+
+    @media (max-width:520px) {
+      .kpi-grid { gap:8px; }
+      .kpi .k-val { font-size:1.1rem; }
+      .cumulative-grid { gap:7px; }
+      .cum-box .c-val { font-size:.9rem; }
+      .input-row input[type="number"] { width:90px; font-size:1.05rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back-link" href="/">&larr; AIアプリ工房トップへ</a>
+
+  <div class="badge">年金・老後資金ツール</div>
+  <h1><span class="grad">国民年金 追納</span>効果シミュレーター</h1>
+  <p class="hero-desc">学生納付特例・猶予期間の追納月数と受給開始年齢を入力するだけで、追納総額・月額年金増加分・損益分岐点(何歳で元が取れるか)を即計算。日本年金機構データ(2026年度)に基づく目安値。</p>
+
+  <div class="card">
+    <div class="section-title">基本情報を入力</div>
+
+    <div class="field">
+      <label for="tsuinoMonths">追納する月数 <span class="label-note">(学生納付特例・猶予期間の合計)</span></label>
+      <div class="preset-row">
+        <button class="preset-btn" id="pre12" onclick="setMonths(12)">12ヶ月</button>
+        <button class="preset-btn" id="pre24" onclick="setMonths(24)">24ヶ月(2年)</button>
+        <button class="preset-btn" id="pre36" onclick="setMonths(36)">36ヶ月</button>
+        <button class="preset-btn" id="pre48" onclick="setMonths(48)">48ヶ月(4年)</button>
+      </div>
+      <div class="input-row">
+        <input type="number" id="tsuinoMonths" value="24" min="1" max="120" step="1"
+          onkeydown="if(event.key==='Enter')calculate();"
+          onfocus="this.select();"
+          oninput="clearPreset();calculate()">
+        <span class="input-unit">ヶ月</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="currentAge">現在の年齢</label>
+      <div class="input-row">
+        <input type="number" id="currentAge" value="28" min="18" max="59" step="1"
+          onkeydown="if(event.key==='Enter')calculate();"
+          onfocus="this.select();"
+          oninput="calculate()">
+        <span class="input-unit">歳</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="startAge">年金受給開始年齢 <span class="label-note">(60〜75歳で選択可)</span></label>
+      <select id="startAge" onchange="calculate()">
+        <option value="60">60歳(繰り上げ受給 -24%)</option>
+        <option value="61">61歳(繰り上げ受給 -19.2%)</option>
+        <option value="62">62歳(繰り上げ受給 -14.4%)</option>
+        <option value="63">63歳(繰り上げ受給 -9.6%)</option>
+        <option value="64">64歳(繰り上げ受給 -4.8%)</option>
+        <option value="65" selected>65歳(標準)</option>
+        <option value="66">66歳(繰り下げ受給 +8.4%)</option>
+        <option value="67">67歳(繰り下げ受給 +16.8%)</option>
+        <option value="68">68歳(繰り下げ受給 +25.2%)</option>
+        <option value="69">69歳(繰り下げ受給 +33.6%)</option>
+        <option value="70">70歳(繰り下げ受給 +42%)</option>
+        <option value="71">71歳(繰り下げ受給 +50.4%)</option>
+        <option value="72">72歳(繰り下げ受給 +58.8%)</option>
+        <option value="73">73歳(繰り下げ受給 +67.2%)</option>
+        <option value="74">74歳(繰り下げ受給 +75.6%)</option>
+        <option value="75">75歳(繰り下げ受給 +84%)</option>
+      </select>
+    </div>
+
+    <button class="detail-toggle" onclick="toggleDetail()">詳細設定を変更する(追納保険料・満額年金額)</button>
+    <div class="detail-section" id="detailSection">
+      <div class="field" style="margin-top:14px;">
+        <label for="monthlyPremium">追納保険料の月額概算 <span class="label-note">(2026年度: 約17,510円。実際は免除年度により異なる)</span></label>
+        <div class="input-row">
+          <input type="number" id="monthlyPremium" value="17510" min="10000" max="30000" step="10"
+            onkeydown="if(event.key==='Enter')calculate();"
+            onfocus="this.select();"
+            oninput="calculate()">
+          <span class="input-unit">円 / 月</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="fullPensionMonthly">国民年金 満額月額 <span class="label-note">(2026年度: 約68,000円)</span></label>
+        <div class="input-row">
+          <input type="number" id="fullPensionMonthly" value="68000" min="30000" max="100000" step="100"
+            onkeydown="if(event.key==='Enter')calculate();"
+            onfocus="this.select();"
+            oninput="calculate()">
+          <span class="input-unit">円 / 月</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="error" id="errorMsg"></div>
+    <button class="btn" onclick="calculate()" style="margin-top:20px;">追納効果を計算する</button>
+  </div>
+
+  <div class="card" id="resultCard">
+    <div class="result-hero">
+      <div class="cond" id="rCond"></div>
+      <div class="big" id="rMonthlyIncrease">—<span class="big-unit">円</span></div>
+      <div class="sub">追納による月額年金増加分</div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="k-label">追納総額(概算)</div>
+        <div class="k-val" id="rTotalCost">—</div>
+        <div class="k-sub">円</div>
+      </div>
+      <div class="kpi highlight">
+        <div class="k-label">年額年金増加分</div>
+        <div class="k-val" id="rAnnualIncrease">—</div>
+        <div class="k-sub">円 / 年</div>
+      </div>
+      <div class="kpi warn">
+        <div class="k-label">損益分岐年数</div>
+        <div class="k-val" id="rBreakevenYears">—</div>
+        <div class="k-sub">受給開始から</div>
+      </div>
+      <div class="kpi warn">
+        <div class="k-label">損益分岐年齢</div>
+        <div class="k-val" id="rBreakevenAge">—</div>
+        <div class="k-sub">この年齢で元が取れる</div>
+      </div>
+    </div>
+
+    <div class="breakeven-bar-wrap">
+      <div class="breakeven-bar-label">
+        <span id="barLeft">受給開始</span>
+        <span id="barRight">85歳(平均寿命目安)</span>
+      </div>
+      <div class="bar-bg">
+        <div class="bar-fill" id="breakevenBar" style="width:0%"></div>
+      </div>
+      <div class="breakeven-note" id="breakevenNote"></div>
+    </div>
+
+    <div style="font-size:.76rem; font-weight:700; color:var(--tx2); text-transform:uppercase; letter-spacing:.08em; margin-bottom:12px;">受給開始からの累計増加受取額</div>
+    <div class="cumulative-grid">
+      <div class="cum-box" id="cum75box">
+        <div class="c-age">75歳時点</div>
+        <div class="c-val" id="cum75">—</div>
+        <div class="c-sub">万円</div>
+      </div>
+      <div class="cum-box" id="cum80box">
+        <div class="c-age">80歳時点</div>
+        <div class="c-val" id="cum80">—</div>
+        <div class="c-sub">万円</div>
+      </div>
+      <div class="cum-box" id="cum85box">
+        <div class="c-age">85歳時点</div>
+        <div class="c-val" id="cum85">—</div>
+        <div class="c-sub">万円(平均寿命目安)</div>
+      </div>
+    </div>
+
+    <div class="info-list">
+      <div class="info-row">
+        <span class="info-mark">+</span>
+        <span class="info-text">追納できるのは<strong style="color:var(--tx);">免除・猶予期間から10年以内</strong>。大学院卒の場合は27〜28歳が追納期限の目安になります。</span>
+      </div>
+      <div class="info-row">
+        <span class="info-mark">+</span>
+        <span class="info-text">追納は<strong style="color:var(--tx);">古い月分から優先</strong>して行うことが原則。社会保険料控除の対象になるため、追納した年の所得税・住民税が軽減されます。</span>
+      </div>
+      <div class="info-row">
+        <span class="info-mark">+</span>
+        <span class="info-text">繰り上げ受給(60〜64歳)は月額が最大24%減額され、損益分岐点が早まります。繰り下げ受給(66〜75歳)は月額増加し長生きするほど有利になります。</span>
+      </div>
+    </div>
+
+    <p class="disclaimer">※ 本ツールの計算は2026年度の国民年金保険料・満額年金額の固定値を使用した概算です。実際の追納保険料は免除年度・加算額により異なります。年金受給額は今後の法改正や経済動向により変わる可能性があります。本ツールは参考目安であり、追納の可否・具体的な保険料額は最寄りの年金事務所または日本年金機構(0570-05-1165)にお問い合わせください。</p>
+
+    <button class="btn" onclick="share()">Xでシェアする</button>
+    <button class="btn btn-sub" onclick="copyText(this)">テキストをコピー</button>
+  </div>
+</div>
+
+<script>
+var _shareText = '';
+var _detailOpen = false;
+
+function toggleDetail() {
+  _detailOpen = !_detailOpen;
+  document.getElementById('detailSection').className = 'detail-section' + (_detailOpen ? ' open' : '');
+}
+
+function setMonths(val) {
+  document.getElementById('tsuinoMonths').value = val;
+  ['pre12','pre24','pre36','pre48'].forEach(function(id) {
+    document.getElementById(id).className = 'preset-btn' + (document.getElementById(id).textContent.indexOf(val + 'ヶ月') >= 0 || (val === 12 && id === 'pre12') || (val === 24 && id === 'pre24') || (val === 36 && id === 'pre36') || (val === 48 && id === 'pre48') ? ' active' : '');
+  });
+  calculate();
+}
+
+function clearPreset() {
+  ['pre12','pre24','pre36','pre48'].forEach(function(id) {
+    document.getElementById(id).className = 'preset-btn';
+  });
+}
+
+function fmtNum(n) { return Math.round(n).toLocaleString('ja-JP'); }
+function fmtMan(n) { return (n / 10000).toFixed(1); }
+
+function getAdjustment(startAge) {
+  if (startAge < 65) return 1 - 0.004 * (65 - startAge) * 12;
+  if (startAge > 65) return 1 + 0.007 * (startAge - 65) * 12;
+  return 1.0;
+}
+
+function cumulativeAt(targetAge, startAge, monthlyIncrease, totalCost) {
+  if (targetAge <= startAge) return -totalCost;
+  var years = targetAge - startAge;
+  return monthlyIncrease * 12 * years - totalCost;
+}
+
+function calculate() {
+  var months = parseInt(document.getElementById('tsuinoMonths').value, 10);
+  var currentAge = parseInt(document.getElementById('currentAge').value, 10);
+  var startAge = parseInt(document.getElementById('startAge').value, 10);
+  var monthlyPremium = parseFloat(document.getElementById('monthlyPremium').value) || 17510;
+  var fullMonthly = parseFloat(document.getElementById('fullPensionMonthly').value) || 68000;
+  var errEl = document.getElementById('errorMsg');
+
+  if (!months || months < 1 || months > 120) {
+    errEl.style.display = 'block';
+    errEl.textContent = '追納月数は1〜120ヶ月の範囲で入力してください。';
+    document.getElementById('resultCard').style.display = 'none';
+    return;
+  }
+  if (!currentAge || currentAge < 18 || currentAge >= startAge) {
+    errEl.style.display = 'block';
+    errEl.textContent = '現在の年齢は18歳以上、かつ受給開始年齢より若い必要があります。';
+    document.getElementById('resultCard').style.display = 'none';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  var adjustment = getAdjustment(startAge);
+
+  var baseMonthlyIncrease = (months / 480) * fullMonthly;
+  var actualMonthlyIncrease = baseMonthlyIncrease * adjustment;
+  var annualIncrease = actualMonthlyIncrease * 12;
+  var totalCost = months * monthlyPremium;
+
+  var breakevenYears = totalCost / annualIncrease;
+  var breakevenAge = startAge + breakevenYears;
+
+  var ages = [75, 80, 85];
+  var cumVals = ages.map(function(age) {
+    return monthlyIncrease = cumulativeAt(age, startAge, actualMonthlyIncrease, totalCost);
+  });
+
+  var barPct = Math.min(100, Math.max(0, ((breakevenAge - startAge) / (85 - startAge)) * 100));
+  if (85 <= startAge) barPct = 0;
+
+  var breakevenAgeRounded = Math.ceil(breakevenAge * 10) / 10;
+  var breakevenYearsRounded = Math.ceil(breakevenYears * 10) / 10;
+
+  var adjLabel = startAge === 65 ? '65歳・標準受給' : (startAge < 65 ? startAge + '歳・繰り上げ受給' : startAge + '歳・繰り下げ受給');
+  document.getElementById('rCond').textContent =
+    '追納' + months + 'ヶ月 / ' + adjLabel + ' / 満額' + fmtNum(fullMonthly) + '円/月で計算';
+
+  document.getElementById('rMonthlyIncrease').innerHTML =
+    '+' + fmtNum(Math.round(actualMonthlyIncrease)) + '<span class="big-unit">円</span>';
+  document.getElementById('rTotalCost').textContent = fmtNum(totalCost);
+  document.getElementById('rAnnualIncrease').textContent = '+' + fmtNum(Math.round(annualIncrease));
+
+  if (breakevenAge > 100) {
+    document.getElementById('rBreakevenYears').textContent = '100年超';
+    document.getElementById('rBreakevenAge').textContent = '100歳超';
+  } else {
+    document.getElementById('rBreakevenYears').textContent = breakevenYearsRounded + '年';
+    document.getElementById('rBreakevenAge').textContent = Math.ceil(breakevenAge) + '歳頃';
+  }
+
+  document.getElementById('breakevenBar').style.width = barPct + '%';
+
+  var noteText = '';
+  if (breakevenAge <= 85) {
+    noteText = startAge + '歳から受給開始すると、' + Math.ceil(breakevenAge) + '歳頃(受給開始から約' + breakevenYearsRounded + '年後)に追納総額' + fmtNum(totalCost) + '円の元が取れます。85歳までに累計約' + fmtNum(Math.round(cumulativeAt(85, startAge, actualMonthlyIncrease, totalCost))) + '円の上乗せ受取見込み。';
+  } else {
+    noteText = '受給開始' + startAge + '歳・85歳時点では追納総額の回収が難しい見込みです。繰り下げ受給や受給期間が長くなる場合に有利になります。';
+  }
+  document.getElementById('breakevenNote').textContent = noteText;
+
+  ages.forEach(function(age, i) {
+    var val = cumulativeAt(age, startAge, actualMonthlyIncrease, totalCost);
+    var boxId = 'cum' + age + 'box';
+    var valId = 'cum' + age;
+    var box = document.getElementById(boxId);
+    var isProfit = val > 0 && age > startAge;
+    box.className = 'cum-box' + (isProfit ? ' profit' : '');
+    if (age <= startAge) {
+      document.getElementById(valId).textContent = '—';
+    } else {
+      document.getElementById(valId).textContent = (val >= 0 ? '+' : '') + fmtMan(val);
+    }
+  });
+
+  _shareText = '【国民年金 追納効果シミュレーター】\n'
+    + '追納' + months + 'ヶ月 / ' + adjLabel + '\n'
+    + '追納総額(概算): 約' + fmtNum(totalCost) + '円\n'
+    + '月額年金増加: +' + fmtNum(Math.round(actualMonthlyIncrease)) + '円/月\n'
+    + '年額増加: +' + fmtNum(Math.round(annualIncrease)) + '円/年\n'
+    + (breakevenAge <= 100
+        ? '損益分岐点: ' + Math.ceil(breakevenAge) + '歳頃(受給開始から約' + breakevenYearsRounded + '年)\n'
+        : '損益分岐点: 100歳超\n')
+    + '#国民年金 #年金追納 #老後資金 #AIアプリ工房\n'
+    + 'https://yama-ai-factory.vercel.app/apps/nenkin-tsuino/';
+
+  document.getElementById('resultCard').style.display = 'block';
+}
+
+function share() {
+  if (!_shareText) return;
+  window.open(
+    'https://x.com/intent/tweet?text=' + encodeURIComponent(_shareText),
+    '_blank', 'noopener'
+  );
+}
+
+function copyText(btn) {
+  if (!_shareText) return;
+  navigator.clipboard.writeText(_shareText).then(function() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'テキストをコピー'; }, 2000);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = _shareText;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'テキストをコピー'; }, 2000);
+  });
+}
+
+setMonths(24);
+calculate();
+</script>
+</body>
+</html>
