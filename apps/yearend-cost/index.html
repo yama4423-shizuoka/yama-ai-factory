@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>年末年始帰省コスト計算機 2026冬版 | 交通費・宿泊費・食費を一発試算 | AIアプリ工房</title>
+  <meta name="description" content="交通手段(新幹線・飛行機・高速バス・マイカー)・同行人数・滞在日数・手土産予算を入力し、2026年12月28日〜2027年1月3日の年末年始帰省費用を即計算。費目別の内訳とXシェア機能付き。無料・登録不要。">
+  <meta property="og:title" content="年末年始帰省コスト計算機 2026冬版 | 帰省費用を一発試算 | AIアプリ工房">
+  <meta property="og:description" content="新幹線・飛行機・高速バス・マイカーに対応。人数・日数・手土産予算を入力するだけで年末年始帰省費用を即計算。2026年12月28日〜2027年1月3日対応。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/yearend-cost/">
+  <meta name="twitter:card" content="summary">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24; --orange:#fb923c;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back { display:inline-block; font-size:.82rem; color:var(--tx2); text-decoration:none; margin-bottom:26px; transition:color .15s; }
+    .back:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,4.5vw,2rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-desc { color:var(--tx3); font-size:.9rem; line-height:1.8; margin-bottom:28px; }
+    .input-card {
+      background:var(--s1); border:1px solid var(--bd); border-radius:16px;
+      padding:22px 20px; margin-bottom:20px;
+    }
+    .field { margin-bottom:20px; }
+    .field:last-child { margin-bottom:0; }
+    .field-label {
+      display:block; font-size:.8rem; font-weight:700; color:var(--tx2);
+      margin-bottom:10px; letter-spacing:.04em;
+    }
+    .field-hint { font-size:.75rem; color:var(--tx2); margin-top:8px; line-height:1.6; }
+    .chips { display:flex; flex-wrap:wrap; gap:8px; }
+    .chip input[type=radio] { display:none; }
+    .chip label {
+      display:block; cursor:pointer; padding:10px 16px; border-radius:10px;
+      border:1px solid var(--bd); background:var(--s2); font-size:.88rem; font-weight:700;
+      color:var(--tx3); transition:all .15s;
+    }
+    .chip input[type=radio]:checked + label {
+      background:rgba(124,111,245,.18); border-color:var(--acc); color:var(--acc2);
+    }
+    .chip label:hover { border-color:var(--acc); }
+    .input-row { display:flex; align-items:center; gap:10px; }
+    .input-row input[type=number] {
+      flex:1; background:var(--s2); border:1px solid var(--bd);
+      color:var(--tx); border-radius:10px; padding:12px 14px;
+      font-size:1.1rem; font-weight:700; transition:border-color .15s;
+    }
+    .input-row input[type=number]:focus { outline:none; border-color:var(--acc); }
+    .input-unit { font-size:.88rem; color:var(--tx2); white-space:nowrap; }
+    .result-card {
+      background:var(--s1); border:1px solid rgba(124,111,245,.35);
+      border-radius:16px; padding:22px 20px; margin-bottom:16px;
+    }
+    .total-box {
+      text-align:center; padding:18px 12px; border-radius:12px; margin-bottom:20px;
+      background:rgba(124,111,245,.08); border:1px solid rgba(124,111,245,.3);
+    }
+    .total-label { font-size:.72rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--acc2); margin-bottom:6px; }
+    .total-value { font-size:2.2rem; font-weight:900; color:var(--acc2); line-height:1; }
+    .total-unit { font-size:.8rem; color:var(--tx3); margin-top:4px; }
+    .total-sub { font-size:.78rem; color:var(--tx2); margin-top:8px; }
+    .breakdown-title { font-size:.75rem; font-weight:800; color:var(--tx2); margin-bottom:10px; letter-spacing:.06em; text-transform:uppercase; }
+    .breakdown-row {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 0; border-bottom:1px solid var(--bd);
+    }
+    .breakdown-row:last-child { border-bottom:none; margin-bottom:16px; }
+    .breakdown-name { font-size:.88rem; color:var(--tx); }
+    .breakdown-detail { font-size:.72rem; color:var(--tx2); margin-top:2px; }
+    .breakdown-amt { font-size:.95rem; font-weight:800; color:var(--acc2); white-space:nowrap; margin-left:12px; text-align:right; }
+    .bar-item { margin-bottom:10px; }
+    .bar-header { font-size:.75rem; color:var(--tx2); margin-bottom:5px; display:flex; justify-content:space-between; }
+    .bar-track { background:var(--s2); border-radius:999px; height:8px; overflow:hidden; border:1px solid var(--bd); }
+    .bar-fill { height:100%; border-radius:999px; transition:width .5s ease; min-width:0; }
+    .c-transport { background:var(--blue); }
+    .c-hotel     { background:var(--acc2); }
+    .c-food      { background:var(--green); }
+    .c-gift      { background:var(--orange); }
+    .actions { display:flex; flex-direction:column; gap:10px; }
+    .btn {
+      display:block; width:100%; border-radius:10px; padding:13px 20px;
+      font-size:.95rem; font-weight:700; cursor:pointer; text-align:center;
+      text-decoration:none; border:none; transition:opacity .15s;
+    }
+    .btn:hover { opacity:.85; }
+    .btn-x    { background:#000; color:#fff; border:1px solid #333; }
+    .btn-copy { background:rgba(52,211,153,.12); color:var(--green); border:1px solid rgba(52,211,153,.3); }
+    .copy-msg { text-align:center; font-size:.8rem; color:var(--green); margin-top:6px; min-height:1.2em; }
+    .countdown-tip {
+      font-size:.82rem; font-weight:700; color:var(--blue);
+      margin-bottom:16px; padding:8px 12px;
+      background:rgba(96,165,250,.08); border-radius:8px;
+      border-left:3px solid var(--blue);
+    }
+    @media (max-width:520px) {
+      .wrapper { padding:28px 14px 60px; }
+      .total-value { font-size:1.8rem; }
+      .chip label { padding:8px 12px; font-size:.82rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back" href="/">← AIアプリ工房 トップへ</a>
+  <div class="badge">Year-End Cost</div>
+  <h1>年末年始帰省<br><span class="grad">コスト計算機 2026冬版</span></h1>
+  <p class="hero-desc">交通手段・人数・滞在日数・手土産予算を入力するだけで、2026年12月28日〜2027年1月3日の年末年始帰省費用を費目別に即計算します。</p>
+  <div id="yearendCountdown"></div>
+
+  <div class="input-card">
+    <div class="field">
+      <span class="field-label">交通手段</span>
+      <div class="chips">
+        <div class="chip">
+          <input type="radio" name="transport" id="tr0" value="0" checked onchange="calculate()">
+          <label for="tr0">新幹線</label>
+        </div>
+        <div class="chip">
+          <input type="radio" name="transport" id="tr1" value="1" onchange="calculate()">
+          <label for="tr1">飛行機</label>
+        </div>
+        <div class="chip">
+          <input type="radio" name="transport" id="tr2" value="2" onchange="calculate()">
+          <label for="tr2">高速バス</label>
+        </div>
+        <div class="chip">
+          <input type="radio" name="transport" id="tr3" value="3" onchange="calculate()">
+          <label for="tr3">マイカー</label>
+        </div>
+      </div>
+      <p class="field-hint" id="transportHint"></p>
+    </div>
+    <div class="field">
+      <label class="field-label" for="people">同行人数(自分を含む)</label>
+      <div class="input-row">
+        <input type="number" id="people" value="2" min="1" max="10" step="1"
+               oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+        <span class="input-unit">人</span>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label" for="nights">滞在日数</label>
+      <div class="input-row">
+        <input type="number" id="nights" value="5" min="1" max="14" step="1"
+               oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+        <span class="input-unit">泊</span>
+      </div>
+      <p class="field-hint">年末年始(12/28〜1/3)の場合は最大6泊7日が目安です。</p>
+    </div>
+    <div class="field">
+      <span class="field-label">宿泊先</span>
+      <div class="chips">
+        <div class="chip">
+          <input type="radio" name="stay" id="stay0" value="0" checked onchange="calculate()">
+          <label for="stay0">実家・親戚宅</label>
+        </div>
+        <div class="chip">
+          <input type="radio" name="stay" id="stay1" value="1" onchange="calculate()">
+          <label for="stay1">ビジネスホテル</label>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label" for="gift">手土産予算</label>
+      <div class="input-row">
+        <input type="number" id="gift" value="5000" min="0" max="100000" step="500"
+               oninput="calculate();" onkeydown="if(event.key==='Enter')calculate();">
+        <span class="input-unit">円</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="result-card">
+    <div class="total-box">
+      <div class="total-label">帰省費用 合計</div>
+      <div>
+        <span class="total-value" id="totalValue">—</span>
+        <span style="font-size:.9rem;color:var(--acc2);margin-left:4px;">円</span>
+      </div>
+      <div class="total-unit">概算(目安)</div>
+      <div class="total-sub" id="totalSub"></div>
+    </div>
+
+    <div class="breakdown-title">費目別 内訳</div>
+    <div class="breakdown-row">
+      <div>
+        <div class="breakdown-name">交通費</div>
+        <div class="breakdown-detail" id="transportDetail"></div>
+      </div>
+      <div class="breakdown-amt" id="transportAmt">—</div>
+    </div>
+    <div class="breakdown-row">
+      <div>
+        <div class="breakdown-name">宿泊費</div>
+        <div class="breakdown-detail" id="hotelDetail"></div>
+      </div>
+      <div class="breakdown-amt" id="hotelAmt">—</div>
+    </div>
+    <div class="breakdown-row">
+      <div>
+        <div class="breakdown-name">食費・外出費</div>
+        <div class="breakdown-detail" id="foodDetail"></div>
+      </div>
+      <div class="breakdown-amt" id="foodAmt">—</div>
+    </div>
+    <div class="breakdown-row">
+      <div>
+        <div class="breakdown-name">手土産代</div>
+        <div class="breakdown-detail" id="giftDetail"></div>
+      </div>
+      <div class="breakdown-amt" id="giftAmt">—</div>
+    </div>
+
+    <div id="barSection"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-x" onclick="shareX()">X でシェア</button>
+    <button class="btn btn-copy" onclick="doCopy()">結果をコピー</button>
+  </div>
+  <div class="copy-msg" id="copyMsg"></div>
+</div>
+
+<script>
+var TRANSPORT_PARAMS = [
+  {
+    name: '新幹線',
+    hint: '主要路線(例: 東京-大阪)の往復自由席料金を目安に算出。年末年始は指定席が必須で繁忙期料金が加算されます。',
+    perPerson: 28000,
+    isPerCar: false
+  },
+  {
+    name: '飛行機',
+    hint: '年末年始の国内線往復料金の目安。最繁忙期のため早期予約推奨。LCCでは比較的安くなる場合があります。',
+    perPerson: 48000,
+    isPerCar: false
+  },
+  {
+    name: '高速バス',
+    hint: '主要都市間の高速バス往復料金の目安。年末年始は混雑するため早めの予約が必要です。',
+    perPerson: 7500,
+    isPerCar: false
+  },
+  {
+    name: 'マイカー',
+    hint: '片道約350km・ETC割引あり想定でガソリン代+高速代を1台分で概算。年末年始は渋滞が多く燃費が落ちる場合があります。',
+    perCar: 23000,
+    isPerCar: true
+  }
+];
+
+var STAY_PARAMS = [
+  { name: '実家・親戚宅', perNightPer: 0 },
+  { name: 'ビジネスホテル', perNightPer: 12000 }
+];
+
+var lastResult = null;
+
+function getRadioVal(name) {
+  var radios = document.querySelectorAll('input[name="' + name + '"]');
+  for (var i = 0; i < radios.length; i++) {
+    if (radios[i].checked) return parseInt(radios[i].value);
+  }
+  return 0;
+}
+
+function fmtJPY(n) { return Math.round(n).toLocaleString() + '円'; }
+
+function calculate() {
+  var people = Math.max(1, Math.min(10, parseInt(document.getElementById('people').value) || 2));
+  var nights = Math.max(1, Math.min(14, parseInt(document.getElementById('nights').value) || 5));
+  var days   = nights + 1;
+  var gift   = Math.max(0, Math.min(100000, parseInt(document.getElementById('gift').value) || 0));
+  var tIdx   = getRadioVal('transport');
+  var sIdx   = getRadioVal('stay');
+  var tp     = TRANSPORT_PARAMS[tIdx];
+  var sp     = STAY_PARAMS[sIdx];
+
+  document.getElementById('transportHint').textContent = tp.hint;
+
+  var transportCost, transportDetail;
+  if (tp.isPerCar) {
+    transportCost = tp.perCar;
+    transportDetail = '往復 1台分のガソリン代+高速代の目安';
+  } else {
+    transportCost = tp.perPerson * people;
+    transportDetail = '往復 ' + people + '人分 / 1人あたり約' + tp.perPerson.toLocaleString() + '円';
+  }
+
+  var hotelCost = sp.perNightPer * nights * people;
+  var hotelDetail;
+  if (sp.perNightPer === 0) {
+    hotelDetail = '実家・親戚宅に宿泊のため宿泊費なし';
+  } else {
+    hotelDetail = nights + '泊 × ' + people + '人 / 1泊1人あたり約' + sp.perNightPer.toLocaleString() + '円(年末年始料金)';
+  }
+
+  var foodPerDayPer = sIdx === 0 ? 2000 : 3500;
+  var foodCost = foodPerDayPer * days * people;
+  var foodDetail = days + '日間 × ' + people + '人 / 1日1人あたり約' + foodPerDayPer.toLocaleString() + '円';
+
+  var total = transportCost + hotelCost + foodCost + gift;
+  var perPerson = Math.round(total / people);
+
+  document.getElementById('totalValue').textContent = total.toLocaleString();
+  document.getElementById('totalSub').textContent =
+    tp.name + ' / ' + sp.name + ' / ' + people + '人 / ' + nights + '泊' + days + '日  1人あたり約' + perPerson.toLocaleString() + '円';
+
+  document.getElementById('transportAmt').textContent = fmtJPY(transportCost);
+  document.getElementById('hotelAmt').textContent     = fmtJPY(hotelCost);
+  document.getElementById('foodAmt').textContent      = fmtJPY(foodCost);
+  document.getElementById('giftAmt').textContent      = fmtJPY(gift);
+
+  document.getElementById('transportDetail').textContent = transportDetail;
+  document.getElementById('hotelDetail').textContent     = hotelDetail;
+  document.getElementById('foodDetail').textContent      = foodDetail;
+  document.getElementById('giftDetail').textContent      = '入力した手土産予算';
+
+  var amounts = [transportCost, hotelCost, foodCost, gift];
+  var labels  = ['交通費', '宿泊費', '食費・外出費', '手土産代'];
+  var classes = ['c-transport', 'c-hotel', 'c-food', 'c-gift'];
+  var barHTML = '<div class="breakdown-title" style="margin-top:4px;">費目別の割合</div>';
+  for (var i = 0; i < amounts.length; i++) {
+    var pct = total > 0 ? Math.round(amounts[i] / total * 100) : 0;
+    barHTML += '<div class="bar-item">' +
+      '<div class="bar-header"><span>' + labels[i] + '</span><span>' + pct + '%</span></div>' +
+      '<div class="bar-track"><div class="bar-fill ' + classes[i] + '" style="width:' + pct + '%;"></div></div>' +
+      '</div>';
+  }
+  document.getElementById('barSection').innerHTML = barHTML;
+
+  lastResult = {
+    total: total, perPerson: perPerson,
+    transportCost: transportCost, hotelCost: hotelCost, foodCost: foodCost, gift: gift,
+    transportName: tp.name, stayName: sp.name,
+    people: people, nights: nights, days: days
+  };
+}
+
+function shareX() {
+  if (!lastResult) return;
+  var r = lastResult;
+  var text = '【年末年始帰省コスト試算(2026冬)】\n' +
+    r.transportName + ' / ' + r.stayName + ' / ' + r.people + '人 / ' + r.nights + '泊' + r.days + '日\n' +
+    '帰省費用 合計: 約' + r.total.toLocaleString() + '円\n' +
+    '(交通費' + r.transportCost.toLocaleString() + '円+宿泊費' + r.hotelCost.toLocaleString() + '円+食費' + r.foodCost.toLocaleString() + '円+手土産' + r.gift.toLocaleString() + '円)\n' +
+    '1人あたり約' + r.perPerson.toLocaleString() + '円 #AIアプリ工房\n' +
+    'https://yama-ai-factory.vercel.app/apps/yearend-cost/';
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text), '_blank', 'noopener');
+}
+
+function doCopy() {
+  if (!lastResult) return;
+  var r = lastResult;
+  var text = '【年末年始帰省コスト試算(2026冬)】\n' +
+    r.transportName + ' / ' + r.stayName + ' / ' + r.people + '人 / ' + r.nights + '泊' + r.days + '日\n' +
+    '帰省費用 合計: 約' + r.total.toLocaleString() + '円\n' +
+    '(交通費' + r.transportCost.toLocaleString() + '円 / 宿泊費' + r.hotelCost.toLocaleString() + '円 / 食費' + r.foodCost.toLocaleString() + '円 / 手土産' + r.gift.toLocaleString() + '円)\n' +
+    '1人あたり約' + r.perPerson.toLocaleString() + '円\n' +
+    'https://yama-ai-factory.vercel.app/apps/yearend-cost/';
+  navigator.clipboard.writeText(text).then(function() {
+    showCopyMsg('コピーしました');
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showCopyMsg('コピーしました');
+  });
+}
+
+function showCopyMsg(msg) {
+  var el = document.getElementById('copyMsg');
+  el.textContent = msg;
+  setTimeout(function() { el.textContent = ''; }, 2000);
+}
+
+function updateCountdown() {
+  var now = new Date();
+  var todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var startDate = new Date(2026, 11, 28);
+  var endDate   = new Date(2027, 0, 3);
+  var diffStart = Math.round((startDate - todayDate) / 86400000);
+  var diffEnd   = Math.round((endDate - todayDate) / 86400000);
+  var el = document.getElementById('yearendCountdown');
+  if (diffStart > 0 && diffStart <= 90) {
+    el.className = 'countdown-tip';
+    el.textContent = '年末年始(12/28)まであと ' + diffStart + ' 日 — 今のうちに帰省費用を試算しておきましょう';
+  } else if (diffStart <= 0 && diffEnd >= 0) {
+    el.className = 'countdown-tip';
+    el.textContent = '年末年始帰省シーズン中です — 帰省費用の参考にご活用ください';
+  }
+}
+
+calculate();
+updateCountdown();
+</script>
+</body>
+</html>
