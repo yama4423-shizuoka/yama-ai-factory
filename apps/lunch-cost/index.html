@@ -129,7 +129,7 @@
         <label>月の回数</label>
         <div class="input-row">
           <input type="number" id="r-n" value="8" min="0" max="31" step="1"
-            onkeydown="if(event.key==='Enter')calculate();" oninput="calculate();">
+            onfocus="this.select()" onkeydown="if(event.key==='Enter')calculate();" oninput="calculate();">
           <span class="input-unit">回 / 月</span>
         </div>
       </div>
@@ -137,7 +137,7 @@
         <label>1回あたりの金額</label>
         <div class="input-row">
           <input type="number" id="r-p" value="1000" min="0" max="5000" step="50"
-            onkeydown="if(event.key==='Enter')calculate();" oninput="syncSl('r'); calculate();">
+            onfocus="this.select()" onkeydown="if(event.key==='Enter')calculate();" oninput="syncSl('r'); calculate();">
           <input type="range" id="r-sl" min="300" max="3000" step="50" value="1000"
             oninput="syncNum('r'); calculate();">
           <span class="input-unit">円</span>
@@ -155,7 +155,7 @@
         <label>月の回数</label>
         <div class="input-row">
           <input type="number" id="c-n" value="7" min="0" max="31" step="1"
-            onkeydown="if(event.key==='Enter')calculate();" oninput="calculate();">
+            onfocus="this.select()" onkeydown="if(event.key==='Enter')calculate();" oninput="calculate();">
           <span class="input-unit">回 / 月</span>
         </div>
       </div>
@@ -163,7 +163,7 @@
         <label>1回あたりの金額</label>
         <div class="input-row">
           <input type="number" id="c-p" value="650" min="0" max="3000" step="50"
-            onkeydown="if(event.key==='Enter')calculate();" oninput="syncSl('c'); calculate();">
+            onfocus="this.select()" onkeydown="if(event.key==='Enter')calculate();" oninput="syncSl('c'); calculate();">
           <input type="range" id="c-sl" min="200" max="1500" step="50" value="650"
             oninput="syncNum('c'); calculate();">
           <span class="input-unit">円</span>
@@ -181,7 +181,7 @@
         <label>月の回数</label>
         <div class="input-row">
           <input type="number" id="b-n" value="5" min="0" max="31" step="1"
-            onkeydown="if(event.key==='Enter')calculate();" oninput="calculate();">
+            onfocus="this.select()" onkeydown="if(event.key==='Enter')calculate();" oninput="calculate();">
           <span class="input-unit">回 / 月</span>
         </div>
       </div>
@@ -189,7 +189,7 @@
         <label>1回あたりの実費（材料費など。食事手当で全額補助の場合は 0）</label>
         <div class="input-row">
           <input type="number" id="b-p" value="200" min="0" max="1000" step="50"
-            onkeydown="if(event.key==='Enter')calculate();" oninput="syncSl('b'); calculate();">
+            onfocus="this.select()" onkeydown="if(event.key==='Enter')calculate();" oninput="syncSl('b'); calculate();">
           <input type="range" id="b-sl" min="0" max="600" step="50" value="200"
             oninput="syncNum('b'); calculate();">
           <span class="input-unit">円</span>
