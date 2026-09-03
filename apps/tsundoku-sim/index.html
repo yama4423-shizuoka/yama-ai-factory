@@ -180,6 +180,7 @@
       <div class="input-row">
         <input type="number" id="pagesPerDay" class="num-input" value="30" min="1" max="9999" step="1"
           onkeydown="if(event.key==='Enter')calculate();"
+          onfocus="this.select()"
           oninput="calculate()">
         <span class="input-unit">ページ / 日</span>
       </div>
@@ -191,7 +192,8 @@
         <input type="text" id="bookTitle" class="text-input" placeholder="タイトルを入力" maxlength="60"
           onkeydown="if(event.key==='Enter')addBook();">
         <input type="number" id="bookPages" class="pages-input" placeholder="ページ数" min="1" max="99999" step="1"
-          onkeydown="if(event.key==='Enter')addBook();">
+          onkeydown="if(event.key==='Enter')addBook();"
+          onfocus="this.select()">
         <button class="add-btn" onclick="addBook()">追加</button>
       </div>
       <div class="error" id="addError"></div>
