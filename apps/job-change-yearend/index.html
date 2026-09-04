@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>転職年 年末調整・確定申告 還付金試算チェッカー(2026年版) | AIアプリ工房</title>
+  <meta name="description" content="前職月収・退職月、新職月収・入社月を入力するだけで「年末調整か確定申告か」を判定し、2026年分の還付金概算額を即計算。2026年基礎控除引き上げ(48万→123万円)初年度対応。無料・登録不要。">
+
+  <meta property="og:title" content="転職年 年末調整・確定申告 還付金試算チェッカー(2026年版) | AIアプリ工房">
+  <meta property="og:description" content="前職月収・退職月と新職月収・入社月を入力で、年末調整か確定申告かを判定し2026年の還付金概算を即計算。基礎控除引き上げ初年度対応。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/job-change-yearend/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa;
+      --yellow:#fbbf24; --red:#f87171;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:600px; margin:0 auto; padding:40px 20px 80px; }
+    .back { font-size:.82rem; color:var(--tx2); text-decoration:none; display:inline-block; margin-bottom:28px; }
+    .back:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.35rem,4.5vw,1.9rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .subtitle { color:var(--tx3); font-size:.88rem; line-height:1.8; margin-bottom:28px; }
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px 22px; margin-bottom:16px; }
+    .card-title { font-size:.78rem; font-weight:700; color:var(--tx3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:20px; }
+    .field { margin-bottom:16px; }
+    .field label { display:block; font-size:.82rem; color:var(--tx3); font-weight:600; margin-bottom:6px; }
+    .input-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    input[type=number] {
+      width:96px; padding:9px 10px; font-size:.95rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; transition:border-color .15s; text-align:center;
+      flex-shrink:0; -moz-appearance:textfield;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { opacity:.5; }
+    input[type=number]:focus { border-color:var(--acc); }
+    select {
+      padding:9px 10px; font-size:.88rem; font-weight:600;
+      background:var(--s2); border:1px solid var(--bd); border-radius:10px;
+      color:var(--tx); outline:none; cursor:pointer;
+    }
+    select:focus { border-color:var(--acc); }
+    .input-unit { font-size:.82rem; color:var(--tx2); white-space:nowrap; }
+    .divider { border:none; border-top:1px solid var(--bd); margin:16px 0; }
+    .judgment-box {
+      border-radius:14px; padding:18px 20px; margin-bottom:16px;
+      display:flex; align-items:flex-start; gap:14px;
+    }
+    .judgment-box.green { background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.3); }
+    .judgment-box.yellow { background:rgba(251,191,36,.08); border:1px solid rgba(251,191,36,.3); }
+    .judgment-icon { font-size:1.8rem; flex-shrink:0; line-height:1; }
+    .judgment-label { font-size:.68rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; margin-bottom:6px; }
+    .judgment-box.green .judgment-label { color:var(--green); }
+    .judgment-box.yellow .judgment-label { color:var(--yellow); }
+    .judgment-main { font-size:1.02rem; font-weight:800; margin-bottom:6px; }
+    .judgment-sub { font-size:.8rem; color:var(--tx3); line-height:1.7; }
+    .result-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+    .res-box {
+      background:var(--s2); border:1px solid var(--bd); border-radius:12px;
+      padding:16px 14px; text-align:center;
+    }
+    .res-lbl { font-size:.72rem; color:var(--tx2); margin-bottom:8px; font-weight:600; letter-spacing:.05em; }
+    .res-val { font-size:clamp(1.3rem,4.5vw,1.9rem); font-weight:900; line-height:1.1; }
+    .res-unit { font-size:.75rem; color:var(--tx3); margin-top:4px; }
+    .c-green { color:var(--green); }
+    .c-red { color:var(--red); }
+    .c-acc { color:var(--acc2); }
+    .c-blue { color:var(--blue); }
+    .c-yellow { color:var(--yellow); }
+    .bd-table { width:100%; border-collapse:collapse; margin-bottom:16px; }
+    .bd-table td { padding:9px 4px; font-size:.84rem; border-bottom:1px solid var(--bd); }
+    .bd-table tr:last-child td { border-bottom:none; }
+    .bd-table .bd-lbl { color:var(--tx3); }
+    .bd-table .bd-val { text-align:right; font-weight:700; color:var(--tx); }
+    .bd-table .bd-total td { font-size:.92rem; font-weight:800; padding-top:14px; }
+    .info-box {
+      background:rgba(96,165,250,.07); border:1px solid rgba(96,165,250,.25);
+      border-radius:12px; padding:14px 16px; margin-bottom:16px; font-size:.8rem;
+      color:var(--tx3); line-height:1.75;
+    }
+    .info-box strong { color:var(--blue); }
+    .share-btn {
+      width:100%; padding:13px; font-size:.92rem; font-weight:700;
+      background:var(--s2); border:1px solid var(--bd); border-radius:12px;
+      color:var(--tx); cursor:pointer; transition:border-color .15s;
+    }
+    .share-btn:hover { border-color:var(--acc); color:var(--acc2); }
+    .note { font-size:.74rem; color:var(--tx2); line-height:1.85; margin-top:16px; }
+    .new-job-field { transition:opacity .2s; }
+
+    @media (max-width:520px) {
+      .wrapper { padding:24px 16px 60px; }
+      .result-grid { grid-template-columns:1fr; }
+      select { min-width:140px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <a class="back" href="/">← AIアプリ工房 トップ</a>
+    <div class="badge">JOB CHANGE TAX 2026</div>
+    <h1><span class="grad">転職年 年末調整・確定申告</span><br>還付金試算チェッカー(2026年版)</h1>
+    <p class="subtitle">前職の月収・退職月と新職の月収・入社月を入力するだけで、「年末調整で処理できるか・確定申告が必要か」を判定し、2026年分の還付金概算額を即計算します。2026年基礎控除引き上げ(48万→123万円)初年度対応。</p>
+
+    <div class="card">
+      <div class="card-title">前職の情報</div>
+      <div class="field">
+        <label for="prevSalary">前職の月収(額面・税引前)</label>
+        <div class="input-row">
+          <input type="number" id="prevSalary" value="35" min="5" max="300" step="1"
+            oninput="calculate()" onfocus="this.select()"
+            onkeydown="if(event.key==='Enter')calculate();">
+          <span class="input-unit">万円 / 月</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="quitMonth">退職月(最後の給与を受け取った月)</label>
+        <div class="input-row">
+          <select id="quitMonth" onchange="calculate()">
+            <option value="1">1月</option>
+            <option value="2">2月</option>
+            <option value="3">3月</option>
+            <option value="4">4月</option>
+            <option value="5">5月</option>
+            <option value="6" selected>6月</option>
+            <option value="7">7月</option>
+            <option value="8">8月</option>
+            <option value="9">9月</option>
+            <option value="10">10月</option>
+            <option value="11">11月</option>
+            <option value="12">12月</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">新職の情報</div>
+      <div class="field">
+        <label for="joinMonth">新職の入社月</label>
+        <div class="input-row">
+          <select id="joinMonth" onchange="toggleNewJob()">
+            <option value="0">未入社(転職活動中・退職のみ)</option>
+            <option value="1">1月</option>
+            <option value="2">2月</option>
+            <option value="3">3月</option>
+            <option value="4">4月</option>
+            <option value="5">5月</option>
+            <option value="6">6月</option>
+            <option value="7">7月</option>
+            <option value="8">8月</option>
+            <option value="9" selected>9月</option>
+            <option value="10">10月</option>
+            <option value="11">11月</option>
+            <option value="12">12月</option>
+          </select>
+        </div>
+      </div>
+      <div class="new-job-field" id="newJobField">
+        <div class="field">
+          <label for="newSalary">新職の月収(額面・税引前)</label>
+          <div class="input-row">
+            <input type="number" id="newSalary" value="38" min="5" max="300" step="1"
+              oninput="calculate()" onfocus="this.select()"
+              onkeydown="if(event.key==='Enter')calculate();">
+            <span class="input-unit">万円 / 月</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">判定 &amp; 還付金試算</div>
+
+      <div class="judgment-box green" id="judgmentBox">
+        <div class="judgment-icon" id="judgmentIcon" aria-hidden="true"></div>
+        <div>
+          <div class="judgment-label" id="judgmentLabel"></div>
+          <div class="judgment-main" id="judgmentMain"></div>
+          <div class="judgment-sub" id="judgmentSub"></div>
+        </div>
+      </div>
+
+      <div class="result-grid">
+        <div class="res-box">
+          <div class="res-lbl">推定還付金(2026年分)</div>
+          <div class="res-val" id="refundMain">—</div>
+          <div class="res-unit" id="refundUnit"></div>
+        </div>
+        <div class="res-box">
+          <div class="res-lbl">2026年 合計年収</div>
+          <div class="res-val c-blue" id="totalIncome">—</div>
+          <div class="res-unit">万円</div>
+        </div>
+      </div>
+
+      <table class="bd-table">
+        <tr>
+          <td class="bd-lbl">前職 期間収入</td>
+          <td class="bd-val" id="prevIncome">—</td>
+        </tr>
+        <tr>
+          <td class="bd-lbl">新職 期間収入</td>
+          <td class="bd-val" id="newIncome">—</td>
+        </tr>
+        <tr>
+          <td class="bd-lbl">前職 源泉徴収額(概算)</td>
+          <td class="bd-val" id="prevWithheld">—</td>
+        </tr>
+        <tr>
+          <td class="bd-lbl">新職 源泉徴収額(概算)</td>
+          <td class="bd-val" id="newWithheld">—</td>
+        </tr>
+        <tr>
+          <td class="bd-lbl">2026年 実際の年間所得税</td>
+          <td class="bd-val" id="actualTax">—</td>
+        </tr>
+        <tr class="bd-total">
+          <td class="bd-lbl">還付金(源泉計 - 実際税額)</td>
+          <td class="bd-val" id="refundBreak">—</td>
+        </tr>
+      </table>
+
+      <div class="info-box" id="infoBox"></div>
+
+      <button class="share-btn" onclick="shareX()">X(Twitter)でシェアする</button>
+    </div>
+
+    <p class="note">
+      ※ 独身・協会けんぽ(東京都)加入・扶養なしを想定した概算です。社会保険料は年収の約14.7%で概算。給与所得控除・所得税は国税庁の速算表に準拠。2026年基礎控除は123万円(改正後)を適用。<br>
+      ※ 源泉徴収概算は「各社が年収見込み×12ヶ月で月次源泉し、途中退職・途中入社で年末調整を行わなかった場合」を前提に試算しています。実際の還付/追加納税額は各社の源泉徴収額・各種控除の詳細によって異なります。正確な金額は源泉徴収票または税理士にご確認ください。本ツールは参考情報の提供を目的としており、税務申告の代替となるものではありません。
+    </p>
+  </div>
+
+  <script>
+    function empDeduct(a) {
+      if (a <= 162.5) return 55;
+      if (a <= 180)   return a * 0.4 - 10;
+      if (a <= 360)   return a * 0.3 + 8;
+      if (a <= 660)   return a * 0.2 + 44;
+      if (a <= 850)   return a * 0.1 + 110;
+      return 195;
+    }
+
+    function calcIT(t) {
+      if (t <= 0) return 0;
+      const b = [[195,.05,0],[330,.10,9.75],[695,.20,42.75],[900,.23,63.6],
+                 [1800,.33,153.6],[4000,.40,279.6],[Infinity,.45,479.6]];
+      for (const [lim,r,d] of b) if (t <= lim) return Math.max(0, t * r - d);
+      return 0;
+    }
+
+    function annualTax(monthlyWan) {
+      const annual  = monthlyWan * 12;
+      const empInc  = annual - empDeduct(annual);
+      const social  = annual * 0.1474;
+      const taxable = Math.max(0, empInc - social - 123);
+      return Math.max(0, calcIT(taxable) * 1.021);
+    }
+
+    function actualAnnualTax(totalAnnualWan) {
+      const empInc  = totalAnnualWan - empDeduct(totalAnnualWan);
+      const social  = totalAnnualWan * 0.1474;
+      const taxable = Math.max(0, empInc - social - 123);
+      return Math.max(0, calcIT(taxable) * 1.021);
+    }
+
+    function fmt(n) { return Math.round(Math.abs(n)).toLocaleString('ja-JP'); }
+
+    var _share = {};
+
+    function toggleNewJob() {
+      const join = parseInt(document.getElementById('joinMonth').value);
+      document.getElementById('newJobField').style.opacity = join === 0 ? '.4' : '1';
+      document.getElementById('newJobField').style.pointerEvents = join === 0 ? 'none' : '';
+      calculate();
+    }
+
+    function calculate() {
+      const prevSal  = parseFloat(document.getElementById('prevSalary').value) || 0;
+      const quitM    = parseInt(document.getElementById('quitMonth').value) || 6;
+      const joinM    = parseInt(document.getElementById('joinMonth').value);
+      const newSal   = parseFloat(document.getElementById('newSalary').value) || 0;
+
+      if (prevSal <= 0) return;
+
+      const prevMonths = quitM;
+      const newMonths  = joinM > 0 ? Math.max(0, 13 - joinM) : 0;
+
+      const prevIncW   = prevSal * prevMonths;
+      const newIncW    = joinM > 0 ? newSal * newMonths : 0;
+      const totalW     = prevIncW + newIncW;
+
+      /* 源泉徴収額: 各社が12ヶ月換算の税額から在職月数で按分 */
+      const prevWH = annualTax(prevSal) * prevMonths / 12;
+      const newWH  = joinM > 0 && newSal > 0 ? annualTax(newSal) * newMonths / 12 : 0;
+      const totalWH = prevWH + newWH;
+
+      const realTax = actualAnnualTax(totalW);
+      const refundW = totalWH - realTax;
+
+      /* 判定 */
+      const needKakunin = (joinM === 0) || (joinM === 12);
+      const jBox  = document.getElementById('judgmentBox');
+      const jIcon = document.getElementById('judgmentIcon');
+      const jLbl  = document.getElementById('judgmentLabel');
+      const jMain = document.getElementById('judgmentMain');
+      const jSub  = document.getElementById('judgmentSub');
+
+      if (needKakunin) {
+        jBox.className  = 'judgment-box yellow';
+        jIcon.textContent = '';
+        jLbl.textContent  = '確定申告が必要';
+        jMain.textContent = joinM === 12
+          ? '12月入社は年末調整に間に合わない場合があります'
+          : '12月31日時点で在職していないため確定申告が必要です';
+        jSub.textContent  = joinM === 12
+          ? '12月入社の場合、新職の年末調整が間に合わないことが多く、2027年2〜3月に自身で確定申告を行うと還付金を受け取れます。前職・新職の源泉徴収票を保管してください。'
+          : '退職後に再就職していない場合、2027年2〜3月に自身で確定申告を行う必要があります。前職の源泉徴収票を保管してください。';
+      } else {
+        jBox.className  = 'judgment-box green';
+        jIcon.textContent = '';
+        jLbl.textContent  = '年末調整で処理できます';
+        jMain.textContent = '新職の年末調整で一括して精算できます';
+        jSub.textContent  = '前職の源泉徴収票を新職の会社に提出することで、年末調整に組み込んでもらえます。12月の給与または別途還付金として受け取れます。';
+      }
+
+      /* 表示 */
+      const refundY = Math.round(refundW * 10000);
+      const rMain   = document.getElementById('refundMain');
+      const rUnit   = document.getElementById('refundUnit');
+      if (refundY >= 0) {
+        rMain.textContent = fmt(refundY);
+        rMain.className   = 'res-val c-green';
+        rUnit.textContent = '円 還付見込み';
+      } else {
+        rMain.textContent = fmt(-refundY);
+        rMain.className   = 'res-val c-red';
+        rUnit.textContent = '円 追加納税';
+      }
+
+      document.getElementById('totalIncome').textContent = Math.round(totalW * 10) / 10;
+      document.getElementById('prevIncome').textContent  = fmt(Math.round(prevIncW * 10000)) + '円(' + prevMonths + 'ヶ月)';
+      document.getElementById('newIncome').textContent   = joinM > 0 && newSal > 0
+        ? fmt(Math.round(newIncW * 10000)) + '円(' + newMonths + 'ヶ月)'
+        : '—';
+      document.getElementById('prevWithheld').textContent = fmt(Math.round(prevWH * 10000)) + '円';
+      document.getElementById('newWithheld').textContent  = joinM > 0 && newSal > 0
+        ? fmt(Math.round(newWH * 10000)) + '円'
+        : '—';
+      document.getElementById('actualTax').textContent    = fmt(Math.round(realTax * 10000)) + '円';
+
+      const rbEl = document.getElementById('refundBreak');
+      rbEl.textContent = (refundY >= 0 ? '+' : '-') + fmt(Math.abs(refundY)) + '円';
+      rbEl.className   = 'bd-val ' + (refundY >= 0 ? 'c-green' : 'c-red');
+
+      /* 基礎控除引き上げ効果 */
+      const oldTax    = actualAnnualTax2025(totalW);
+      const savingsW  = Math.max(0, oldTax - realTax);
+      const savingsY  = Math.round(savingsW * 10000);
+      const infoEl    = document.getElementById('infoBox');
+      if (savingsY > 0) {
+        infoEl.innerHTML = '<strong>2026年 基礎控除引き上げの効果:</strong> 2025年比で年間所得税が約 <strong style="color:var(--green)">' + fmt(savingsY) + '円</strong> 少なくなっています(基礎控除 48万→123万円)。';
+      } else {
+        infoEl.innerHTML = '2026年の税制改正(基礎控除 48万→123万円)により、課税所得がゼロ以下のため所得税はかかりません。';
+      }
+
+      _share = { prevSal, quitM, joinM, newSal, prevMonths, newMonths, totalW: Math.round(totalW * 10) / 10, refundY, needKakunin };
+    }
+
+    function actualAnnualTax2025(totalAnnualWan) {
+      const empInc  = totalAnnualWan - empDeduct(totalAnnualWan);
+      const social  = totalAnnualWan * 0.1474;
+      const taxable = Math.max(0, empInc - social - 48);
+      return Math.max(0, calcIT(taxable) * 1.021);
+    }
+
+    function shareX() {
+      const { prevSal, quitM, joinM, newSal, totalW, refundY, needKakunin } = _share;
+      if (!prevSal) return;
+      const method = needKakunin ? '確定申告が必要' : '年末調整で処理可能';
+      const refundStr = refundY >= 0
+        ? fmt(refundY) + '円還付見込み'
+        : fmt(-refundY) + '円追加納税';
+      const jobStr = joinM > 0
+        ? '前職' + prevSal + '万(' + quitM + '月退職)→新職' + newSal + '万(' + joinM + '月入社)'
+        : '前職' + prevSal + '万(' + quitM + '月退職)・再就職なし';
+      const text = '【転職年 還付金試算チェッカー(2026年版)】\n'
+        + jobStr + '\n'
+        + '2026年合計年収: ' + totalW + '万円 / ' + method + '\n'
+        + '還付金試算: ' + refundStr + '\n'
+        + 'https://yama-ai-factory.vercel.app/apps/job-change-yearend/\n'
+        + '#転職 #年末調整 #確定申告 #AIアプリ工房';
+      window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text), '_blank');
+    }
+
+    toggleNewJob();
+    calculate();
+  </script>
+</body>
+</html>
