@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>マイカーvs公共交通 通勤年間コスト比較機 | AIアプリ工房</title>
+  <meta name="description" content="ガソリン代・駐車場代・車検維持費と定期代を入力するだけで、マイカー通勤と公共交通の年間コストを比較。どちらが安いか・年間差額・10年累計差額を即計算。無料・登録不要。">
+
+  <meta property="og:title" content="マイカーvs公共交通 通勤年間コスト比較機 | AIアプリ工房">
+  <meta property="og:description" content="ガソリン代・駐車場代・車検維持費と定期代を入力するだけで、マイカーと公共交通の年間コストを即比較。どちらが安いか・年間差額・損益分岐を計算。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yama-ai-factory.vercel.app/apps/car-vs-transit/">
+  <meta name="twitter:card" content="summary">
+
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <style>
+    :root {
+      --bg:#07070f; --s1:#0e0e1a; --s2:#13131f; --bd:#22223a;
+      --tx:#f0f0fa; --tx2:#6868a0; --tx3:#9090c0;
+      --acc:#7c6ff5; --acc2:#a89cf7; --green:#34d399; --blue:#60a5fa; --red:#f87171;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--tx);
+      font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .wrapper { max-width:620px; margin:0 auto; padding:40px 20px 80px; }
+    .back { font-size:.82rem; color:var(--tx2); text-decoration:none; display:inline-block; margin-bottom:28px; }
+    .back:hover { color:var(--acc2); }
+    .badge {
+      display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--acc2);
+      background:rgba(124,111,245,.15); border:1px solid rgba(124,111,245,.35);
+      padding:4px 14px; border-radius:999px; margin-bottom:14px;
+    }
+    h1 { font-size:clamp(1.5rem,5vw,2.1rem); font-weight:900; line-height:1.3; margin-bottom:10px; }
+    .grad { background:linear-gradient(135deg,#a89cf7,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .subtitle { color:var(--tx3); font-size:.88rem; line-height:1.8; margin-bottom:28px; }
+
+    .card { background:var(--s1); border:1px solid var(--bd); border-radius:16px; padding:24px 22px; margin-bottom:16px; }
+    .card-title { font-size:.78rem; font-weight:700; color:var(--tx3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:18px; }
+
+    .field-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .field { display:flex; flex-direction:column; gap:6px; }
+    .field label { font-size:.82rem; color:var(--tx3); font-weight:600; }
+    .input-wrap { display:flex; align-items:center; gap:8px; }
+    input[type=number] {
+      flex:1; background:var(--s2); border:1.5px solid var(--bd); border-radius:10px;
+      color:var(--tx); padding:10px 12px; font-size:1rem; font-weight:700;
+      outline:none; transition:border-color .15s; min-width:0;
+      -moz-appearance:textfield;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; }
+    input[type=number]:focus { border-color:var(--acc); }
+    .unit { font-size:.8rem; color:var(--tx2); white-space:nowrap; }
+
+    .subtotal-row {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-top:16px; padding-top:14px; border-top:1px solid var(--bd);
+    }
+    .subtotal-label { font-size:.84rem; color:var(--tx3); font-weight:600; }
+    .subtotal-value { font-size:1.1rem; font-weight:900; color:var(--tx); }
+
+    .result-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+    .result-col {
+      background:var(--s2); border:1.5px solid var(--bd); border-radius:14px;
+      padding:18px 16px; text-align:center;
+    }
+    .result-col.winner { border-color:rgba(52,211,153,.5); }
+    .result-col.loser { border-color:rgba(248,113,113,.25); opacity:.8; }
+    .result-col-label { font-size:.72rem; font-weight:800; letter-spacing:.08em; color:var(--tx3); margin-bottom:8px; }
+    .result-col-monthly { font-size:.82rem; color:var(--tx2); margin-bottom:4px; }
+    .result-col-annual { font-size:1.5rem; font-weight:900; margin-bottom:4px; }
+    .result-col-tag {
+      font-size:.65rem; font-weight:800; letter-spacing:.08em;
+      padding:3px 10px; border-radius:999px; display:inline-block; margin-top:4px;
+    }
+    .tag-win { background:rgba(52,211,153,.15); color:var(--green); border:1px solid rgba(52,211,153,.3); }
+    .tag-lose { background:rgba(248,113,113,.1); color:var(--red); border:1px solid rgba(248,113,113,.25); }
+    .tag-same { background:rgba(124,111,245,.1); color:var(--acc2); border:1px solid rgba(124,111,245,.25); }
+
+    .diff-block {
+      background:var(--s2); border:1px solid var(--bd); border-radius:14px;
+      padding:18px 20px; margin-bottom:12px;
+    }
+    .diff-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+    .diff-row:last-child { margin-bottom:0; }
+    .diff-label { font-size:.82rem; color:var(--tx3); }
+    .diff-value { font-size:1rem; font-weight:800; }
+    .diff-value.saving { color:var(--green); }
+    .diff-value.neutral { color:var(--tx2); }
+    .divider { border:none; border-top:1px solid var(--bd); margin:10px 0; }
+
+    .breakeven-block {
+      background:var(--s2); border:1px solid rgba(96,165,250,.3); border-radius:14px;
+      padding:16px 20px; margin-bottom:12px;
+    }
+    .breakeven-label { font-size:.78rem; font-weight:700; color:var(--blue); margin-bottom:8px; letter-spacing:.04em; }
+    .breakeven-value { font-size:1.1rem; font-weight:900; color:var(--tx); }
+    .breakeven-note { font-size:.74rem; color:var(--tx2); margin-top:6px; line-height:1.6; }
+
+    .btn {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:12px 22px; border-radius:10px; font-weight:700; font-size:.88rem;
+      cursor:pointer; border:none; transition:all .15s; text-decoration:none;
+    }
+    .btn-primary { background:var(--acc); color:#fff; }
+    .btn-primary:hover { background:#6a5fe0; }
+    .btn-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+
+    footer { margin-top:48px; padding-top:20px; border-top:1px solid var(--bd); text-align:center; font-size:.78rem; color:var(--tx2); line-height:2; }
+    footer a { color:var(--acc2); text-decoration:none; }
+
+    @media (max-width:520px) {
+      .wrapper { padding:28px 14px 60px; }
+      .field-grid { grid-template-columns:1fr; gap:10px; }
+      .result-grid { grid-template-columns:1fr; }
+      .result-col-annual { font-size:1.3rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <a class="back" href="/">&larr; AIアプリ工房</a>
+  <div class="badge">Car vs Transit</div>
+  <h1><span class="grad">マイカーvs公共交通</span><br>通勤年間コスト比較機</h1>
+  <p class="subtitle">ガソリン代・駐車場代・車検維持費と定期代を入力するだけで、<br>年間コストの差額と損益分岐を即計算します。</p>
+
+  <!-- マイカー費用 -->
+  <div class="card">
+    <div class="card-title">マイカー費用(月額)</div>
+    <div class="field-grid">
+      <div class="field">
+        <label>ガソリン代</label>
+        <div class="input-wrap">
+          <input type="number" id="gasoline" value="12000" min="0" max="999999" step="100"
+            oninput="calculate()" onkeydown="if(event.key==='Enter')calculate();"
+            onfocus="this.select();">
+          <span class="unit">円/月</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>駐車場代</label>
+        <div class="input-wrap">
+          <input type="number" id="parking" value="15000" min="0" max="999999" step="100"
+            oninput="calculate()" onkeydown="if(event.key==='Enter')calculate();"
+            onfocus="this.select();">
+          <span class="unit">円/月</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>車検・自動車税(月割)</label>
+        <div class="input-wrap">
+          <input type="number" id="maintenance" value="8000" min="0" max="999999" step="100"
+            oninput="calculate()" onkeydown="if(event.key==='Enter')calculate();"
+            onfocus="this.select();">
+          <span class="unit">円/月</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>自動車保険(月割)</label>
+        <div class="input-wrap">
+          <input type="number" id="insurance" value="5000" min="0" max="999999" step="100"
+            oninput="calculate()" onkeydown="if(event.key==='Enter')calculate();"
+            onfocus="this.select();">
+          <span class="unit">円/月</span>
+        </div>
+      </div>
+    </div>
+    <div class="subtotal-row">
+      <span class="subtotal-label">マイカー月額合計</span>
+      <span class="subtotal-value" id="carMonthly">--</span>
+    </div>
+  </div>
+
+  <!-- 公共交通費用 -->
+  <div class="card">
+    <div class="card-title">公共交通費用(月額)</div>
+    <div class="field-grid">
+      <div class="field">
+        <label>通勤定期代</label>
+        <div class="input-wrap">
+          <input type="number" id="transit" value="10000" min="0" max="999999" step="100"
+            oninput="calculate()" onkeydown="if(event.key==='Enter')calculate();"
+            onfocus="this.select();">
+          <span class="unit">円/月</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>その他交通費</label>
+        <div class="input-wrap">
+          <input type="number" id="transitExtra" value="0" min="0" max="999999" step="100"
+            oninput="calculate()" onkeydown="if(event.key==='Enter')calculate();"
+            onfocus="this.select();">
+          <span class="unit">円/月</span>
+        </div>
+      </div>
+    </div>
+    <div class="subtotal-row">
+      <span class="subtotal-label">公共交通 月額合計</span>
+      <span class="subtotal-value" id="transitMonthly">--</span>
+    </div>
+  </div>
+
+  <!-- 乗り換え初期費用 -->
+  <div class="card">
+    <div class="card-title">乗り換え初期費用(任意)</div>
+    <div class="field-grid">
+      <div class="field" style="grid-column:1/-1">
+        <label>乗り換えにかかる初期費用 (購入・廃車・敷金など)</label>
+        <div class="input-wrap">
+          <input type="number" id="initialCost" value="0" min="0" max="99999999" step="1000"
+            oninput="calculate()" onkeydown="if(event.key==='Enter')calculate();"
+            onfocus="this.select();">
+          <span class="unit">円</span>
+        </div>
+      </div>
+    </div>
+    <p style="font-size:.74rem;color:var(--tx2);margin-top:10px;line-height:1.6;">
+      0円のまま比較だけ行うことができます。入力すると「何ヶ月で元が取れるか」を表示します。
+    </p>
+  </div>
+
+  <!-- 結果 -->
+  <div class="card">
+    <div class="card-title">年間コスト比較結果</div>
+
+    <div class="result-grid">
+      <div class="result-col" id="carCol">
+        <div class="result-col-label">マイカー</div>
+        <div class="result-col-monthly" id="carMonthlyResult">--円/月</div>
+        <div class="result-col-annual" id="carAnnual">--</div>
+        <div style="font-size:.72rem;color:var(--tx3);">年間</div>
+        <div class="result-col-tag" id="carTag">&nbsp;</div>
+      </div>
+      <div class="result-col" id="transitCol">
+        <div class="result-col-label">公共交通</div>
+        <div class="result-col-monthly" id="transitMonthlyResult">--円/月</div>
+        <div class="result-col-annual" id="transitAnnual">--</div>
+        <div style="font-size:.72rem;color:var(--tx3);">年間</div>
+        <div class="result-col-tag" id="transitTag">&nbsp;</div>
+      </div>
+    </div>
+
+    <div class="diff-block">
+      <div class="diff-row">
+        <span class="diff-label">月額差</span>
+        <span class="diff-value saving" id="diffMonthly">--</span>
+      </div>
+      <div class="diff-row">
+        <span class="diff-label">年間差額</span>
+        <span class="diff-value saving" id="diffAnnual">--</span>
+      </div>
+      <hr class="divider">
+      <div class="diff-row">
+        <span class="diff-label">5年累計差額</span>
+        <span class="diff-value" id="diff5y">--</span>
+      </div>
+      <div class="diff-row">
+        <span class="diff-label">10年累計差額</span>
+        <span class="diff-value" id="diff10y">--</span>
+      </div>
+    </div>
+
+    <div class="breakeven-block" id="breakevenBlock" style="display:none;">
+      <div class="breakeven-label">損益分岐点</div>
+      <div class="breakeven-value" id="breakevenValue">--</div>
+      <div class="breakeven-note" id="breakevenNote"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="share()">Xでシェア</button>
+    </div>
+  </div>
+
+  <footer>
+    <a href="/">AIアプリ工房トップへ</a><br>
+    計算結果はあくまで目安です。実際のコストは車種・路線・地域等により異なります。
+  </footer>
+</div>
+
+<script>
+  function fmt(n) {
+    return Math.round(Math.abs(n)).toLocaleString('ja-JP') + '円';
+  }
+  function fmtSign(n) {
+    var s = Math.round(Math.abs(n)).toLocaleString('ja-JP') + '円';
+    return n < 0 ? '-' + s : (n > 0 ? '+' + s : s);
+  }
+
+  function val(id) {
+    var v = parseFloat(document.getElementById(id).value);
+    return isNaN(v) || v < 0 ? 0 : v;
+  }
+
+  function calculate() {
+    var gasoline = val('gasoline');
+    var parking = val('parking');
+    var maintenance = val('maintenance');
+    var insurance = val('insurance');
+    var transit = val('transit');
+    var transitExtra = val('transitExtra');
+    var initialCost = val('initialCost');
+
+    var carMonth = gasoline + parking + maintenance + insurance;
+    var transitMonth = transit + transitExtra;
+    var carYear = carMonth * 12;
+    var transitYear = transitMonth * 12;
+    var diffMonth = carMonth - transitMonth;
+    var diffYear = carYear - transitYear;
+
+    document.getElementById('carMonthly').textContent = fmt(carMonth) + '/月';
+    document.getElementById('transitMonthly').textContent = fmt(transitMonth) + '/月';
+
+    document.getElementById('carMonthlyResult').textContent = fmt(carMonth) + '/月';
+    document.getElementById('transitMonthlyResult').textContent = fmt(transitMonth) + '/月';
+    document.getElementById('carAnnual').textContent = fmt(carYear);
+    document.getElementById('transitAnnual').textContent = fmt(transitYear);
+
+    var carCol = document.getElementById('carCol');
+    var transitCol = document.getElementById('transitCol');
+    var carTag = document.getElementById('carTag');
+    var transitTag = document.getElementById('transitTag');
+
+    if (diffYear > 0) {
+      carCol.className = 'result-col loser';
+      transitCol.className = 'result-col winner';
+      carTag.className = 'result-col-tag tag-lose';
+      carTag.textContent = '高コスト';
+      transitTag.className = 'result-col-tag tag-win';
+      transitTag.textContent = '安い';
+    } else if (diffYear < 0) {
+      carCol.className = 'result-col winner';
+      transitCol.className = 'result-col loser';
+      carTag.className = 'result-col-tag tag-win';
+      carTag.textContent = '安い';
+      transitTag.className = 'result-col-tag tag-lose';
+      transitTag.textContent = '高コスト';
+    } else {
+      carCol.className = 'result-col';
+      transitCol.className = 'result-col';
+      carTag.className = 'result-col-tag tag-same';
+      carTag.textContent = '同額';
+      transitTag.className = 'result-col-tag tag-same';
+      transitTag.textContent = '同額';
+    }
+
+    var cheaper = diffYear > 0 ? '公共交通が安い' : (diffYear < 0 ? 'マイカーが安い' : '同額');
+    var absDiffMonth = Math.abs(diffMonth);
+    var absDiffYear = Math.abs(diffYear);
+
+    var diffMonthEl = document.getElementById('diffMonthly');
+    var diffAnnualEl = document.getElementById('diffAnnual');
+    diffMonthEl.textContent = cheaper + ' (' + fmt(absDiffMonth) + '/月)';
+    diffMonthEl.className = 'diff-value ' + (absDiffMonth === 0 ? 'neutral' : 'saving');
+    diffAnnualEl.textContent = cheaper + ' (' + fmt(absDiffYear) + '/年)';
+    diffAnnualEl.className = 'diff-value ' + (absDiffYear === 0 ? 'neutral' : 'saving');
+
+    document.getElementById('diff5y').textContent = cheaper + ' (' + fmt(absDiffYear * 5) + ')';
+    document.getElementById('diff10y').textContent = cheaper + ' (' + fmt(absDiffYear * 10) + ')';
+
+    var breakevenBlock = document.getElementById('breakevenBlock');
+    if (initialCost > 0 && absDiffMonth > 0) {
+      breakevenBlock.style.display = 'block';
+      var months = Math.ceil(initialCost / absDiffMonth);
+      var years = Math.floor(months / 12);
+      var remainMonths = months % 12;
+      var durationStr = years > 0
+        ? (years + '年' + (remainMonths > 0 ? remainMonths + 'ヶ月' : ''))
+        : (months + 'ヶ月');
+      document.getElementById('breakevenValue').textContent = durationStr + '後に元が取れる';
+      var who = diffYear > 0 ? '公共交通へ乗り換える' : 'マイカーに乗り換える';
+      document.getElementById('breakevenNote').textContent =
+        '初期費用 ' + fmt(initialCost) + 'を、月 ' + fmt(absDiffMonth) + 'の差額で回収するまでの期間（' + who + '場合）';
+    } else {
+      breakevenBlock.style.display = 'none';
+    }
+  }
+
+  function share() {
+    var gasoline = val('gasoline');
+    var parking = val('parking');
+    var maintenance = val('maintenance');
+    var insurance = val('insurance');
+    var transit = val('transit');
+    var transitExtra = val('transitExtra');
+
+    var carMonth = gasoline + parking + maintenance + insurance;
+    var transitMonth = transit + transitExtra;
+    var diffYear = Math.abs((carMonth - transitMonth) * 12);
+    var cheaper = carMonth > transitMonth ? '公共交通' : (carMonth < transitMonth ? 'マイカー' : '同額');
+
+    var text =
+      '【マイカーvs公共交通 通勤コスト比較】\n' +
+      'マイカー: 月' + Math.round(carMonth).toLocaleString('ja-JP') + '円 / 年' + Math.round(carMonth * 12).toLocaleString('ja-JP') + '円\n' +
+      '公共交通: 月' + Math.round(transitMonth).toLocaleString('ja-JP') + '円 / 年' + Math.round(transitMonth * 12).toLocaleString('ja-JP') + '円\n' +
+      cheaper + 'が年間' + Math.round(diffYear).toLocaleString('ja-JP') + '円お得\n' +
+      '#AIアプリ工房\n' +
+      'https://yama-ai-factory.vercel.app/apps/car-vs-transit/';
+
+    window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text), '_blank');
+  }
+
+  calculate();
+</script>
+</body>
+</html>
