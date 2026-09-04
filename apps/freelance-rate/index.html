@@ -149,7 +149,7 @@
     <div class="form-group">
       <label for="reward">案件報酬（税込）</label>
       <div class="input-row">
-        <input type="number" id="reward" placeholder="300000" value="300000" min="0" step="1000">
+        <input type="number" id="reward" placeholder="300000" value="300000" min="0" step="1000" onfocus="this.select()">
         <span class="input-unit">円</span>
       </div>
     </div>
@@ -157,7 +157,7 @@
     <div class="form-group">
       <label for="hours">作業時間（合計）</label>
       <div class="input-row">
-        <input type="number" id="hours" placeholder="40" value="40" min="0.1" step="0.5">
+        <input type="number" id="hours" placeholder="40" value="40" min="0.1" step="0.5" onfocus="this.select()">
         <span class="input-unit">時間</span>
       </div>
     </div>
@@ -165,7 +165,7 @@
     <div class="form-group">
       <label for="expenses">経費（任意）</label>
       <div class="input-row">
-        <input type="number" id="expenses" placeholder="0" min="0" step="1000">
+        <input type="number" id="expenses" placeholder="0" min="0" step="1000" onfocus="this.select()">
         <span class="input-unit">円</span>
       </div>
       <div class="input-hint">ソフトウェア・通信費・交通費など案件に直接かかった費用</div>
@@ -177,7 +177,7 @@
     <div class="form-group">
       <label for="annualHours">年間稼働時間</label>
       <div class="input-row">
-        <input type="number" id="annualHours" value="1800" min="1" step="10">
+        <input type="number" id="annualHours" value="1800" min="1" step="10" onfocus="this.select()">
         <span class="input-unit">時間/年</span>
       </div>
       <div class="input-hint">目安: 月15日 x 8時間 x 12か月 = 1,440時間 / 月20日 x 8時間 x 12か月 = 1,920時間</div>
